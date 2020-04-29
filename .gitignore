@@ -1,0 +1,19 @@
+*.iml
+.gradle
+/local.properties
+.idea
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+jd-gui.cfg
+
+# release folder
+/release
+
+# configurations
+configs
+
+# temp data
+/tmp-*
+*.txt
