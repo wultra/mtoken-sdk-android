@@ -14,7 +14,7 @@ package com.wultra.android.mtokensdk.api.operation.model
 /**
  * Authorization  request model class - the wrapper requestObject.
  */
-data class AuthorizeRequest(val requestObject: AuthorizeRequestObject)
+internal data class AuthorizeRequest(val requestObject: AuthorizeRequestObject)
 
 /**
  * Authorize request model class.
@@ -22,5 +22,4 @@ data class AuthorizeRequest(val requestObject: AuthorizeRequestObject)
  * @property id Operation ID.
  * @property data Operation data.
  */
-data class AuthorizeRequestObject(val id: String,
-                                  val data: String)
+internal data class AuthorizeRequestObject(val id: String, val data: String)

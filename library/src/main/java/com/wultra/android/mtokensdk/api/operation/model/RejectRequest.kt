@@ -13,8 +13,6 @@ package com.wultra.android.mtokensdk.api.operation.model
 
 /**
  * Reject request model class - the wrapper requestObject.
- *
- * @author Tomas Kypta, tomas.kypta@wultra.com
  */
 internal data class RejectRequest(val requestObject: RejectRequestObject)
 

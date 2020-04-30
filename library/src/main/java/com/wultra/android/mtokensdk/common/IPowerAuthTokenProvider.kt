@@ -9,12 +9,14 @@
  * before the Municipal Court of Prague.
  */
 
-package com.wultra.android.mtokensdk.api.push.model
+package com.wultra.android.mtokensdk.common
+
+import io.getlime.security.powerauth.sdk.PowerAuthToken
+
 
 /**
- * Push registration request model class - the wrapper requestObject.
+ * IPowerAuthTokenProvider
  */
-data class PushRegistrationRequest(val requestObject: PushRegistrationRequestObject) {
-
-    constructor(token: String) : this(PushRegistrationRequestObject(token = token))
+interface IPowerAuthTokenProvider {
+    fun getToken(): PowerAuthToken
 }

@@ -15,9 +15,6 @@ package com.wultra.android.mtokensdk.operation
  * Reason for rejecting a pending operation.
  *
  * @property reason Reason identifier.
- * @property radioButtonId Id of the designated radio button in UI.
- *
- * @author Tomas Kypta, tomas.kypta@wultra.com
  */
 enum class RejectionReason(val reason: String) {
 

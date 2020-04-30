@@ -18,8 +18,6 @@ import java.util.*
 /**
  * Returns a well-formed IETF BCP 47 language tag representing
  * this locale.
- *
- * @author Tomas Kypta, tomas.kypta@wultra.com
  */
 fun Locale.toBcp47LanguageTag(): String {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {

@@ -14,5 +14,4 @@ package com.wultra.android.mtokensdk.api.general
 /**
  * Model class for error response - the wrapper responseObject.
  */
-data class ErrorResponse(val status: String,
-                         val responseObject: ErrorResponseObject)
+data class ErrorResponse(val status: String, val responseObject: ErrorResponseObject)

@@ -9,7 +9,7 @@
  * before the Municipal Court of Prague.
  */
 
-package com.wultra.android.mtokensdk.operation
+package com.wultra.android.mtokensdk.common
 
 import android.content.Context
 import com.wultra.android.mtokensdk.api.apiCoroutineScope
@@ -28,7 +28,9 @@ import kotlin.coroutines.suspendCoroutine
 /**
  * Manager for PowerAuth token header handling.
  */
-internal class TokenManager constructor(private val appContext: Context, private val powerAuthTokenStore: PowerAuthTokenStore) {
+internal class TokenManager constructor(
+        private val appContext: Context,
+        private val powerAuthTokenStore: PowerAuthTokenStore) : IPowerAuthTokenProvider {
 
     companion object {
         const val TOKEN_NAME = "possession_universal"
@@ -37,9 +39,9 @@ internal class TokenManager constructor(private val appContext: Context, private
     /**
      * Get PowerAuth token header or prepare a new one if it doesn't exist.
      */
-    fun getOrPreparePowerAuthTokenHeader(): PowerAuthAuthorizationHttpHeader {
+    override fun getToken(): PowerAuthToken {
         val powerAuthTokenHeader = runBlocking {
-            getPowerAuthTokenHeader()
+            getPowerAuthToken()
         }
         if (powerAuthTokenHeader == null || !powerAuthTokenHeader.isValid) {
             throw IllegalStateException("Cannot obtain PowerAuth token")
@@ -51,14 +53,13 @@ internal class TokenManager constructor(private val appContext: Context, private
     /**
      * Prepare header from either locally stored token or newly requested token from the backend.
      */
-     private suspend fun getPowerAuthTokenHeader(): PowerAuthAuthorizationHttpHeader? {
+     private suspend fun getPowerAuthToken(): PowerAuthToken? {
         val localPowerAuthToken = powerAuthTokenStore.getLocalToken(appContext, TOKEN_NAME)
         if (localPowerAuthToken != null) {
-            return localPowerAuthToken.generateHeader()
+            return localPowerAuthToken
         }
         val powerAuthTokenDeferred = apiCoroutineScope.async { launchRequestPowerAuthAccessToken() }
-        val token = powerAuthTokenDeferred.await()
-        return token?.generateHeader()
+        return powerAuthTokenDeferred.await()
     }
 
     private suspend fun launchRequestPowerAuthAccessToken(): PowerAuthToken? {

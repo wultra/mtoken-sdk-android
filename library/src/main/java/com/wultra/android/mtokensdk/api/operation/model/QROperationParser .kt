@@ -15,7 +15,6 @@ import android.util.Base64
 import java.math.BigDecimal
 import java.text.SimpleDateFormat
 
-
 /**
  * Parser for QR operation
  */

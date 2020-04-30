@@ -15,7 +15,8 @@ import com.wultra.android.mtokensdk.api.Api
 import com.wultra.android.mtokensdk.api.GsonRequestBodyBytes
 import com.wultra.android.mtokensdk.api.general.StatusResponse
 import com.wultra.android.mtokensdk.api.push.model.PushRegistrationRequest
-import com.wultra.android.mtokensdk.operation.TokenManager
+import com.wultra.android.mtokensdk.common.IPowerAuthTokenProvider
+import com.wultra.android.mtokensdk.common.TokenManager
 import kotlinx.coroutines.Deferred
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -23,12 +24,10 @@ import okhttp3.RequestBody
 
 /**
  * API for registering with push server.
- *
- * @author Tomas Kypta, tomas.kypta@wultra.com
  */
 internal class PushApi constructor(okHttpClient: OkHttpClient,
                                    baseURL: String,
-                                   private val tokenManager: TokenManager) : Api(okHttpClient,baseURL) {
+                                   private val tokenManager: IPowerAuthTokenProvider) : Api(okHttpClient,baseURL) {
 
     private val PUSH_URL = constructApiUrl("api/push/device/register/token")
 
@@ -45,7 +44,7 @@ internal class PushApi constructor(okHttpClient: OkHttpClient,
                 .url(PUSH_URL)
                 .post(body)
 
-        val tokenHeader = tokenManager.getOrPreparePowerAuthTokenHeader()
+        val tokenHeader = tokenManager.getToken().generateHeader()
         requestBuilder.header(tokenHeader.key, tokenHeader.value)
 
         return makeCall(requestBuilder.build())

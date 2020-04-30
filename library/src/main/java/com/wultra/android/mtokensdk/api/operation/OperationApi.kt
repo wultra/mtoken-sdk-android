@@ -19,7 +19,8 @@ import com.wultra.android.mtokensdk.api.operation.model.AllowedSignatureType
 import com.wultra.android.mtokensdk.api.operation.model.AuthorizeRequest
 import com.wultra.android.mtokensdk.api.operation.model.OperationListResponse
 import com.wultra.android.mtokensdk.api.operation.model.RejectRequest
-import com.wultra.android.mtokensdk.operation.TokenManager
+import com.wultra.android.mtokensdk.common.IPowerAuthTokenProvider
+import com.wultra.android.mtokensdk.common.TokenManager
 import io.getlime.security.powerauth.sdk.PowerAuthAuthentication
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
 import kotlinx.coroutines.Deferred
@@ -34,7 +35,7 @@ import okhttp3.RequestBody
 internal class OperationApi constructor(okHttpClient: OkHttpClient,
                                         baseUrl: String,
                                         private val appContext: Context,
-                                        private val tokenManager: TokenManager,
+                                        private val tokenManager: IPowerAuthTokenProvider,
                                         private val powerAuthSDK: PowerAuthSDK) : Api(okHttpClient, baseUrl) {
 
     companion object {
@@ -53,7 +54,7 @@ internal class OperationApi constructor(okHttpClient: OkHttpClient,
     fun list(): Deferred<OperationListResponse> {
         val json: String = "{}"
         val body = RequestBody.create(JSON_MEDIA_TYPE, json)
-        val tokenHeader = tokenManager.getOrPreparePowerAuthTokenHeader()
+        val tokenHeader = tokenManager.getToken().generateHeader()
         val request = Request.Builder()
                 .url(LIST_URL)
                 .post(body)
@@ -73,7 +74,7 @@ internal class OperationApi constructor(okHttpClient: OkHttpClient,
         val bodyBytes = GsonRequestBodyBytes(gson, typeAdapter).convert(rejectRequest)
         val authentication = PowerAuthAuthentication()
         authentication.usePossession = true
-        val authorizationHeader = powerAuthSDK.requestSignatureWithAuthentication(appContext, authentication, "POST", AUTHORIZE_URL_ID, bodyBytes)
+        val authorizationHeader = powerAuthSDK.requestSignatureWithAuthentication(appContext, authentication, "POST", REJECT_URL_ID, bodyBytes)
         val body = RequestBody.create(JSON_MEDIA_TYPE, bodyBytes)
         val request = Request.Builder()
                 .url(REJECT_URL)

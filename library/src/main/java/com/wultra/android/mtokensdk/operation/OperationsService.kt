@@ -17,6 +17,8 @@ import com.wultra.android.mtokensdk.api.apiCoroutineScope
 import com.wultra.android.mtokensdk.api.general.ApiError
 import com.wultra.android.mtokensdk.api.operation.OperationApi
 import com.wultra.android.mtokensdk.api.operation.model.*
+import com.wultra.android.mtokensdk.common.IPowerAuthTokenProvider
+import com.wultra.android.mtokensdk.common.TokenManager
 import io.getlime.security.powerauth.sdk.PowerAuthAuthentication
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
 import kotlinx.coroutines.Dispatchers
@@ -29,8 +31,12 @@ abstract class OperationsResult
 data class SuccessOperationsResult(val operations: List<Operation>): OperationsResult()
 data class ErrorOperationsResult(val error: ApiError): OperationsResult()
 
-fun PowerAuthSDK.createOperationsService(appContext: Context, httpClient: OkHttpClient, baseURL: String): OperationsService {
-    return OperationsService(this, appContext, httpClient, baseURL)
+fun PowerAuthSDK.createOperationsService(
+        appContext: Context,
+        httpClient: OkHttpClient,
+        baseURL: String,
+        tokenProvider: IPowerAuthTokenProvider = TokenManager(appContext, this.tokenStore)): OperationsService {
+    return OperationsService(this, appContext, tokenProvider, httpClient, baseURL)
 }
 
 /**
@@ -39,6 +45,7 @@ fun PowerAuthSDK.createOperationsService(appContext: Context, httpClient: OkHttp
 @Suppress("EXPERIMENTAL_API_USAGE")
 class OperationsService(private val powerAuthSDK: PowerAuthSDK,
                         private val appContext: Context,
+                        tokenManager: IPowerAuthTokenProvider,
                         httpClient: OkHttpClient,
                         baseURL: String) {
 
@@ -69,7 +76,7 @@ class OperationsService(private val powerAuthSDK: PowerAuthSDK,
         }
 
     // API class for communication.
-    private val operationApi: OperationApi = OperationApi(httpClient, baseURL, appContext, TokenManager(appContext, powerAuthSDK.tokenStore), powerAuthSDK)
+    private val operationApi: OperationApi = OperationApi(httpClient, baseURL, appContext, tokenManager, powerAuthSDK)
 
     // List of tasks waiting for ongoing operation fetch to finish
     private val tasks = mutableListOf<IGetOperationListener>()

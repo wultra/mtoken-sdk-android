@@ -23,10 +23,8 @@ import java.lang.reflect.Type
 
 /**
  * Gson deserializer for [ZonedDateTime].
- *
- * @author Tomas Kypta, tomas.kypta@wultra.com
  */
-class ZonedDateTimeDeserializer : JsonDeserializer<ZonedDateTime> {
+internal class ZonedDateTimeDeserializer : JsonDeserializer<ZonedDateTime> {
 
     override fun deserialize(json: JsonElement, typeOfT: Type, context: JsonDeserializationContext): ZonedDateTime {
         val jsonPrimitive = json.getAsJsonPrimitive()

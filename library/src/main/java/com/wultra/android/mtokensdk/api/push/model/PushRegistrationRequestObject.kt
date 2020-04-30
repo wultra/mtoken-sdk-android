@@ -13,8 +13,7 @@ package com.wultra.android.mtokensdk.api.push.model
 
 /**
  * Push registration request model class.
- *
- * @author Tomas Kypta, tomas.kypta@wultra.com
  */
-data class PushRegistrationRequestObject(val platform: String = "android",
-                                         val token: String)
+data class PushRegistrationRequestObject(val token: String) {
+    val platform: String = "android"
+}

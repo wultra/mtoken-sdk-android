@@ -29,8 +29,6 @@ val apiCoroutineScope = CoroutineScope(Dispatchers.IO + CoroutineName("ApiCorout
 
 /**
  * Common API methods for making request via OkHttp and (de)serializing data via Gson.
- *
- * @author Tomas Kypta, tomas.kypta@wultra.com
  */
 internal abstract class Api(protected val okHttpClient: OkHttpClient, private val baseUrl: String) {
 

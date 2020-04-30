@@ -17,8 +17,7 @@ import com.wultra.android.mtokensdk.api.ErrorCode
 /**
  * Model class for error response.
  */
-data class ErrorResponseObject(val code: String,
-                               val message: String) {
+data class ErrorResponseObject(val code: String, val message: String) {
     val errorCode: ErrorCode?
         get() {
             return ErrorCode.errorCodeFromCodeString(code)

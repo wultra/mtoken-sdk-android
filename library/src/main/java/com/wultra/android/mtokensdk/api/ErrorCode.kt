@@ -13,8 +13,6 @@ package com.wultra.android.mtokensdk.api
 
 /**
  * Error codes denoting API errors.
- *
- * @author Tomas Kypta, tomas.kypta@wultra.com
  */
 enum class ErrorCode(val message: String) {
 
