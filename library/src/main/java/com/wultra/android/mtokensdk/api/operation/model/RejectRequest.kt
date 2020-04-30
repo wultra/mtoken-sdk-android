@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, Wultra s.r.o. (www.wultra.com).
+ * Copyright (c) 2020, Wultra s.r.o. (www.wultra.com).
  *
  * All rights reserved. This source code can be used only for purposes specified
  * by the given license contract signed by the rightful deputy of Wultra s.r.o.
@@ -16,7 +16,7 @@ package com.wultra.android.mtokensdk.api.operation.model
  *
  * @author Tomas Kypta, tomas.kypta@wultra.com
  */
-data class RejectRequest(val requestObject: RejectRequestObject)
+internal data class RejectRequest(val requestObject: RejectRequestObject)
 
 /**
  * Reject request model class.
@@ -24,5 +24,4 @@ data class RejectRequest(val requestObject: RejectRequestObject)
  * @property id Operation ID.
  * @property reason Rejection reason.
  */
-data class RejectRequestObject(val id: String,
-                               val reason: String)
+internal data class RejectRequestObject(val id: String, val reason: String)

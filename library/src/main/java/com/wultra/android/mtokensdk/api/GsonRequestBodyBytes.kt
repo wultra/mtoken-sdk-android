@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, Wultra s.r.o. (www.wultra.com).
+ * Copyright (c) 2020, Wultra s.r.o. (www.wultra.com).
  *
  * All rights reserved. This source code can be used only for purposes specified
  * by the given license contract signed by the rightful deputy of Wultra s.r.o.
@@ -22,10 +22,8 @@ import java.nio.charset.Charset
  * GSON converter for serializing data to bytes.
  *
  * Inspired by Retrofit implementation.
- *
- * @author Tomas Kypta, tomas.kypta@wultra.com
  */
-class GsonRequestBodyBytes<T>(private val gson: Gson, private val adapter: TypeAdapter<T>) {
+internal class GsonRequestBodyBytes<T>(private val gson: Gson, private val adapter: TypeAdapter<T>) {
 
     @Throws(IOException::class)
     fun convert(value: T): ByteArray {

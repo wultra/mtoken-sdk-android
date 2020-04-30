@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, Wultra s.r.o. (www.wultra.com).
+ * Copyright (c) 2020, Wultra s.r.o. (www.wultra.com).
  *
  * All rights reserved. This source code can be used only for purposes specified
  * by the given license contract signed by the rightful deputy of Wultra s.r.o.

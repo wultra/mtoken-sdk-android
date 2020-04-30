@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, Wultra s.r.o. (www.wultra.com).
+ * Copyright (c) 2020, Wultra s.r.o. (www.wultra.com).
  *
  * All rights reserved. This source code can be used only for purposes specified
  * by the given license contract signed by the rightful deputy of Wultra s.r.o.
@@ -26,16 +26,11 @@ import okhttp3.RequestBody
  *
  * @author Tomas Kypta, tomas.kypta@wultra.com
  */
-class PushApi constructor(okHttpClient: OkHttpClient,
-                                  private val tokenManager: TokenManager) : Api(okHttpClient) {
+internal class PushApi constructor(okHttpClient: OkHttpClient,
+                                   baseURL: String,
+                                   private val tokenManager: TokenManager) : Api(okHttpClient,baseURL) {
 
-    companion object {
-
-        // TODO: configurable
-        val baseUrl = "http://localhost"
-
-        val PUSH_URL = Api.constructApiUrl(baseUrl,"api/push/device/register/token")
-    }
+    private val PUSH_URL = constructApiUrl("api/push/device/register/token")
 
     /**
      * Register FCM token with push server.

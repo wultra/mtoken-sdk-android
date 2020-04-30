@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, Wultra s.r.o. (www.wultra.com).
+ * Copyright (c) 2020, Wultra s.r.o. (www.wultra.com).
  *
  * All rights reserved. This source code can be used only for purposes specified
  * by the given license contract signed by the rightful deputy of Wultra s.r.o.
@@ -27,10 +27,8 @@ import kotlin.coroutines.suspendCoroutine
 
 /**
  * Manager for PowerAuth token header handling.
- *
- * @author Tomas Kypta, tomas.kypta@wultra.com
  */
-class TokenManager constructor(private val appContext: Context, private val powerAuthTokenStore: PowerAuthTokenStore) {
+internal class TokenManager constructor(private val appContext: Context, private val powerAuthTokenStore: PowerAuthTokenStore) {
 
     companion object {
         const val TOKEN_NAME = "possession_universal"

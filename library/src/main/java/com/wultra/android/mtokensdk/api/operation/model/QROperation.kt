@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Wultra s.r.o. (www.wultra.com).
+ * Copyright (c) 2020, Wultra s.r.o. (www.wultra.com).
  *
  * All rights reserved. This source code can be used only for purposes specified
  * by the given license contract signed by the rightful deputy of Wultra s.r.o.
@@ -16,8 +16,6 @@ import java.util.*
 
 /**
  * QR operation model class.
- *
- * @author Jan Kobersky, kober@wultra.com
  */
 data class QROperation(val operationId: String, // Operation's identifier
                        val title: String, // Title associated with the operation.

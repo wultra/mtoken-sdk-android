@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, Wultra s.r.o. (www.wultra.com).
+ * Copyright (c) 2020, Wultra s.r.o. (www.wultra.com).
  *
  * All rights reserved. This source code can be used only for purposes specified
  * by the given license contract signed by the rightful deputy of Wultra s.r.o.
@@ -32,16 +32,15 @@ val apiCoroutineScope = CoroutineScope(Dispatchers.IO + CoroutineName("ApiCorout
  *
  * @author Tomas Kypta, tomas.kypta@wultra.com
  */
-abstract class Api(protected val okHttpClient: OkHttpClient) {
+internal abstract class Api(protected val okHttpClient: OkHttpClient, private val baseUrl: String) {
 
-    companion object {
+    var acceptLanguage = "en"
 
-        val JSON_MEDIA_TYPE: MediaType = MediaType.parse("application/json; charset=UTF-8")!!
+    protected val JSON_MEDIA_TYPE: MediaType = MediaType.parse("application/json; charset=UTF-8")!!
 
-        fun constructApiUrl(baseUrl: String, path: String): String {
-            val base = baseUrl.removeSuffix("/")
-            return "$base/$path"
-        }
+    protected fun constructApiUrl(path: String): String {
+        val base = baseUrl.removeSuffix("/")
+        return "$base/$path"
     }
 
     /**

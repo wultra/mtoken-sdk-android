@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, Wultra s.r.o. (www.wultra.com).
+ * Copyright (c) 2020, Wultra s.r.o. (www.wultra.com).
  *
  * All rights reserved. This source code can be used only for purposes specified
  * by the given license contract signed by the rightful deputy of Wultra s.r.o.
@@ -16,10 +16,8 @@ import okhttp3.Response
 
 /**
  * Exception for describing HTTP exceptions.
- *
- * @author Tomas Kypta, tomas.kypta@wultra.com
  */
-class HttpException(val response: Response, val errorResponse: ErrorResponse? = null) : RuntimeException(getErrorMessage(response)) {
+internal class HttpException(response: Response, val errorResponse: ErrorResponse? = null) : RuntimeException(getErrorMessage(response)) {
 
     companion object {
         private fun getErrorMessage(response: Response): String {
@@ -27,11 +25,7 @@ class HttpException(val response: Response, val errorResponse: ErrorResponse? = 
         }
     }
 
-    val code: Int
-    override val message: String
+    val code: Int = response.code()
+    override val message: String = response.message()
 
-    init {
-        code = response.code()
-        message = response.message()
-    }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, Wultra s.r.o. (www.wultra.com).
+ * Copyright (c) 2020, Wultra s.r.o. (www.wultra.com).
  *
  * All rights reserved. This source code can be used only for purposes specified
  * by the given license contract signed by the rightful deputy of Wultra s.r.o.
@@ -20,10 +20,8 @@ import java.math.BigDecimal
 
 /**
  * Type adapter for deserializing sealed class Attribute with its hierarchy types.
- *
- * @author Tomas Kypta, tomas.kypta@wultra.com
  */
-class AttributeTypeAdapter : TypeAdapter<Attribute>() {
+internal class AttributeTypeAdapter : TypeAdapter<Attribute>() {
 
     override fun read(reader: JsonReader): Attribute? {
         var token = reader.peek()
