@@ -14,16 +14,16 @@ package com.wultra.android.mtokensdk.api.operation
 import android.content.Context
 import com.wultra.android.mtokensdk.api.Api
 import com.wultra.android.mtokensdk.api.GsonRequestBodyBytes
+import com.wultra.android.mtokensdk.api.IApiCallResponseListener
 import com.wultra.android.mtokensdk.api.general.StatusResponse
-import com.wultra.android.mtokensdk.api.operation.model.AllowedSignatureType
 import com.wultra.android.mtokensdk.api.operation.model.AuthorizeRequest
 import com.wultra.android.mtokensdk.api.operation.model.OperationListResponse
 import com.wultra.android.mtokensdk.api.operation.model.RejectRequest
+import com.wultra.android.mtokensdk.common.IPowerAuthTokenListener
 import com.wultra.android.mtokensdk.common.IPowerAuthTokenProvider
-import com.wultra.android.mtokensdk.common.TokenManager
 import io.getlime.security.powerauth.sdk.PowerAuthAuthentication
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
-import kotlinx.coroutines.Deferred
+import io.getlime.security.powerauth.sdk.PowerAuthToken
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
@@ -51,24 +51,31 @@ internal class OperationApi constructor(okHttpClient: OkHttpClient,
     /**
      * List pending operations.
      */
-    fun list(): Deferred<OperationListResponse> {
+    fun list(listener: IApiCallResponseListener<OperationListResponse>) {
         val json: String = "{}"
         val body = RequestBody.create(JSON_MEDIA_TYPE, json)
-        val tokenHeader = tokenManager.getToken().generateHeader()
-        val request = Request.Builder()
-                .url(LIST_URL)
-                .post(body)
-                .header("Accept-Language", acceptLanguage)
-                .header(tokenHeader.key, tokenHeader.value)
-                .build()
+        tokenManager.getTokenAsync(object : IPowerAuthTokenListener {
+            override fun onReceived(token: PowerAuthToken) {
+                val tokenHeader = token.generateHeader()
+                val request = Request.Builder()
+                        .url(LIST_URL)
+                        .post(body)
+                        .header("Accept-Language", acceptLanguage)
+                        .header(tokenHeader.key, tokenHeader.value)
+                        .build()
+                return makeCall(request, listener)
+            }
 
-        return makeCall(request)
+            override fun onFailed(e: Throwable) {
+                listener.onFailure(e)
+            }
+        })
     }
 
     /**
      * Reject an operation.
      */
-    fun reject(rejectRequest: RejectRequest): Deferred<StatusResponse> {
+    fun reject(rejectRequest: RejectRequest, listener: IApiCallResponseListener<StatusResponse>) {
         val gson = getGson()
         val typeAdapter = getTypeAdapter<RejectRequest>(gson)
         val bodyBytes = GsonRequestBodyBytes(gson, typeAdapter).convert(rejectRequest)
@@ -81,13 +88,13 @@ internal class OperationApi constructor(okHttpClient: OkHttpClient,
                 .post(body)
                 .header(authorizationHeader.key, authorizationHeader.value)
                 .build()
-        return makeCall(request)
+        return makeCall(request, listener)
     }
 
     /**
      * Authorize an operation.
      */
-    fun authorize(authorizeRequest: AuthorizeRequest, signatureType: AllowedSignatureType.Type, authentication: PowerAuthAuthentication): Deferred<StatusResponse> {
+    fun authorize(authorizeRequest: AuthorizeRequest, authentication: PowerAuthAuthentication, listener: IApiCallResponseListener<StatusResponse>) {
         val gson = getGson()
         val typeAdapter = getTypeAdapter<AuthorizeRequest>(gson)
         val bodyBytes = GsonRequestBodyBytes(gson, typeAdapter).convert(authorizeRequest)
@@ -98,6 +105,6 @@ internal class OperationApi constructor(okHttpClient: OkHttpClient,
                 .post(body)
                 .header(authorizationHeader.key, authorizationHeader.value)
                 .build()
-        return makeCall(request)
+        return makeCall(request, listener)
     }
 }

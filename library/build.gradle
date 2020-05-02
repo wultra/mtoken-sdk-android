@@ -44,16 +44,16 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:${kotlinCoroutinesVersion}"
 
-    compileOnly "io.getlime.security.powerauth:powerauth-android-sdk:${powerAuthSdkVersion}"
-
+    // Bundled
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation "com.android.support:support-annotations:${supportVersion}"
-
-    compileOnly "com.squareup.okhttp3:okhttp:${okHttpVersion}"
     implementation "com.google.code.gson:gson:${gsonVersion}"
     implementation "com.jakewharton.threetenabp:threetenabp:${threetenabpVersion}"
+
+    // Dependencies
+    compileOnly "io.getlime.security.powerauth:powerauth-android-sdk:${powerAuthSdkVersion}"
+    compileOnly "com.squareup.okhttp3:okhttp:${okHttpVersion}"
 }
 
 apply from: 'android-release-aar.gradle'

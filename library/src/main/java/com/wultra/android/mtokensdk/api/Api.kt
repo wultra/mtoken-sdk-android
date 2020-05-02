@@ -19,13 +19,15 @@ import com.wultra.android.mtokensdk.api.general.ErrorResponse
 import com.wultra.android.mtokensdk.api.operation.AttributeTypeAdapter
 import com.wultra.android.mtokensdk.api.operation.ZonedDateTimeDeserializer
 import com.wultra.android.mtokensdk.api.operation.model.Attribute
-import kotlinx.coroutines.*
 import okhttp3.*
 import org.threeten.bp.ZonedDateTime
 import java.io.IOException
 import java.lang.Exception
 
-val apiCoroutineScope = CoroutineScope(Dispatchers.IO + CoroutineName("ApiCoroutineDispatcher"))
+interface IApiCallResponseListener<T> {
+    fun onSuccess(result: T)
+    fun onFailure(e: Throwable)
+}
 
 /**
  * Common API methods for making request via OkHttp and (de)serializing data via Gson.
@@ -44,17 +46,11 @@ internal abstract class Api(protected val okHttpClient: OkHttpClient, private va
     /**
      * Make an API call.
      */
-    protected inline fun <reified T> makeCall(request: Request): Deferred<T> {
+    protected inline fun <reified T> makeCall(request: Request, listener: IApiCallResponseListener<T>) {
         val call = okHttpClient.newCall(request)
-        val deferred = CompletableDeferred<T>()
-        deferred.invokeOnCompletion {
-            if (deferred.isCancelled) {
-                call.cancel()
-            }
-        }
         call.enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
-                deferred.completeExceptionally(e)
+                listener.onFailure(e)
             }
 
             override fun onResponse(call: Call, response: Response) {
@@ -62,22 +58,21 @@ internal abstract class Api(protected val okHttpClient: OkHttpClient, private va
                     val gson = getGson()
                     val typeAdapter = getTypeAdapter<T>(gson)
                     val converter = GsonResponseBodyConverter(gson, typeAdapter)
-                    deferred.complete(converter.convert(response.body()!!))
+                    listener.onSuccess(converter.convert(response.body()!!))
                 } else {
                     val gson = getGson()
                     val typeAdapter = getTypeAdapter<ErrorResponse>(gson)
                     val converter = GsonResponseBodyConverter(gson, typeAdapter)
                     try {
                         val errorResponse = converter.convert(response.body()!!)
-                        deferred.completeExceptionally(HttpException(response, errorResponse))
+                        listener.onFailure(HttpException(response, errorResponse))
                     } catch (e: Exception) {
                         // there's no error response
-                        deferred.completeExceptionally(HttpException(response))
+                        listener.onFailure(HttpException(response))
                     }
                 }
             }
         })
-        return deferred
     }
 
     protected inline fun <reified T> getTypeAdapter(gson: Gson): TypeAdapter<T> {

@@ -13,10 +13,14 @@ package com.wultra.android.mtokensdk.common
 
 import io.getlime.security.powerauth.sdk.PowerAuthToken
 
-
 /**
  * IPowerAuthTokenProvider
  */
 interface IPowerAuthTokenProvider {
-    fun getToken(): PowerAuthToken
+    fun getTokenAsync(listener: IPowerAuthTokenListener)
+}
+
+interface IPowerAuthTokenListener {
+    fun onReceived(token: PowerAuthToken)
+    fun onFailed(e: Throwable)
 }

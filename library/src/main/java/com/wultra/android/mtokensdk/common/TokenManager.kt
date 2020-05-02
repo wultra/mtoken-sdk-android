@@ -12,18 +12,10 @@
 package com.wultra.android.mtokensdk.common
 
 import android.content.Context
-import com.wultra.android.mtokensdk.api.apiCoroutineScope
 import io.getlime.security.powerauth.networking.response.IGetTokenListener
 import io.getlime.security.powerauth.sdk.PowerAuthAuthentication
 import io.getlime.security.powerauth.sdk.PowerAuthToken
 import io.getlime.security.powerauth.sdk.PowerAuthTokenStore
-import io.getlime.security.powerauth.sdk.PowerAuthAuthorizationHttpHeader
-import kotlinx.coroutines.async
-import kotlinx.coroutines.runBlocking
-import java.lang.Exception
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.suspendCoroutine
 
 /**
  * Manager for PowerAuth token header handling.
@@ -36,54 +28,21 @@ internal class TokenManager constructor(
         const val TOKEN_NAME = "possession_universal"
     }
 
-    /**
-     * Get PowerAuth token header or prepare a new one if it doesn't exist.
-     */
-    override fun getToken(): PowerAuthToken {
-        val powerAuthTokenHeader = runBlocking {
-            getPowerAuthToken()
-        }
-        if (powerAuthTokenHeader == null || !powerAuthTokenHeader.isValid) {
-            throw IllegalStateException("Cannot obtain PowerAuth token")
-        } else {
-            return powerAuthTokenHeader
-        }
-    }
-
-    /**
-     * Prepare header from either locally stored token or newly requested token from the backend.
-     */
-     private suspend fun getPowerAuthToken(): PowerAuthToken? {
+    override fun getTokenAsync(listener: IPowerAuthTokenListener) {
         val localPowerAuthToken = powerAuthTokenStore.getLocalToken(appContext, TOKEN_NAME)
         if (localPowerAuthToken != null) {
-            return localPowerAuthToken
+            listener.onReceived(localPowerAuthToken)
+        } else {
+            val authentication = PowerAuthAuthentication()
+            authentication.usePossession = true
+            powerAuthTokenStore.requestAccessToken(appContext, TOKEN_NAME, authentication, object : IGetTokenListener {
+                override fun onGetTokenSucceeded(token: PowerAuthToken) {
+                    listener.onReceived(token)
+                }
+                override fun onGetTokenFailed(t: Throwable) {
+                    listener.onFailed(t)
+                }
+            })
         }
-        val powerAuthTokenDeferred = apiCoroutineScope.async { launchRequestPowerAuthAccessToken() }
-        return powerAuthTokenDeferred.await()
     }
-
-    private suspend fun launchRequestPowerAuthAccessToken(): PowerAuthToken? {
-        val powerAuthAuthentication = PowerAuthAuthentication()
-        powerAuthAuthentication.usePossession = true
-        try {
-            return requestPowerAuthAccessToken(authentication = powerAuthAuthentication)
-        } catch (e: Exception) {
-            return null
-        }
-    }
-
-    private suspend fun requestPowerAuthAccessToken(authentication: PowerAuthAuthentication): PowerAuthToken =
-            suspendCoroutine { cont ->
-                powerAuthTokenStore.requestAccessToken(appContext, TOKEN_NAME, authentication, object : IGetTokenListener {
-                    override fun onGetTokenSucceeded(token: PowerAuthToken) {
-                        cont.resume(token)
-                    }
-
-                    override fun onGetTokenFailed(t: Throwable) {
-                        cont.resumeWithException(t)
-                    }
-                })
-            }
-
-
 }

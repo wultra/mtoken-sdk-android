@@ -13,11 +13,12 @@ package com.wultra.android.mtokensdk.api.push
 
 import com.wultra.android.mtokensdk.api.Api
 import com.wultra.android.mtokensdk.api.GsonRequestBodyBytes
+import com.wultra.android.mtokensdk.api.IApiCallResponseListener
 import com.wultra.android.mtokensdk.api.general.StatusResponse
 import com.wultra.android.mtokensdk.api.push.model.PushRegistrationRequest
+import com.wultra.android.mtokensdk.common.IPowerAuthTokenListener
 import com.wultra.android.mtokensdk.common.IPowerAuthTokenProvider
-import com.wultra.android.mtokensdk.common.TokenManager
-import kotlinx.coroutines.Deferred
+import io.getlime.security.powerauth.sdk.PowerAuthToken
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
@@ -34,7 +35,7 @@ internal class PushApi constructor(okHttpClient: OkHttpClient,
     /**
      * Register FCM token with push server.
      */
-    fun registerToken(requestObject: PushRegistrationRequest): Deferred<StatusResponse> {
+    fun registerToken(requestObject: PushRegistrationRequest, listener: IApiCallResponseListener<StatusResponse>) {
         val gson = getGson()
         val typeAdapter = getTypeAdapter<PushRegistrationRequest>(gson)
         val bodyBytes = GsonRequestBodyBytes(gson, typeAdapter).convert(requestObject)
@@ -44,9 +45,16 @@ internal class PushApi constructor(okHttpClient: OkHttpClient,
                 .url(PUSH_URL)
                 .post(body)
 
-        val tokenHeader = tokenManager.getToken().generateHeader()
-        requestBuilder.header(tokenHeader.key, tokenHeader.value)
+        tokenManager.getTokenAsync(object : IPowerAuthTokenListener {
+            override fun onReceived(token: PowerAuthToken) {
+                val tokenHeader = token.generateHeader()
+                requestBuilder.header(tokenHeader.key, tokenHeader.value)
+                return makeCall(requestBuilder.build(), listener)
+            }
 
-        return makeCall(requestBuilder.build())
+            override fun onFailed(e: Throwable) {
+                listener.onFailure(e)
+            }
+        })
     }
 }

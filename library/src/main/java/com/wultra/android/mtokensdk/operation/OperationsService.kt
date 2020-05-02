@@ -12,18 +12,15 @@
 package com.wultra.android.mtokensdk.operation
 
 import android.content.Context
-import android.support.annotation.WorkerThread
-import com.wultra.android.mtokensdk.api.apiCoroutineScope
+import com.wultra.android.mtokensdk.api.IApiCallResponseListener
 import com.wultra.android.mtokensdk.api.general.ApiError
+import com.wultra.android.mtokensdk.api.general.StatusResponse
 import com.wultra.android.mtokensdk.api.operation.OperationApi
 import com.wultra.android.mtokensdk.api.operation.model.*
 import com.wultra.android.mtokensdk.common.IPowerAuthTokenProvider
 import com.wultra.android.mtokensdk.common.TokenManager
 import io.getlime.security.powerauth.sdk.PowerAuthAuthentication
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import java.lang.ref.WeakReference
 
@@ -81,39 +78,52 @@ class OperationsService(private val powerAuthSDK: PowerAuthSDK,
     // List of tasks waiting for ongoing operation fetch to finish
     private val tasks = mutableListOf<IGetOperationListener>()
 
+    private val mutex = Object()
+
     /**
      * Retrieves user operations and calls the listener when finished
      */
-    @Synchronized
     fun getOperations(listener: IGetOperationListener? = null) {
-        listener?.let { tasks.add(listener) }
-        if (operationsLoading) {
-            return
-        }
-        apiCoroutineScope.launch {
-            updateOperationsListSuspended()
+        synchronized(mutex) {
+            listener?.let { tasks.add(listener) }
+            if (operationsLoading) {
+                return
+            }
+            operationsLoading = true
+            updateOperationsListAsync()
         }
     }
 
-    @Synchronized
+
     fun authorizeOperation(operation: Operation, authentication: PowerAuthAuthentication, listener: IAcceptOperationListener) {
-        apiCoroutineScope.launch {
-            authorizeOperationSuspended(operation, authentication, listener)
-        }
+        val authorizeRequest = AuthorizeRequest(AuthorizeRequestObject(operation.id, operation.data))
+        operationApi.authorize(authorizeRequest, authentication, object : IApiCallResponseListener<StatusResponse> {
+            override fun onSuccess(result: StatusResponse) {
+                listener.onSuccess()
+            }
+
+            override fun onFailure(e: Throwable) {
+                listener.onError(ApiError(e))
+            }
+        })
     }
 
-    @Synchronized
     fun rejectOperation(operation: Operation, reason: RejectionReason, listener: IRejectOperationListener) {
-        apiCoroutineScope.launch {
-            rejectOperationSuspended(operation, reason, listener)
-        }
+        val rejectRequest = RejectRequest(RejectRequestObject(operation.id, reason.reason))
+        operationApi.reject(rejectRequest, object : IApiCallResponseListener<StatusResponse> {
+            override fun onSuccess(result: StatusResponse) {
+                listener.onSuccess()
+            }
+
+            override fun onFailure(e: Throwable) {
+                listener.onError(ApiError(e))
+            }
+        })
     }
 
     /**
      * Sign offline QR operation with password.
      */
-    @Synchronized
-    @WorkerThread
     fun signOfflineOperationWithBiometry(biometry: ByteArray, offlineOperation: QROperation): String? {
         return offlineSignature(null, biometry, offlineOperation)
     }
@@ -121,49 +131,28 @@ class OperationsService(private val powerAuthSDK: PowerAuthSDK,
     /**
      * Sign offline QR operation with password.
      */
-    @Synchronized
-    @WorkerThread
     fun signOfflineOperationWithPassword(password: String, offlineOperation: QROperation): String? {
         return offlineSignature(password, null, offlineOperation)
     }
 
-    @Synchronized
-    private suspend fun updateOperationsListSuspended() = withContext(Dispatchers.IO) {
-        try {
-            operationsLoading = true
-            val operationsListResult = operationApi.list().await()
-            lastOperationsResult = SuccessOperationsResult(operationsListResult.responseObject)
-            tasks.forEach { it.onSuccess(operationsListResult.responseObject) }.also { tasks.clear() }
-        } catch (e: Exception) {
-            val error = ApiError(e)
-            lastOperationsResult = ErrorOperationsResult(error)
-            tasks.forEach { it.onError(error) }.also { tasks.clear() }
-        } finally {
-            operationsLoading = false
-        }
-    }
-
-    @Synchronized
-    private suspend fun rejectOperationSuspended(operation: Operation, reason: RejectionReason, listener: IRejectOperationListener) = withContext(Dispatchers.IO) {
-        try {
-            val rejectRequest = RejectRequest(RejectRequestObject(operation.id, reason.reason))
-            operationApi.reject(rejectRequest).await()
-            listener.onSuccess()
-        } catch (e: Exception) {
-            listener.onError(ApiError(e))
-        }
-    }
-
-    @Synchronized
-    private suspend fun authorizeOperationSuspended(operation: Operation, authentication: PowerAuthAuthentication, listener: IAcceptOperationListener) {
-        try {
-            val authorizeRequest = AuthorizeRequest(AuthorizeRequestObject(operation.id, operation.data))
-            operationApi.authorize(authorizeRequest, operation.allowedSignatureType.type, authentication).await()
-            // TODO: stats and action manager
-            listener.onSuccess()
-        } catch (e: Exception) {
-            listener.onError(ApiError(e))
-        }
+    private fun updateOperationsListAsync() {
+        operationApi.list(object : IApiCallResponseListener<OperationListResponse> {
+            override fun onSuccess(result: OperationListResponse) {
+                lastOperationsResult = SuccessOperationsResult(result.responseObject)
+                synchronized(mutex) {
+                    tasks.forEach { it.onSuccess(result.responseObject) }.also { tasks.clear() }
+                    operationsLoading = false
+                }
+            }
+            override fun onFailure(e: Throwable) {
+                val error = ApiError(e)
+                lastOperationsResult = ErrorOperationsResult(error)
+                synchronized(mutex) {
+                    tasks.forEach { it.onError(error) }.also { tasks.clear() }
+                    operationsLoading = false
+                }
+            }
+        })
     }
 
     /**
