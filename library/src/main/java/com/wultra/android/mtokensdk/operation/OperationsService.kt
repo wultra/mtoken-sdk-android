@@ -12,6 +12,7 @@
 package com.wultra.android.mtokensdk.operation
 
 import android.content.Context
+import android.support.annotation.MainThread
 import com.wultra.android.mtokensdk.api.IApiCallResponseListener
 import com.wultra.android.mtokensdk.api.general.ApiError
 import com.wultra.android.mtokensdk.api.general.StatusResponse
@@ -22,68 +23,80 @@ import com.wultra.android.mtokensdk.common.TokenManager
 import io.getlime.security.powerauth.sdk.PowerAuthAuthentication
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
 import okhttp3.OkHttpClient
-import java.lang.ref.WeakReference
+import java.util.*
 
-abstract class OperationsResult
-data class SuccessOperationsResult(val operations: List<Operation>): OperationsResult()
-data class ErrorOperationsResult(val error: ApiError): OperationsResult()
-
+/**
+ * Convenience factory method to create an IOperationsService instance
+ * from given PowerAuthSDK instance.
+ *
+ * @param appContext Application Context object
+ * @param httpClient OkHttpClient for API communication
+ * @param baseURL Base URL where the operations endpoint rests.
+ * @param tokenProvider PowerAuthToken provider. If null is provided, default internal implementation is provided.
+ */
 fun PowerAuthSDK.createOperationsService(
         appContext: Context,
         httpClient: OkHttpClient,
         baseURL: String,
-        tokenProvider: IPowerAuthTokenProvider = TokenManager(appContext, this.tokenStore)): OperationsService {
-    return OperationsService(this, appContext, tokenProvider, httpClient, baseURL)
+        tokenProvider: IPowerAuthTokenProvider? = TokenManager(appContext, this.tokenStore)): IOperationsService {
+    return OperationsService(this, appContext, httpClient, baseURL, tokenProvider)
 }
 
-/**
- * Manager for handling operations.
- */
 @Suppress("EXPERIMENTAL_API_USAGE")
-class OperationsService(private val powerAuthSDK: PowerAuthSDK,
-                        private val appContext: Context,
-                        tokenManager: IPowerAuthTokenProvider,
-                        httpClient: OkHttpClient,
-                        baseURL: String) {
+class OperationsService: IOperationsService {
 
-    /**
-     * Listener gets notified about changes in operations loading.
-     */
-    var listener: WeakReference<IOperationsManagerListener>? = null
+    override var listener: IOperationsServiceListener? = null
 
-    /**
-     * If operation loading is currently in progress.
-     */
-    var operationsLoading = false
-        private set(value) {
+    private val powerAuthSDK: PowerAuthSDK
+    private val appContext: Context
+    private var timer: Timer? = null
+
+    private var operationsLoading = false
+        set(value) {
             field = value
-            listener?.get()?.operationsLoading(value)
+            listener?.operationsLoading(value)
         }
 
-    /**
-     * Last cached operation result for easy access.
-     */
-    var lastOperationsResult: OperationsResult? = null
-        private set(value) {
+    private var lastOperationsResult: OperationsResult? = null
+        set(value) {
             field = value
             when (value) {
-                is SuccessOperationsResult -> listener?.get()?.operationsChanged(value.operations)
-                is ErrorOperationsResult -> listener?.get()?.operationsFailed(value.error)
+                is SuccessOperationsResult -> listener?.operationsLoaded(value.operations)
+                is ErrorOperationsResult -> listener?.operationsFailed(value.error)
             }
         }
 
     // API class for communication.
-    private val operationApi: OperationApi = OperationApi(httpClient, baseURL, appContext, tokenManager, powerAuthSDK)
+    private val operationApi: OperationApi
 
     // List of tasks waiting for ongoing operation fetch to finish
     private val tasks = mutableListOf<IGetOperationListener>()
 
+    // IsLoading mutex
     private val mutex = Object()
 
     /**
-     * Retrieves user operations and calls the listener when finished
+     * Constructs OperationService
+     *
+     * @param powerAuthSDK PowerAuth instance
+     * @param appContext Application Context object
+     * @param httpClient OkHttpClient for API communication
+     * @param baseURL Base URL where the operations endpoint rests.
+     * @param tokenProvider PowerAuthToken provider. If null is provided, default internal implementation is provided.
+     *
      */
-    fun getOperations(listener: IGetOperationListener? = null) {
+    constructor(powerAuthSDK: PowerAuthSDK, appContext: Context, httpClient: OkHttpClient, baseURL: String, tokenProvider: IPowerAuthTokenProvider? = null) {
+        this.powerAuthSDK = powerAuthSDK
+        this.appContext = appContext
+        val tokenManager = tokenProvider ?: TokenManager(appContext, powerAuthSDK.tokenStore)
+        this.operationApi = OperationApi(httpClient, baseURL, appContext, tokenManager, powerAuthSDK)
+    }
+
+    override fun isLoadingOperations() = operationsLoading
+
+    override fun getLastOperationsResult() = lastOperationsResult
+
+    override fun getOperations(listener: IGetOperationListener?) {
         synchronized(mutex) {
             listener?.let { tasks.add(listener) }
             if (operationsLoading) {
@@ -94,8 +107,7 @@ class OperationsService(private val powerAuthSDK: PowerAuthSDK,
         }
     }
 
-
-    fun authorizeOperation(operation: Operation, authentication: PowerAuthAuthentication, listener: IAcceptOperationListener) {
+    override fun authorizeOperation(operation: Operation, authentication: PowerAuthAuthentication, listener: IAcceptOperationListener) {
         val authorizeRequest = AuthorizeRequest(AuthorizeRequestObject(operation.id, operation.data))
         operationApi.authorize(authorizeRequest, authentication, object : IApiCallResponseListener<StatusResponse> {
             override fun onSuccess(result: StatusResponse) {
@@ -108,7 +120,7 @@ class OperationsService(private val powerAuthSDK: PowerAuthSDK,
         })
     }
 
-    fun rejectOperation(operation: Operation, reason: RejectionReason, listener: IRejectOperationListener) {
+    override fun rejectOperation(operation: Operation, reason: RejectionReason, listener: IRejectOperationListener) {
         val rejectRequest = RejectRequest(RejectRequestObject(operation.id, reason.reason))
         operationApi.reject(rejectRequest, object : IApiCallResponseListener<StatusResponse> {
             override fun onSuccess(result: StatusResponse) {
@@ -121,18 +133,46 @@ class OperationsService(private val powerAuthSDK: PowerAuthSDK,
         })
     }
 
-    /**
-     * Sign offline QR operation with password.
-     */
-    fun signOfflineOperationWithBiometry(biometry: ByteArray, offlineOperation: QROperation): String? {
+    override fun signOfflineOperationWithBiometry(biometry: ByteArray, offlineOperation: QROperation): String? {
         return offlineSignature(null, biometry, offlineOperation)
     }
 
-    /**
-     * Sign offline QR operation with password.
-     */
-    fun signOfflineOperationWithPassword(password: String, offlineOperation: QROperation): String? {
+    override fun signOfflineOperationWithPassword(password: String, offlineOperation: QROperation): String? {
         return offlineSignature(password, null, offlineOperation)
+    }
+
+    @Throws(IllegalArgumentException::class)
+    override fun processOfflineQrPayload(payload: String): QROperation? {
+        val unverifiedOfflineOperation = QROperationParser.parse(payload)
+        val verified = powerAuthSDK.verifyServerSignedData(unverifiedOfflineOperation.signedData,
+                unverifiedOfflineOperation.signature.signature,
+                unverifiedOfflineOperation.signature.isMaster())
+        if (!verified) {
+            throw IllegalArgumentException("Invalid offline operation")
+        }
+        return unverifiedOfflineOperation
+    }
+
+    override fun isPollingOperations() = timer != null
+
+    @Synchronized
+    override fun startPollingOperations(pollingInterval: Long) {
+        if (timer != null) {
+            return
+        }
+
+        val t = Timer("OperationsServiceTimer")
+        t.scheduleAtFixedRate(object : TimerTask() {
+            override fun run() {
+                getOperations(null)
+            }
+        }, pollingInterval, pollingInterval)
+        timer = t
+    }
+
+    override fun stopPollingOperations() {
+        timer?.cancel()
+        timer = null
     }
 
     private fun updateOperationsListAsync() {
@@ -155,24 +195,6 @@ class OperationsService(private val powerAuthSDK: PowerAuthSDK,
         })
     }
 
-    /**
-     * Process loaded payload from a scanned offline QR.
-     */
-    fun processOfflineQrPayload(payload: String): QROperation? {
-        try {
-            val unverifiedOfflineOperation = QROperationParser.parse(payload)
-            val verified = powerAuthSDK.verifyServerSignedData(unverifiedOfflineOperation.signedData,
-                    unverifiedOfflineOperation.signature.signature,
-                    unverifiedOfflineOperation.signature.isMaster())
-            if (!verified) {
-                throw IllegalArgumentException("Invalid offline operation")
-            }
-            return unverifiedOfflineOperation
-        } catch (e: Exception) {
-            return null
-        }
-    }
-
     private fun offlineSignature(password: String?, biometry: ByteArray?, offlineOperation: QROperation): String? {
         if (password == null && biometry == null) {
             throw IllegalArgumentException("Password or biometry needs to be set")
@@ -181,28 +203,7 @@ class OperationsService(private val powerAuthSDK: PowerAuthSDK,
         authentication.usePossession = true
         authentication.usePassword = password
         authentication.useBiometry = biometry
-        // TODO: stats!
         return powerAuthSDK.offlineSignatureWithAuthentication(appContext, authentication, OperationApi.OFFLINE_AUTHORIZE_URL_ID, offlineOperation.dataForOfflineSigning(), offlineOperation.nonce)
     }
 
-    interface IAcceptOperationListener {
-        fun onSuccess()
-        fun onError(error: ApiError)
-    }
-
-    interface IRejectOperationListener {
-        fun onSuccess()
-        fun onError(error: ApiError)
-    }
-
-    interface IOperationsManagerListener {
-        fun operationsChanged(operations: List<Operation>)
-        fun operationsLoading(loading: Boolean)
-        fun operationsFailed(error: ApiError)
-    }
-
-    interface IGetOperationListener {
-        fun onError(error: ApiError)
-        fun onSuccess(operations: List<Operation>)
-    }
 }

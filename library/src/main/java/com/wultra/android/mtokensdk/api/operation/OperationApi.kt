@@ -39,9 +39,9 @@ internal class OperationApi constructor(okHttpClient: OkHttpClient,
                                         private val powerAuthSDK: PowerAuthSDK) : Api(okHttpClient, baseUrl) {
 
     companion object {
-        val AUTHORIZE_URL_ID = "/operation/authorize"
-        val REJECT_URL_ID = "/operation/cancel"
-        val OFFLINE_AUTHORIZE_URL_ID = "/operation/authorize/offline"
+        const val AUTHORIZE_URL_ID = "/operation/authorize"
+        const val REJECT_URL_ID = "/operation/cancel"
+        const val OFFLINE_AUTHORIZE_URL_ID = "/operation/authorize/offline"
     }
 
     private val LIST_URL = constructApiUrl("api/auth/token/app/operation/list")
@@ -52,7 +52,7 @@ internal class OperationApi constructor(okHttpClient: OkHttpClient,
      * List pending operations.
      */
     fun list(listener: IApiCallResponseListener<OperationListResponse>) {
-        val json: String = "{}"
+        val json = "{}"
         val body = RequestBody.create(JSON_MEDIA_TYPE, json)
         tokenManager.getTokenAsync(object : IPowerAuthTokenListener {
             override fun onReceived(token: PowerAuthToken) {

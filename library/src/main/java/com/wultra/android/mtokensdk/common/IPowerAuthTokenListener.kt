@@ -9,9 +9,14 @@
  * before the Municipal Court of Prague.
  */
 
-package com.wultra.android.mtokensdk.api.general
+package com.wultra.android.mtokensdk.common
+
+import io.getlime.security.powerauth.sdk.PowerAuthToken
 
 /**
- * Model class for error response - the wrapper responseObject.
+ * Consumer of the PowerAuth token.
  */
-internal data class ErrorResponse(val status: String, val responseObject: ErrorResponseObject)
+interface IPowerAuthTokenListener {
+    fun onReceived(token: PowerAuthToken)
+    fun onFailed(e: Throwable)
+}

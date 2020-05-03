@@ -80,7 +80,7 @@ internal abstract class Api(protected val okHttpClient: OkHttpClient, private va
     }
 
     /**
-     * This class is inlined only because of ProGuard.
+     * This func is inlined only because of ProGuard.
      * For some reason when a method is called only from an inlined method
      * ProGuard gets confused and it can't correctly trace method usage.
      * The obfuscated code then breaks at this method code.

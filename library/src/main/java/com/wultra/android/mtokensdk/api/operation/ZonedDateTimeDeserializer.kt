@@ -27,7 +27,7 @@ import java.lang.reflect.Type
 internal class ZonedDateTimeDeserializer : JsonDeserializer<ZonedDateTime> {
 
     override fun deserialize(json: JsonElement, typeOfT: Type, context: JsonDeserializationContext): ZonedDateTime {
-        val jsonPrimitive = json.getAsJsonPrimitive()
+        val jsonPrimitive = json.asJsonPrimitive
         try {
 
             // if provided as String - '2011-12-03T10:15:30+01:00[Europe/Paris]'
@@ -36,17 +36,17 @@ internal class ZonedDateTimeDeserializer : JsonDeserializer<ZonedDateTime> {
                 val fixedStr = jsonPrimitive.asString.replace(Regex("\\+([0-9][0-9])([0-9][0-9])$"), transform = { matchResult ->
                     "+${matchResult.groupValues[1]}:${matchResult.groupValues[2]}"
                 })
-                return ZonedDateTime.parse(fixedStr, DateTimeFormatter.ISO_ZONED_DATE_TIME);
+                return ZonedDateTime.parse(fixedStr, DateTimeFormatter.ISO_ZONED_DATE_TIME)
             }
 
             // if provided as Long
             if (jsonPrimitive.isNumber) {
-                return ZonedDateTime.ofInstant(Instant.ofEpochMilli(jsonPrimitive.asLong), ZoneId.systemDefault());
+                return ZonedDateTime.ofInstant(Instant.ofEpochMilli(jsonPrimitive.asLong), ZoneId.systemDefault())
             }
 
         } catch (e: Exception) {
             throw JsonParseException("Unable to parse ZonedDateTime", e)
         }
-        throw JsonParseException("Unable to parse ZonedDateTime");
+        throw JsonParseException("Unable to parse ZonedDateTime")
     }
 }

@@ -14,4 +14,4 @@ package com.wultra.android.mtokensdk.api.general
 /**
  * Model class for activation status responses.
  */
-data class StatusResponse(val status: String)
+internal data class StatusResponse(val status: String)

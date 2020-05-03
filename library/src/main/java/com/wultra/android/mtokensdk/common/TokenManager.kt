@@ -19,6 +19,7 @@ import io.getlime.security.powerauth.sdk.PowerAuthTokenStore
 
 /**
  * Manager for PowerAuth token header handling.
+ * Default internal implementation of [IPowerAuthTokenProvider]
  */
 internal class TokenManager constructor(
         private val appContext: Context,

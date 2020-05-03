@@ -33,7 +33,6 @@ android {
         }
         release {
             minifyEnabled false
-            consumerProguardFiles 'proguard-rules.pro'
         }
     }
     compileOptions {
