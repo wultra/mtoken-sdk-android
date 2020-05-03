@@ -21,8 +21,11 @@ This SDK contains an Operations service that handles operation retrieving, appro
 ### Integration
 
 Integration is now supported only via local maven.
-
 Download latest release from releases here on github and copy it to your local maven repository.
+In your gradle file, use:
+```rb
+implementation "com.wultra.android.mtokensdk:wultra-mtoken-sdk:1.0.0"
+```
 
 ### Code usage
 
