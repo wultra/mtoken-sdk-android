@@ -14,7 +14,7 @@ This SDK contains an Operations service that handles operation retrieving, appro
 
 **PUSH**
 
-> This is not available yet
+This SDK contains a Push service that handles registering push notification.
 
 ## Basic usage
 
@@ -29,8 +29,14 @@ implementation "com.wultra.android.mtokensdk:wultra-mtoken-sdk:1.0.0"
 
 ### Code usage
 
-To retrieve `IOperationsService` service from your PowerAuth activation, simply use:
+To create `IOperationsService` from your PowerAuth activation, simply use:
 
 ```kotlin   
-val opService = powerAuthSDK.createOperationsService(appContext, okHttpClient, "http://mydomain.com/myservice/ops")
+val opService = powerAuthSDK.createOperationsService(appContext, "https://mydomain.com/myservice/ops", SSLValidationStrategy.default())
+```
+
+To create `IPushService` from your PowerAuth activation, simply use:
+
+```kotlin   
+val pushService = powerAuthSDK.createPushService(appContext, "https://mydomain.com/myservice/push", SSLValidationStrategy.default())
 ```

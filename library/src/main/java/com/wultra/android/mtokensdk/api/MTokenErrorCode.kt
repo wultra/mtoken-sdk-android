@@ -14,7 +14,7 @@ package com.wultra.android.mtokensdk.api
 /**
  * Error codes denoting API errors.
  */
-enum class ErrorCode(val message: String) {
+enum class MTokenErrorCode(val message: String) {
 
     /* PUSH */
     ERROR_GENERIC("ERROR_GENERIC"),
@@ -65,12 +65,12 @@ enum class ErrorCode(val message: String) {
     ERR_UPGRADE("ERR_UPGRADE");
 
     companion object {
-        private val map = mutableMapOf<String, ErrorCode>()
+        private val map = mutableMapOf<String, MTokenErrorCode>()
 
         init {
             values().forEach { ec -> map[ec.message] = ec }
         }
 
-        fun errorCodeFromCodeString(code: String): ErrorCode? = map[code]
+        fun errorCodeFromCodeString(code: String): MTokenErrorCode? = map[code]
     }
 }

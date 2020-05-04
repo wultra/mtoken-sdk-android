@@ -11,8 +11,8 @@
 
 package com.wultra.android.mtokensdk.api.general
 
-import com.wultra.android.mtokensdk.api.ErrorCode
-import com.wultra.android.mtokensdk.api.HttpException
+import com.wultra.android.mtokensdk.api.MTokenErrorCode
+import com.wultra.android.mtokensdk.api.MTokenHttpException
 import io.getlime.security.powerauth.networking.exceptions.ErrorResponseApiException
 
 /**
@@ -20,12 +20,12 @@ import io.getlime.security.powerauth.networking.exceptions.ErrorResponseApiExcep
  */
 data class ApiError(val e: Throwable) {
 
-    val error: ErrorCode? = when (e) {
-        is HttpException -> {
+    val error: MTokenErrorCode? = when (e) {
+        is MTokenHttpException -> {
             e.errorResponse?.responseObject?.errorCode
         }
         is ErrorResponseApiException -> {
-            ErrorCode.errorCodeFromCodeString(e.errorResponse.code)
+            MTokenErrorCode.errorCodeFromCodeString(e.errorResponse.code)
         }
         else -> {
             null

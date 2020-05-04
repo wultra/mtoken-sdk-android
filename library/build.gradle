@@ -49,10 +49,10 @@ dependencies {
     implementation "com.android.support:support-annotations:${supportVersion}"
     implementation "com.google.code.gson:gson:${gsonVersion}"
     implementation "com.jakewharton.threetenabp:threetenabp:${threetenabpVersion}"
+    implementation "com.squareup.okhttp3:okhttp:${okHttpVersion}"
 
     // Dependencies
     compileOnly "io.getlime.security.powerauth:powerauth-android-sdk:${powerAuthSdkVersion}"
-    compileOnly "com.squareup.okhttp3:okhttp:${okHttpVersion}"
 }
 
 apply from: 'android-release-aar.gradle'

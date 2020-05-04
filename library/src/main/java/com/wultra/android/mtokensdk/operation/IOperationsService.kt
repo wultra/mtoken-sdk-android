@@ -31,6 +31,12 @@ interface IOperationsService {
     var listener: IOperationsServiceListener?
 
     /**
+     * Accept language for the outgoing requests headers.
+     * Default value is "en".
+     */
+    var acceptLanguage: String
+
+    /**
      * Last cached operation result for easy access.
      *
      * @return Last getOperations result. Null if not performed yet
@@ -56,6 +62,8 @@ interface IOperationsService {
 
     /**
      * Starts polling operations from the server. You can observe the polling via [listener].
+     *
+     * @param pollingInterval Polling interval in milliseconds
      */
     fun startPollingOperations(pollingInterval: Long)
 
