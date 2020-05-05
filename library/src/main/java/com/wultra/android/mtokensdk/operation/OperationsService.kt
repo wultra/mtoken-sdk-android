@@ -23,6 +23,7 @@ import com.wultra.android.mtokensdk.common.TokenManager
 import io.getlime.security.powerauth.sdk.PowerAuthAuthentication
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
 import okhttp3.OkHttpClient
+import java.lang.Exception
 import java.util.*
 
 /**
@@ -147,24 +148,10 @@ class OperationsService: IOperationsService {
         })
     }
 
-    override fun signOfflineOperationWithBiometry(biometry: ByteArray, offlineOperation: QROperation): String? {
-        return offlineSignature(null, biometry, offlineOperation)
-    }
-
-    override fun signOfflineOperationWithPassword(password: String, offlineOperation: QROperation): String? {
-        return offlineSignature(password, null, offlineOperation)
-    }
-
-    @Throws(IllegalArgumentException::class)
-    override fun processOfflineQrPayload(payload: String): QROperation? {
-        val unverifiedOfflineOperation = QROperationParser.parse(payload)
-        val verified = powerAuthSDK.verifyServerSignedData(unverifiedOfflineOperation.signedData,
-                unverifiedOfflineOperation.signature.signature,
-                unverifiedOfflineOperation.signature.isMaster())
-        if (!verified) {
-            throw IllegalArgumentException("Invalid offline operation")
-        }
-        return unverifiedOfflineOperation
+    @Throws
+    override fun authorizeOfflineOperation(operation: QROperation, authentication: PowerAuthAuthentication): String {
+        return powerAuthSDK.offlineSignatureWithAuthentication(appContext, authentication, OperationApi.OFFLINE_AUTHORIZE_URL_ID, operation.dataForOfflineSigning(), operation.nonce)
+                ?: throw Exception("Cannot sign this operation")
     }
 
     override fun isPollingOperations() = timer != null
@@ -207,17 +194,6 @@ class OperationsService: IOperationsService {
                 }
             }
         })
-    }
-
-    private fun offlineSignature(password: String?, biometry: ByteArray?, offlineOperation: QROperation): String? {
-        if (password == null && biometry == null) {
-            throw IllegalArgumentException("Password or biometry needs to be set")
-        }
-        val authentication = PowerAuthAuthentication()
-        authentication.usePossession = true
-        authentication.usePassword = password
-        authentication.useBiometry = biometry
-        return powerAuthSDK.offlineSignatureWithAuthentication(appContext, authentication, OperationApi.OFFLINE_AUTHORIZE_URL_ID, offlineOperation.dataForOfflineSigning(), offlineOperation.nonce)
     }
 
 }

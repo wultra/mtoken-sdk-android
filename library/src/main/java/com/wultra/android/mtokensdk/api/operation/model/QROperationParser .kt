@@ -34,8 +34,14 @@ class QROperationParser {
         private val dateFormatter = SimpleDateFormat("yyyyMMdd")
 
         /**
-         * Parses input string into `QROperationParser` data class. Throws IllegalArgumentException when invalid data are provided.
+         * Process loaded payload from a scanned offline QR.
+         *
+         * @param string String parsed from QR code
+         *
+         * @throws IllegalArgumentException When there is no operation in provided string.
+         * @return Parsed operation.
          */
+        @Throws(IllegalArgumentException::class)
         fun parse(string: String): QROperation {
             // Split string by newline
             val attributes = string.split("\n")

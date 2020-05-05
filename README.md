@@ -159,19 +159,31 @@ fun reject(operation: Operation, reason: RejectionReason) {
 
 In case the user is not online, you can use off-line authorizations. In this operation mode, the user needs to scan a QR code, enter PIN code or use biometry, and rewrite the resulting code. Wultra provides a special format for [the operation QR codes](https://github.com/wultra/powerauth-webflow/blob/develop/docs/Off-line-Signatures-QR-Code.md), that are automatically processed with the SDK.
 
-To process the operation QR code, simply call:
+To process the operation QR code, you can use:
 
 ```kotlin
-fun onQROperationScanned(scannedCode: String): QROperation? {
-    return operationsService.processOfflineQrPayload(scannerCode)
+@Throws(IllegalArgumentException::class)
+fun onQROperationScanned(scannedCode: String): QROperation {
+    // retrieve parsed operation
+    val operation = QROperationParser.parse(payload)
+    // verify the signature against the powerauth instance
+    val verified = powerAuthSDK.verifyServerSignedData(operation.signedData, operation.signature.signature, operation.signature.isMaster())
+    if (!verified) {
+        throw IllegalArgumentException("Invalid offline operation")
+    }
+    return operation
 }
 ```
 
 After that, you can produce an off-line signature using the following code:
 
 ```kotlin
-fun approveQROperation(operation: QROperation, password: String): String? {
-    return operationsService.signOfflineOperationWithPassword(password, operation)
+@Throws
+fun approveQROperation(operation: QROperation, password: String): String {
+    val authentication = PowerAuthAuthentication()
+    authentication.usePossession = true
+    authentication.usePassword = password
+    return operationsService.authorizeOfflineOperation(operation, authentication)
 }
 ```
 
@@ -197,11 +209,9 @@ All available methods and attributes of `IOperationsService` API are:
     - `operation` - Operation to reject, retrieved from `getOperations` call.
     - `reason` - Rejection reason.
     - `listener` - Called when rejection request finishes.
-- `processOfflineQrPayload(payload: String)` - Parses offline (QR) operation string into a structure.
-    - `payload` - Parse data from QR code scanned with the app.
-- `signOfflineOperationWithPassword(password: String, offlineOperation: QROperation)` - Sign offline (QR) operation with password
-    - `password` - Password for PowerAuth activation.
-    - `offlineOperation` - Offline operation retrieved via `processOfflineQrPayload` method.
+- `fun authorizeOfflineOperation(operation: QROperation, authentication: PowerAuthAuthentication)` - Sign offline (QR) operation
+    - `operation` - Offline operation retrieved via `QROperationParser.parse` method.
+    - `authentication` - PowerAuth authentication object for operation signing.
 - `signOfflineOperationWithBiometry(biometry: ByteArray, offlineOperation: QROperation)` - Sign offline (QR) operation with biometry data.
     - `biometry` - Biometry data retrieved from `powerAuthSDK.authenticateUsingBiometry` call.
     - `offlineOperation` - Offline operation retrieved via `processOfflineQrPayload` method.
