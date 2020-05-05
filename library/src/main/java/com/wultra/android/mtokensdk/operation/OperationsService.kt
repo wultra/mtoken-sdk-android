@@ -12,17 +12,18 @@
 package com.wultra.android.mtokensdk.operation
 
 import android.content.Context
-import android.support.annotation.MainThread
 import com.wultra.android.mtokensdk.api.IApiCallResponseListener
 import com.wultra.android.mtokensdk.api.general.ApiError
 import com.wultra.android.mtokensdk.api.general.StatusResponse
 import com.wultra.android.mtokensdk.api.operation.OperationApi
 import com.wultra.android.mtokensdk.api.operation.model.*
 import com.wultra.android.mtokensdk.common.IPowerAuthTokenProvider
+import com.wultra.android.mtokensdk.common.SSLValidationStrategy
 import com.wultra.android.mtokensdk.common.TokenManager
 import io.getlime.security.powerauth.sdk.PowerAuthAuthentication
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
 import okhttp3.OkHttpClient
+import java.lang.Exception
 import java.util.*
 
 /**
@@ -30,22 +31,37 @@ import java.util.*
  * from given PowerAuthSDK instance.
  *
  * @param appContext Application Context object
- * @param httpClient OkHttpClient for API communication
  * @param baseURL Base URL where the operations endpoint rests.
- * @param tokenProvider PowerAuthToken provider. If null is provided, default internal implementation is provided.
+ * @param httpClient OkHttpClient for API communication
  */
-fun PowerAuthSDK.createOperationsService(
-        appContext: Context,
-        httpClient: OkHttpClient,
-        baseURL: String,
-        tokenProvider: IPowerAuthTokenProvider? = TokenManager(appContext, this.tokenStore)): IOperationsService {
-    return OperationsService(this, appContext, httpClient, baseURL, tokenProvider)
+fun PowerAuthSDK.createOperationsService(appContext: Context, baseURL: String, httpClient: OkHttpClient): IOperationsService {
+    return OperationsService(this, appContext, httpClient, baseURL, TokenManager(appContext, this.tokenStore))
+}
+
+/**
+ * Convenience factory method to create an IOperationsService instance
+ * from given PowerAuthSDK instance.
+ *
+ * @param appContext Application Context object
+ * @param baseURL Base URL where the operations endpoint rests.
+ * @param strategy SSL validation strategy for networking
+ */
+fun PowerAuthSDK.createOperationsService(appContext: Context, baseURL: String, strategy: SSLValidationStrategy): IOperationsService {
+    val builder = OkHttpClient.Builder()
+    strategy.configure(builder)
+    return createOperationsService(appContext, baseURL, builder.build())
 }
 
 @Suppress("EXPERIMENTAL_API_USAGE")
 class OperationsService: IOperationsService {
 
     override var listener: IOperationsServiceListener? = null
+
+    override var acceptLanguage: String
+        get() = operationApi.acceptLanguage
+        set(value) {
+            operationApi.acceptLanguage = value
+        }
 
     private val powerAuthSDK: PowerAuthSDK
     private val appContext: Context
@@ -85,11 +101,10 @@ class OperationsService: IOperationsService {
      * @param tokenProvider PowerAuthToken provider. If null is provided, default internal implementation is provided.
      *
      */
-    constructor(powerAuthSDK: PowerAuthSDK, appContext: Context, httpClient: OkHttpClient, baseURL: String, tokenProvider: IPowerAuthTokenProvider? = null) {
+    constructor(powerAuthSDK: PowerAuthSDK, appContext: Context, httpClient: OkHttpClient, baseURL: String, tokenProvider: IPowerAuthTokenProvider) {
         this.powerAuthSDK = powerAuthSDK
         this.appContext = appContext
-        val tokenManager = tokenProvider ?: TokenManager(appContext, powerAuthSDK.tokenStore)
-        this.operationApi = OperationApi(httpClient, baseURL, appContext, tokenManager, powerAuthSDK)
+        this.operationApi = OperationApi(httpClient, baseURL, appContext, tokenProvider, powerAuthSDK)
     }
 
     override fun isLoadingOperations() = operationsLoading
@@ -133,24 +148,10 @@ class OperationsService: IOperationsService {
         })
     }
 
-    override fun signOfflineOperationWithBiometry(biometry: ByteArray, offlineOperation: QROperation): String? {
-        return offlineSignature(null, biometry, offlineOperation)
-    }
-
-    override fun signOfflineOperationWithPassword(password: String, offlineOperation: QROperation): String? {
-        return offlineSignature(password, null, offlineOperation)
-    }
-
-    @Throws(IllegalArgumentException::class)
-    override fun processOfflineQrPayload(payload: String): QROperation? {
-        val unverifiedOfflineOperation = QROperationParser.parse(payload)
-        val verified = powerAuthSDK.verifyServerSignedData(unverifiedOfflineOperation.signedData,
-                unverifiedOfflineOperation.signature.signature,
-                unverifiedOfflineOperation.signature.isMaster())
-        if (!verified) {
-            throw IllegalArgumentException("Invalid offline operation")
-        }
-        return unverifiedOfflineOperation
+    @Throws
+    override fun authorizeOfflineOperation(operation: QROperation, authentication: PowerAuthAuthentication): String {
+        return powerAuthSDK.offlineSignatureWithAuthentication(appContext, authentication, OperationApi.OFFLINE_AUTHORIZE_URL_ID, operation.dataForOfflineSigning(), operation.nonce)
+                ?: throw Exception("Cannot sign this operation")
     }
 
     override fun isPollingOperations() = timer != null
@@ -193,17 +194,6 @@ class OperationsService: IOperationsService {
                 }
             }
         })
-    }
-
-    private fun offlineSignature(password: String?, biometry: ByteArray?, offlineOperation: QROperation): String? {
-        if (password == null && biometry == null) {
-            throw IllegalArgumentException("Password or biometry needs to be set")
-        }
-        val authentication = PowerAuthAuthentication()
-        authentication.usePossession = true
-        authentication.usePassword = password
-        authentication.useBiometry = biometry
-        return powerAuthSDK.offlineSignatureWithAuthentication(appContext, authentication, OperationApi.OFFLINE_AUTHORIZE_URL_ID, offlineOperation.dataForOfflineSigning(), offlineOperation.nonce)
     }
 
 }

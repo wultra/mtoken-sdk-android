@@ -9,9 +9,19 @@
  * before the Municipal Court of Prague.
  */
 
-package com.wultra.android.mtokensdk.api.general
+package com.wultra.android.mtokensdk.common
+
+import okhttp3.OkHttpClient
+
 
 /**
- * Model class for error response - the wrapper responseObject.
+ * SSL pinning provider configures HTTP client to verify SSL certificates
  */
-data class ErrorResponse(val status: String, val responseObject: ErrorResponseObject)
+interface ISSLPinningProvider {
+    /**
+     * Called when HTTP client builder needs to be configured
+     *
+     * @param builder OkHttpClient builder to configure
+     */
+    fun configureOkHttpClient(builder: OkHttpClient.Builder)
+}

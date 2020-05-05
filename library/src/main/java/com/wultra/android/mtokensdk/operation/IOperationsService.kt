@@ -31,6 +31,12 @@ interface IOperationsService {
     var listener: IOperationsServiceListener?
 
     /**
+     * Accept language for the outgoing requests headers.
+     * Default value is "en".
+     */
+    var acceptLanguage: String
+
+    /**
      * Last cached operation result for easy access.
      *
      * @return Last getOperations result. Null if not performed yet
@@ -56,6 +62,8 @@ interface IOperationsService {
 
     /**
      * Starts polling operations from the server. You can observe the polling via [listener].
+     *
+     * @param pollingInterval Polling interval in milliseconds
      */
     fun startPollingOperations(pollingInterval: Long)
 
@@ -83,32 +91,15 @@ interface IOperationsService {
     fun rejectOperation(operation: Operation, reason: RejectionReason, listener: IRejectOperationListener)
 
     /**
-     * Sign offline QR operation with biometry.
+     * Sign offline QR operation with provided authentication.
      *
-     * @param biometry Biometry data
-     * @param offlineOperation Operation to approve
+     * @param operation Operation to approve
+     * @param authentication PowerAuth authentication object
      *
-     * @return Signature. Null if the signing failed
+     * @throws Exception Various exceptions, based on the error.
+     *
+     * @return Signature that should be displayed to the user
      */
-    fun signOfflineOperationWithBiometry(biometry: ByteArray, offlineOperation: QROperation): String?
-    /**
-     * Sign offline QR operation with password.
-     *
-     * @param password Password to for signing
-     * @param offlineOperation Operation to approve
-     *
-     * @return Signature. Null if the signing failed
-     */
-    fun signOfflineOperationWithPassword(password: String, offlineOperation: QROperation): String?
-
-    /**
-     * Process loaded payload from a scanned offline QR.
-     *
-     * @param payload String parsed from QR code
-     *
-     * @throws IllegalArgumentException When there is no operation in provided payload.
-     * @return Parsed operation.
-     */
-    @Throws(IllegalArgumentException::class)
-    fun processOfflineQrPayload(payload: String): QROperation?
+    @Throws
+    fun authorizeOfflineOperation(operation: QROperation, authentication: PowerAuthAuthentication): String
 }

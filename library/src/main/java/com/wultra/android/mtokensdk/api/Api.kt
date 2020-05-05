@@ -65,10 +65,10 @@ internal abstract class Api(protected val okHttpClient: OkHttpClient, private va
                     val converter = GsonResponseBodyConverter(gson, typeAdapter)
                     try {
                         val errorResponse = converter.convert(response.body()!!)
-                        listener.onFailure(HttpException(response, errorResponse))
+                        listener.onFailure(MTokenHttpException(response, errorResponse))
                     } catch (e: Exception) {
                         // there's no error response
-                        listener.onFailure(HttpException(response))
+                        listener.onFailure(MTokenHttpException(response))
                     }
                 }
             }

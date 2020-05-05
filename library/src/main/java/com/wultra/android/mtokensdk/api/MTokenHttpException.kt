@@ -17,7 +17,7 @@ import okhttp3.Response
 /**
  * Exception for describing HTTP exceptions.
  */
-internal class HttpException(response: Response, val errorResponse: ErrorResponse? = null) : RuntimeException(getErrorMessage(response)) {
+class MTokenHttpException(response: Response, val errorResponse: ErrorResponse? = null) : RuntimeException(getErrorMessage(response)) {
 
     companion object {
         private fun getErrorMessage(response: Response): String {

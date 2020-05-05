@@ -11,15 +11,15 @@
 
 package com.wultra.android.mtokensdk.api.general
 
-import com.wultra.android.mtokensdk.api.ErrorCode
+import com.wultra.android.mtokensdk.api.MTokenErrorCode
 
 
 /**
  * Model class for error response.
  */
-internal data class ErrorResponseObject(val code: String, val message: String) {
-    val errorCode: ErrorCode?
+data class ErrorResponseObject(val code: String, val message: String) {
+    val errorCode: MTokenErrorCode?
         get() {
-            return ErrorCode.errorCodeFromCodeString(code)
+            return MTokenErrorCode.errorCodeFromCodeString(code)
         }
 }
