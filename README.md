@@ -19,15 +19,15 @@
 
 ## Introduction
  
-With Wultra Mobile Token (WMT) SDK, you can integrate an out-of-band operation approval into an existing mobile app, instead of using a standalone mobile token application. WMT is built on top of [PowerAuth Mobile SDK](https://github.com/wultra/powerauth-mobile-sdk#docucheck-keep-link). It communicates with the "Mobile Token REST API" and "Mobile Push Registration API". Individual endpoints are described in the [PowerAuth Webflow documentation](https://developers.wultra.com/docs/2019.11/powerauth-webflow/).
+With Wultra Mobile Token (WMT) SDK, you can integrate an out-of-band operation approval into an existing mobile app, instead of using a standalone mobile token application. WMT is built on top of [PowerAuth Mobile SDK](https://github.com/wultra/powerauth-mobile-sdk#docucheck-keep-link). It communicates with the "Mobile Token REST API" and "Mobile Push Registration API." Individual endpoints are described in the [PowerAuth Webflow documentation](https://developers.wultra.com/docs/2019.11/powerauth-webflow/).
 
-To understand Wultra Mobile Token SDK purpose on a business level better, you can visit our own [Mobile Token application](https://www.wultra.com/mobile-token#docucheck-keep-link). We use Wultra Mobile Token SDK in our mobile token application as well.
+To understand the Wultra Mobile Token SDK purpose on a business level better, you can visit our own [Mobile Token application](https://www.wultra.com/mobile-token#docucheck-keep-link). We use Wultra Mobile Token SDK in our mobile token application as well.
 
 Wultra Mobile Token SDK library does precisely this:
 
-- Registering an existing PowerAuth activation to receive push notifications.
-- Retrieving list of operations that are pending for approval for given user.
-- Approving and rejecting operations with PowerAuth transaction signing.
+- Registers an existing PowerAuth activation to receive push notifications.
+- Retrieves the list of operations that are pending for approval for a given user.
+- Approves or rejects operations with PowerAuth transaction signing.
 
 _Note: We also provide an [iOS version of this library](https://github.com/wultra/mtoken-sdk-ios#docucheck-keep-link)_
 
@@ -40,7 +40,7 @@ _Note: We also provide an [iOS version of this library](https://github.com/wultr
 
 ### Gradle
 
-To use **WMT** in you Android app, add this dependency:
+To use **WMT** in your Android app, add this dependency:
 
 ```gradle
 implementation "com.wultra.android.mtokensdk:wultra-mtoken-sdk:1.0.0"
@@ -103,7 +103,7 @@ operationsService.getOperations(object : IGetOperationListener {
 })
 ```
 
-After you retrieve the pending operation, you can render them in the UI, for example, as a list of pending operations with a detail of operation on tap.
+After you retrieve the pending operations, you can render them in the UI, for example, as a list of items with a detail of operation shown after a tap.
 
 #### Start Periodic Polling
 
@@ -157,7 +157,7 @@ fun reject(operation: Operation, reason: RejectionReason) {
 
 #### Off-line Authorization
 
-In case the user is not online, you can use off-line authorizations. In this operation mode, the user needs to scan a QR code, enter PIN code or use biometry, and rewrite the resulting code. Wultra provides a special format for [the operation QR codes](https://github.com/wultra/powerauth-webflow/blob/develop/docs/Off-line-Signatures-QR-Code.md), that is automatically processed with the SDK.
+In case the user is not online, you can use off-line authorizations. In this operation mode, the user needs to scan a QR code, enter PIN code or use biometry, and rewrite the resulting code. Wultra provides a special format for [the operation QR codes](https://github.com/wultra/powerauth-webflow/blob/develop/docs/Off-line-Signatures-QR-Code.md), that are automatically processed with the SDK.
 
 To process the operation QR code, simply call:
 
@@ -246,7 +246,7 @@ To register an app to push notifications, you can simply call the register metho
 // first, retrieve FireBase token
 FirebaseInstanceId.getInstance().instanceId.addOnCompleteListener { task ->
     if (task.isSuccessful) {
-        task.result?.token?.let { fcmToken ->
+        task.result?.token?.let { token ->
             pushService.register(fcmToken, object : IPushRegisterListener {
                 override fun onSuccess() {
                     // push notification registered
