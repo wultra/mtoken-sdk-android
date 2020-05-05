@@ -247,7 +247,7 @@ To register an app to push notifications, you can simply call the register metho
 FirebaseInstanceId.getInstance().instanceId.addOnCompleteListener { task ->
     if (task.isSuccessful) {
         task.result?.token?.let { token ->
-            pushService.register(fcmToken, object : IPushRegisterListener {
+            pushService.register(token, object : IPushRegisterListener {
                 override fun onSuccess() {
                     // push notification registered
                 }
