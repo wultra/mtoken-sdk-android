@@ -178,8 +178,12 @@ fun onQROperationScanned(scannedCode: String): QROperation {
 After that, you can produce an off-line signature using the following code:
 
 ```kotlin
-fun approveQROperation(operation: QROperation, password: String): String? {
-    return operationsService.signOfflineOperationWithPassword(password, operation)
+@Throws
+fun approveQROperation(operation: QROperation, password: String): String {
+    val authentication = PowerAuthAuthentication()
+    authentication.usePossession = true
+    authentication.usePassword = password
+    return operationsService.authorizeOfflineOperation(operation, authentication)
 }
 ```
 
