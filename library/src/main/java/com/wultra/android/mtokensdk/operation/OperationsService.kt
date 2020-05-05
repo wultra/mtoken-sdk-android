@@ -155,18 +155,6 @@ class OperationsService: IOperationsService {
         return offlineSignature(password, null, offlineOperation)
     }
 
-    @Throws(IllegalArgumentException::class)
-    override fun processOfflineQrPayload(payload: String): QROperation? {
-        val unverifiedOfflineOperation = QROperationParser.parse(payload)
-        val verified = powerAuthSDK.verifyServerSignedData(unverifiedOfflineOperation.signedData,
-                unverifiedOfflineOperation.signature.signature,
-                unverifiedOfflineOperation.signature.isMaster())
-        if (!verified) {
-            throw IllegalArgumentException("Invalid offline operation")
-        }
-        return unverifiedOfflineOperation
-    }
-
     override fun isPollingOperations() = timer != null
 
     @Synchronized

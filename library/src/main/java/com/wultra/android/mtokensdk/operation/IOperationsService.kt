@@ -108,15 +108,4 @@ interface IOperationsService {
      * @return Signature. Null if the signing failed
      */
     fun signOfflineOperationWithPassword(password: String, offlineOperation: QROperation): String?
-
-    /**
-     * Process loaded payload from a scanned offline QR.
-     *
-     * @param payload String parsed from QR code
-     *
-     * @throws IllegalArgumentException When there is no operation in provided payload.
-     * @return Parsed operation.
-     */
-    @Throws(IllegalArgumentException::class)
-    fun processOfflineQrPayload(payload: String): QROperation?
 }

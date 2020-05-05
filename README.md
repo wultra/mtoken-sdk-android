@@ -162,8 +162,16 @@ In case the user is not online, you can use off-line authorizations. In this ope
 To process the operation QR code, simply call:
 
 ```kotlin
+@Throws(IllegalArgumentException::class)
 fun onQROperationScanned(scannedCode: String): QROperation? {
-    return operationsService.processOfflineQrPayload(scannerCode)
+    // retrieve parsed operation
+    val operation = QROperationParser.parse(payload)
+    // verify the signature against the powerauth instance
+    val verified = powerAuthSDK.verifyServerSignedData(operation.signedData, operation.signature.signature, operation.signature.isMaster())
+    if (!verified) {
+        throw IllegalArgumentException("Invalid offline operation")
+    }
+    return operation
 }
 ```
 
@@ -197,8 +205,6 @@ All available methods and attributes of `IOperationsService` API are:
     - `operation` - Operation to reject, retrieved from `getOperations` call.
     - `reason` - Rejection reason.
     - `listener` - Called when rejection request finishes.
-- `processOfflineQrPayload(payload: String)` - Parses offline (QR) operation string into a structure.
-    - `payload` - Parse data from QR code scanned with the app.
 - `signOfflineOperationWithPassword(password: String, offlineOperation: QROperation)` - Sign offline (QR) operation with password
     - `password` - Password for PowerAuth activation.
     - `offlineOperation` - Offline operation retrieved via `processOfflineQrPayload` method.
