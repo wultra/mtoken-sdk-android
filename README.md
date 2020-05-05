@@ -11,7 +11,7 @@
 - [Usage](#usage)
     - [Operations](#operations)
     - [Push Messages](#push-messages)
-    - [Error handling](#error-handling)
+    - [Error Handling](#error-handling)
 - [License](#license)
 - [Contact](#contact)
     - [Security Disclosure](#security-disclosure)
@@ -61,7 +61,7 @@ To use this library, you need to have a `PowerAuthSDK` object available and init
 
 This part of the SDK communicates with [Mobile Token API endpoints](https://github.com/wultra/powerauth-webflow/blob/develop/docs/Mobile-Token-API.md).
 
-#### Factory Extension with SSL Validation Strategy
+#### Factory Extension With SSL Validation Strategy
 
 Convenience factory method that will return a new instance. A new `OkHttpClient` will be created based on chosen `SSLValidationStrategy` in the last parameter.
 
@@ -76,7 +76,7 @@ fun PowerAuthSDK.createOperationsService(appContext: Context, baseURL: String, s
     - `SSLValidationStrategy.noValidation`
     - `SSLValidationStrategy.sslPinning`
 
-#### Factory Extension with OkHttpClient
+#### Factory Extension With OkHttpClient
 
 Convenience factory method that will return a new instance with provided `OkHttpClient` that you can configure on your own.
 
@@ -171,7 +171,7 @@ This part of the SDK communicates with [Mobile Push Registration API](https://gi
 
 To register PowerAuth enabled application to receive push notifications, use one of the following convenience extension methods (Kotlin):
 
-#### Extension factory with SSL Validation Strategy
+#### Extension Factory With SSL Validation Strategy
 
 This factory method will create its own `OkHttpClient` instance based on the chosen SSL validation strategy.
 
@@ -186,7 +186,7 @@ fun PowerAuthSDK.createPushService(appContext: Context, baseURL: String, strateg
     - `SSLValidationStrategy.noValidation`
     - `SSLValidationStrategy.sslPinning`
 
-#### Extension Factory with OkHttpClient
+#### Extension Factory With OkHttpClient
 
 ```kotlin
 fun PowerAuthSDK.createPushService(appContext: Context, baseURL: String, httpClient: OkHttpClient): IPushService
@@ -197,7 +197,14 @@ fun PowerAuthSDK.createPushService(appContext: Context, baseURL: String, httpCli
 
 #### Registering to Push Notifications
 
-To register an app to push notifications, implement the `IPushService` API.
+To register an app to push notifications, you can simply call the register method:
+
+```kotlin
+```
+
+#### Push Message API Reference
+
+All available methods of the `IPushService` API are:
 
 - `acceptLanguage` - Language settings, that will be sent along with each request.
 - `register(fcmToken: String, listener: IPushRegisterListener)` - Registers Firebase Cloud Messaging token on the backend
