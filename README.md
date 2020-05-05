@@ -88,26 +88,33 @@ fun PowerAuthSDK.createOperationsService(appContext: Context, baseURL: String, h
 - `baseURL`-  address, where your operations server can be reached
 - `httpClient` - `OkHttpClient` instance used for API requests 
 
+
 #### Retrieve the Pending Operations
 
 To fetch the list with pending operations, implement the `IOperationsService` API, you can call:
 
 ```kotlin
-// TBD
+operationsService.getOperations(object : IGetOperationListener {
+    override fun onSuccess(operations: List<Operation>) {
+        // render operations
+    }
+    override fun onError(error: ApiError) {
+        // render error state
+    }
+})
 ```
 
-After you retrieve the pending operation, you can render them in the UI, for example, as a list of pending operations with a detail of operation on tap:
-
-```kotlin
-// TBD
-```
+After you retrieve the pending operation, you can render them in the UI, for example, as a list of pending operations with a detail of operation on tap.
 
 #### Start Periodic Polling
 
 Mobile token API is highly asynchronous - to simplify the work for you, we added a convenience operation list polling feature:
 
 ```kotlin
-// TBD
+// fetch new operations every 7 seconds periodically
+if (!operationsService.isPollingOperations()) {
+    operationsService.startPollingOperations(7_000)
+}
 ```
 
 #### Approve or Reject Operation
@@ -115,7 +122,38 @@ Mobile token API is highly asynchronous - to simplify the work for you, we added
 Approve or reject a given operation, simply hook these actions to the approve or reject buttons:
 
 ```kotlin
-// TBD
+
+// Approve operation with password
+fun approve(operation: Operation, password: String) {
+    
+    val auth = PowerAuthAuthentication()
+    auth.usePossession = true
+    auth.usePassword = password
+    auth.useBiometry = null // needed only when approving with biometry
+
+    operationsService.authorizeOperation(operation, authentication, object : IAcceptOperationListener {
+        override fun onSuccess() {
+            // show success UI
+        }
+    
+        override fun onError(error: ApiError) {
+            // show error UI
+        }
+    })
+}
+
+// Reject operation with some reason
+fun reject(operation: Operation, reason: RejectionReason) {
+    operationsService.rejectOperation(operation, reason, object : IRejectOperationListener {
+        override fun onSuccess() {
+            // show success UI
+        }
+
+        override fun onError(error: ApiError) {
+            // show error UI
+        }
+    })
+}
 ```
 
 #### Off-line Authorization
@@ -125,11 +163,17 @@ In case the user is not online, you can use off-line authorizations. In this ope
 To process the operation QR code, simply call:
 
 ```kotlin
+fun onQROperationScanned(scannedCode: String): QROperation? {
+    return operationsService.processOfflineQrPayload(scannerCode)
+}
 ```
 
 After that, you can produce an off-line signature using the following code:
 
 ```kotlin
+fun approveQROperation(operation: QROperation, password: String): String? {
+    return operationsService.signOfflineOperationWithPassword(password, operation)
+}
 ```
 
 #### Operations API Reference
@@ -137,7 +181,7 @@ After that, you can produce an off-line signature using the following code:
 All available methods and attributes of `IOperationsService` API are:
 
 - `listener` - Listener object that receives info about operation loading.
-- `acceptLanguage` - Language settings, that will be sent along with each request.
+- `acceptLanguage` - Language settings, that will be sent along with each request. The server will return properly localized content based on this value.
 - `getLastOperationsResult()` - Cached last operations result.
 - `isLoadingOperations()` - Indicates if the service is loading operations.
 - `getOperations(listener: IGetOperationListener?)` - Retrieves pending operations from the server.
@@ -200,6 +244,24 @@ fun PowerAuthSDK.createPushService(appContext: Context, baseURL: String, httpCli
 To register an app to push notifications, you can simply call the register method:
 
 ```kotlin
+// first, retrieve FireBase token
+FirebaseInstanceId.getInstance().instanceId.addOnCompleteListener { task ->
+    if (task.isSuccessful) {
+        task.result?.token?.let { token ->
+            pushService.register(fcmToken, object : IPushRegisterListener {
+                override fun onSuccess() {
+                    // push notification registered
+                }
+
+                override fun onFailure(e: ApiError) {
+                    // push notification failed
+                }
+            })
+        }       
+    } else {
+        // on error
+    }
+}
 ```
 
 #### Push Message API Reference
