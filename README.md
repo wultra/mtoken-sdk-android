@@ -159,11 +159,11 @@ fun reject(operation: Operation, reason: RejectionReason) {
 
 In case the user is not online, you can use off-line authorizations. In this operation mode, the user needs to scan a QR code, enter PIN code or use biometry, and rewrite the resulting code. Wultra provides a special format for [the operation QR codes](https://github.com/wultra/powerauth-webflow/blob/develop/docs/Off-line-Signatures-QR-Code.md), that are automatically processed with the SDK.
 
-To process the operation QR code, simply call:
+To process the operation QR code, you can use:
 
 ```kotlin
 @Throws(IllegalArgumentException::class)
-fun onQROperationScanned(scannedCode: String): QROperation? {
+fun onQROperationScanned(scannedCode: String): QROperation {
     // retrieve parsed operation
     val operation = QROperationParser.parse(payload)
     // verify the signature against the powerauth instance
@@ -205,9 +205,9 @@ All available methods and attributes of `IOperationsService` API are:
     - `operation` - Operation to reject, retrieved from `getOperations` call.
     - `reason` - Rejection reason.
     - `listener` - Called when rejection request finishes.
-- `signOfflineOperationWithPassword(password: String, offlineOperation: QROperation)` - Sign offline (QR) operation with password
-    - `password` - Password for PowerAuth activation.
-    - `offlineOperation` - Offline operation retrieved via `processOfflineQrPayload` method.
+- `fun authorizeOfflineOperation(operation: QROperation, authentication: PowerAuthAuthentication)` - Sign offline (QR) operation
+    - `operation` - Offline operation retrieved via `QROperationParser.parse` method.
+    - `authentication` - PowerAuth authentication object for operation signing.
 - `signOfflineOperationWithBiometry(biometry: ByteArray, offlineOperation: QROperation)` - Sign offline (QR) operation with biometry data.
     - `biometry` - Biometry data retrieved from `powerAuthSDK.authenticateUsingBiometry` call.
     - `offlineOperation` - Offline operation retrieved via `processOfflineQrPayload` method.

@@ -91,21 +91,15 @@ interface IOperationsService {
     fun rejectOperation(operation: Operation, reason: RejectionReason, listener: IRejectOperationListener)
 
     /**
-     * Sign offline QR operation with biometry.
+     * Sign offline QR operation with provided authentication.
      *
-     * @param biometry Biometry data
-     * @param offlineOperation Operation to approve
+     * @param operation Operation to approve
+     * @param authentication PowerAuth authentication object
      *
-     * @return Signature. Null if the signing failed
+     * @throws Exception Various exceptions, based on the error.
+     *
+     * @return Signature that should be displayed to the user
      */
-    fun signOfflineOperationWithBiometry(biometry: ByteArray, offlineOperation: QROperation): String?
-    /**
-     * Sign offline QR operation with password.
-     *
-     * @param password Password to for signing
-     * @param offlineOperation Operation to approve
-     *
-     * @return Signature. Null if the signing failed
-     */
-    fun signOfflineOperationWithPassword(password: String, offlineOperation: QROperation): String?
+    @Throws
+    fun authorizeOfflineOperation(operation: QROperation, authentication: PowerAuthAuthentication): String
 }
