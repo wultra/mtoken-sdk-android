@@ -11,6 +11,7 @@
 - [Usage](#usage)
     - [Operations](#operations)
     - [Push](#push)
+    - [Error handling](#error-handling)
 - [License](#license)
 - [Contact](#contact)
     - [Security Disclosure](#security-disclosure)
@@ -22,7 +23,7 @@ With `Wultra Mobile Token (WMT) SDK`, you will make access to your digital chann
 
 WMT is built on top of [PowerAuth Mobile SDK](https://github.com/wultra/powerauth-mobile-sdk#docucheck-keep-link) and is communication with `Mobile Token REST API` and `Mobile Push Registration API` endpoints described in [PowerAuth Webflow documentation](https://developers.wultra.com/docs/2019.11/powerauth-webflow/) 
 
-To understand `WMT SDK` application level purpose, you can visit our own [Mobile Token application](https://www.wultra.com/mobile-token#docucheck-keep-link) that is integrating this SDK.
+To understand `WMT SDK` application-level purpose, you can visit our own [Mobile Token application](https://www.wultra.com/mobile-token#docucheck-keep-link) that is integrating this SDK.
 
 `Wultra Mobile Token SDK` library does precisely this:
 - Registering powerauth activation to receive push notifications
@@ -36,7 +37,7 @@ To understand `WMT SDK` application level purpose, you can visit our own [Mobile
 ### Requirements
 
 - minSdkVersion 16 (Android 4.1 Jelly Bean)
-- PowerAuth SDK needs to be available in your project 
+- [PowerAuth Mobile SDK](https://github.com/wultra/powerauth-mobile-sdk#docucheck-keep-link) needs to be available in your project 
 
 ### Gradle
 
@@ -48,7 +49,7 @@ implementation "com.wultra.android.mtokensdk:wultra-mtoken-sdk:1.0.0"
 
 Note that this documentation is using version `1.0.0` as an example. You can find the latest version at [github's release](https://github.com/wultra/mtoken-sdk-android/releases#docucheck-keep-link) page.
 
-Also make sure you have `mavenLocal()` repository among the project repositories and the version, you're linking available in your local maven repository.
+Also, make sure you have `mavenLocal()` repository among the project repositories and the version, you're linking available in your local maven repository.
 
 ## Usage
 
@@ -59,22 +60,30 @@ If not, all endpoints will return an error.
 
 This part of the SDK communicates with [Mobile Token API endpoints](https://github.com/wultra/powerauth-webflow/blob/develop/docs/Mobile-Token-API.md).
 
-#### To retrieve, approve and reject operations, use one of the following convenience extension methods (kotlin only):
+**Factory extension with SSL Validation Strategy**
 
-**Extension factory with SSL Validation Strategy**
+Convenience factory method that will return a new instance. A new `OkHttpClient` will be created based on
+chosen `SSLValidationStrategy` in the last parameter.
+
 ```kotlin
 fun PowerAuthSDK.createOperationsService(appContext: Context, baseURL: String, strategy: SSLValidationStrategy): IOperationsService
 ``` 
+- `appContext` - application context
 - `baseURL` - address, where your operations server can be reached
 - `strategy` - strategy used when validating HTTPS requests. Following strategies can be used:
     - `SSLValidationStrategy.default`
     - `SSLValidationStrategy.noValidation`
     - `SSLValidationStrategy.sslPinning`
 
-**Extension factory with OkHttpClient**
+**Factory extension with OkHttpClient**
+
+Convenience factory method that will return a new instance with provided `OkHttpClient` that you can configure
+at your own will.
+
 ```kotlin
 fun PowerAuthSDK.createOperationsService(appContext: Context, baseURL: String, httpClient: OkHttpClient): IOperationsService
 ``` 
+- `appContext` - application context
 - `baseURL`-  address, where your operations server can be reached
 - `httpClient` - `OkHttpClient` instance used for API requests 
 
@@ -113,7 +122,7 @@ For more details on the API, visit [`IOperationsService` code documentation](htt
 
 This part of the SDK communicates with [Mobile Push Registration API](https://github.com/wultra/powerauth-webflow/blob/develop/docs/Mobile-Push-Registration-API.md).
 
-#### To register PowerAuth enabled application to receive push notifications, use one of the following convenience extension methods (kotlin only):
+#### To register PowerAuth enabled application to receive push notifications, use one of the following convenience extension methods (kotlin):
 
 **Extension factory with SSL Validation Strategy**
 
@@ -121,6 +130,7 @@ This factory method will create its own `OkHttpClient` instance based on the cho
 ```kotlin
 fun PowerAuthSDK.createPushService(appContext: Context, baseURL: String, strategy: SSLValidationStrategy): IPushService
 ``` 
+- `appContext` - application context
 - `baseURL` - address, where your operations server can be reached
 - `strategy` - strategy used when validating HTTPS requests. Following strategies can be used:
     - `SSLValidationStrategy.default`
@@ -131,6 +141,7 @@ fun PowerAuthSDK.createPushService(appContext: Context, baseURL: String, strateg
 ```kotlin
 fun PowerAuthSDK.createPushService(appContext: Context, baseURL: String, httpClient: OkHttpClient): IPushService
 ``` 
+- `appContext` - application context
 - `baseURL` - address, where your operations server can be reached
 - `httpClient` - `OkHttpClient` instance used for API requests 
 
@@ -143,9 +154,14 @@ fun PowerAuthSDK.createPushService(appContext: Context, baseURL: String, httpCli
 
 For more details on the API, visit [`IPushService` code documentation](https://github.com/wultra/mtoken-sdk-android/blob/master/library/src/main/java/com/wultra/android/mtokensdk/push/IPushService.kt).
 
+### Error handling
+
+All methods, that are communicating with server APIs will return an [`ApiError`](https://github.com/wultra/mtoken-sdk-android/blob/master/library/src/main/java/com/wultra/android/mtokensdk/api/general/ApiError.kt) instance.
+Every API error contains an original exception, that was thrown and convenience error property if a known API error happened (for example when the operation is already canceled during approval).
+
 ## License
 
-All sources are licensed using Apache 2.0 license. You can use them with no restriction. 
+All sources are licensed using the Apache 2.0 license. You can use them with no restrictions. 
 If you are using this library, please let us know. We will be happy to share and promote your project.
 
 ## Contact
