@@ -88,7 +88,6 @@ fun PowerAuthSDK.createOperationsService(appContext: Context, baseURL: String, h
 - `baseURL`-  address, where your operations server can be reached
 - `httpClient` - `OkHttpClient` instance used for API requests 
 
-
 #### Retrieve the Pending Operations
 
 To fetch the list with pending operations, implement the `IOperationsService` API, you can call:
