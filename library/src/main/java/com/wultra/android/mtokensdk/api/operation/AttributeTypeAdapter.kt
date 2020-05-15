@@ -70,13 +70,20 @@ internal class AttributeTypeAdapter : TypeAdapter<Attribute>() {
         val type = attrMap["type"]
         val id = attrMap["id"]
         val label = attrMap["label"]
+
+        val labelObject = if(id != null && label != null) {
+            Attribute.Label(id, label)
+        } else {
+            null
+        }
+
         when (type) {
-            "AMOUNT" -> return AmountAttribute(id, label, BigDecimal(attrMap["amount"]), attrMap["currency"], attrMap["amountFormatted"], attrMap["currencyFormatted"])
-            "KEY_VALUE" -> return KeyValueAttribute(id, label, attrMap["value"])
-            "NOTE" -> return NoteAttribute(id, label, attrMap["note"])
-            "HEADING" -> return HeadingAttribute(id, label)
+            "AMOUNT" -> return AmountAttribute(BigDecimal(attrMap["amount"]), attrMap["currency"], attrMap["amountFormatted"], attrMap["currencyFormatted"], labelObject)
+            "KEY_VALUE" -> return KeyValueAttribute(attrMap["value"], labelObject)
+            "NOTE" -> return NoteAttribute(attrMap["note"], labelObject)
+            "HEADING" -> return HeadingAttribute(labelObject)
             "PARTY_INFO" -> {
-                return PartyInfoAttribute(id, label, PartyInfo(partyInfoMap))
+                return PartyInfoAttribute(PartyInfoAttribute.PartyInfo(partyInfoMap), labelObject)
             }
         }
         return null

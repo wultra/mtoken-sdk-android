@@ -12,7 +12,7 @@
 package com.wultra.android.mtokensdk.operation
 
 import com.wultra.android.mtokensdk.api.general.ApiError
-import com.wultra.android.mtokensdk.api.operation.model.Operation
+import com.wultra.android.mtokensdk.api.operation.model.UserOperation
 
 
 /**
@@ -24,7 +24,7 @@ interface IOperationsServiceListener {
      *
      * @param operations Loaded operations
      */
-    fun operationsLoaded(operations: List<Operation>)
+    fun operationsLoaded(operations: List<UserOperation>)
 
     /**
      * Called when operations loading changed

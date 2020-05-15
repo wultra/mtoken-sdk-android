@@ -14,4 +14,4 @@ package com.wultra.android.mtokensdk.api.operation.model
 /**
  * Operation list response model class.
  */
-internal data class OperationListResponse(val status: String, val responseObject: List<Operation>)
+internal data class OperationListResponse(val status: String, val responseObject: List<UserOperation>)
