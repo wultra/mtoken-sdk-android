@@ -75,6 +75,7 @@ data class AllowedSignatureType(
         /**
          * What factors ("password" or/and "biometry") can be used for signing this operation.
          */
+        @SerializedName("variants")
         val factors: List<Factor> = emptyList()) {
 
     /**
