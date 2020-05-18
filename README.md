@@ -94,7 +94,7 @@ To fetch the list with pending operations, implement the `IOperationsService` AP
 
 ```kotlin
 operationsService.getOperations(object : IGetOperationListener {
-    override fun onSuccess(operations: List<Operation>) {
+    override fun onSuccess(operations: List<UserOperation>) {
         // render operations
     }
     override fun onError(error: ApiError) {
@@ -104,6 +104,8 @@ operationsService.getOperations(object : IGetOperationListener {
 ```
 
 After you retrieve the pending operations, you can render them in the UI, for example, as a list of items with a detail of operation shown after a tap.
+
+*Note: Language of the UI data inside the operation depends on the configuration of the `IOperationsService.acceptLanguage`.*
 
 #### Start Periodic Polling
 
@@ -123,7 +125,7 @@ Approve or reject a given operation, simply hook these actions to the approve or
 ```kotlin
 
 // Approve operation with password
-fun approve(operation: Operation, password: String) {
+fun approve(operation: UserOperation, password: String) {
     
     val auth = PowerAuthAuthentication()
     auth.usePossession = true
@@ -142,7 +144,7 @@ fun approve(operation: Operation, password: String) {
 }
 
 // Reject operation with some reason
-fun reject(operation: Operation, reason: RejectionReason) {
+fun reject(operation: UserOperation, reason: RejectionReason) {
     operationsService.rejectOperation(operation, reason, object : IRejectOperationListener {
         override fun onSuccess() {
             // show success UI
@@ -192,7 +194,7 @@ fun approveQROperation(operation: QROperation, password: String): String {
 All available methods and attributes of `IOperationsService` API are:
 
 - `listener` - Listener object that receives info about operation loading.
-- `acceptLanguage` - Language settings, that will be sent along with each request. The server will return properly localized content based on this value.
+- `acceptLanguage` - Language settings, that will be sent along with each request. The server will return properly localized content based on this value. Value follows standard RFC [Accept-Language](https://tools.ietf.org/html/rfc7231#section-5.3.5)
 - `getLastOperationsResult()` - Cached last operations result.
 - `isLoadingOperations()` - Indicates if the service is loading operations.
 - `getOperations(listener: IGetOperationListener?)` - Retrieves pending operations from the server.
@@ -201,11 +203,11 @@ All available methods and attributes of `IOperationsService` API are:
 - `startPollingOperations(pollingInterval: Long)` - Starts periodic operation polling.
     - `pollingInterval` - How often should operations be refreshed.
 - `stopPollingOperations()` - Stops periodic operation polling.
-- `authorizeOperation(operation: Operation, authentication: PowerAuthAuthentication, listener: IAcceptOperationListener)` - Authorize provided operation.
+- `authorizeOperation(operation: UserOperation, authentication: PowerAuthAuthentication, listener: IAcceptOperationListener)` - Authorize provided operation.
     - `operation` - Operation to approve, retrieved from `getOperations` call.
     - `authentication` - PowerAuth authentication object for operation signing.
     - `listener` - Called when authorization request finishes.
-- `rejectOperation(operation: Operation, reason: RejectionReason, listener: IRejectOperationListener)` - Reject provided operation.
+- `rejectOperation(operation: UserOperation, reason: RejectionReason, listener: IRejectOperationListener)` - Reject provided operation.
     - `operation` - Operation to reject, retrieved from `getOperations` call.
     - `reason` - Rejection reason.
     - `listener` - Called when rejection request finishes.
@@ -217,6 +219,77 @@ All available methods and attributes of `IOperationsService` API are:
     - `offlineOperation` - Offline operation retrieved via `processOfflineQrPayload` method.
 
 For more details on the API, visit [`IOperationsService` code documentation](https://github.com/wultra/mtoken-sdk-android/blob/master/library/src/main/java/com/wultra/android/mtokensdk/operation/IOperationsService.kt).
+
+#### UserOperations
+
+Operations objects retrieved through the online API (like `getOperations` method in `IOperationsService`) are called "user operations".
+
+Under this abstract name, you can imagine for example "Login operation", which is a request for signing in to the online account in a web browser on another device. **In general, it can be any operation that can be either approved or rejected by the user.**
+
+Visually, the operation should be displayed as an info page with all the attributes (rows) of such operation, where the user can decide if he wants to approve or reject it.
+
+Definition of the `UserOperations`:
+
+```kotlin
+class UserOperation {
+
+	// Unique operation identifier
+	val id: String
+	    
+	// System name of the operation.
+    //
+    // This property lets you adjust the UI for various operation types. 
+    // For example, the "login" operation may display a specialized interface with 
+    // an icon or an illustration, instead of an empty list of attributes, 
+    // "payment" operation can include a special icon that denotes payments, etc.
+	val name: String
+	    
+	// Actual data that will be signed.
+	val data: String
+	    
+	// Date and time when the operation was created.
+	val created: ZonedDateTime
+	    
+	// Date and time when the operation will expire.
+	val expires: ZonedDateTime
+	    
+	// Data that should be presented to the user.
+	val formData: FormData
+	    
+	// Allowed signature types.
+    //
+	// This hints if the operation needs a 2nd factor or can be approved simply by 
+	// tapping an approve button. If the operation requires 2FA, this value also hints if 
+	// the user may use the biometry, or if a password is required.
+	val allowedSignatureType: AllowedSignatureType
+}
+```
+
+Definition of `FormData`: 
+
+```kotlin
+class FormData {
+    
+    /// Title of the operation
+    val title: String
+    
+    /// Message for the user
+    val message: String
+    
+    /// Other attributes.
+    ///
+    /// Each attribute presents one line in the UI. Attributes are differentiated by type property
+    /// and specific classes such as NoteAttribute or AmountAttribute.
+    val attributes: List<Attribute>
+}
+```
+
+Attributes types:  
+- `AMOUNT` like "100.00 CZK"  
+- `KEY_VALUE` any key value pair  
+- `NOTE` just like keyValue, emphasizing that the value is a note or message  
+- `HEADING` single highlighted text, written in a larger font, used as a section heading  
+- `PARTY_INFO` providing structured information about third party data (for example known eshop)
 
 ### Push Messages
 
