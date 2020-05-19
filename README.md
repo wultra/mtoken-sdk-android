@@ -63,7 +63,7 @@ This part of the SDK communicates with [Mobile Token API endpoints](https://gith
 
 #### Factory Extension With SSL Validation Strategy
 
-Convenience factory method that will return a new instance. A new `OkHttpClient` will be created based on chosen `SSLValidationStrategy` in the last parameter.
+Convenience factory method that will return a new instance. A new [`OkHttpClient`](https://square.github.io/okhttp/) will be created based on chosen `SSLValidationStrategy` in the last parameter.
 
 ```kotlin
 fun PowerAuthSDK.createOperationsService(appContext: Context, baseURL: String, strategy: SSLValidationStrategy): IOperationsService
