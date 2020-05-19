@@ -15,11 +15,20 @@ import java.math.BigDecimal
 
 /**
  * Base model class of operation attribute hierarchy.
+ * Operation Attribute can be visualized as "1 row in operation screen"
+ * Every type of the attribute has it's own strongly typed implementation based on its [type]
  */
-sealed class Attribute(val type: Type) {
+sealed class Attribute(
 
-    abstract val id: String?
-    abstract val label: String?
+        /**
+         * Type of the operation
+         */
+        val type: Type,
+
+        /**
+         * Label for the value
+         */
+        val label: Label?) {
 
     enum class Type(val typeInt: Int) {
         AMOUNT(0),
@@ -28,51 +37,118 @@ sealed class Attribute(val type: Type) {
         HEADING(3),
         PARTY_INFO(4)
     }
+
+    /**
+     * Attribute label serves as a UI heading for the attribute
+     */
+    data class Label(
+            /**
+             * ID (type) of the label. This is highly depended on the backend
+             * and can be used to change the appearance of the label
+             */
+            val id: String,
+
+            /**
+             * Label value
+             */
+            val value: String)
 }
 
 /**
- * Model class for AMOUNT operation attribute.
+ * Amount attribute is 1 row in operation that represents "Payment Amount"
  */
-data class AmountAttribute(override val id: String?,
-                           override val label: String?,
-                           val amount: BigDecimal?,
-                           val currency: String?,
-                           val amountFormatted: String?,
-                           val currencyFormatted: String?) : Attribute(Type.AMOUNT)
+class AmountAttribute(
+        /**
+         * Payment amount
+         */
+        val amount: BigDecimal?,
+
+        /**
+         * Currency
+         */
+        val currency: String?,
+
+        /**
+         * Formatted amount for presentation.
+         * This property will be properly formatted based on the response language.
+         * For example when amount is 100 and the acceptLanguage is "cs" for czech,
+         * he amountFormatted will be "100,00".
+         */
+        val amountFormatted: String?,
+
+        /**
+         * Formatted currency to the locale based on acceptLanguage
+         * For example when the currency is CZK, this property will be "Kč"
+         */
+        val currencyFormatted: String?,
+
+        label: Label?) : Attribute(Type.AMOUNT, label)
 
 /**
- * Model class for KEY_VALUE operation attribute.
+ * Attribute that describes generic key-value row to display
  */
-data class KeyValueAttribute(override val id: String?,
-                             override val label: String?,
-                             val value: String?) : Attribute(Type.KEY_VALUE)
+class KeyValueAttribute(
+
+        /**
+         * Value of the attribute
+         */
+        val value: String?,
+
+        label: Label?) : Attribute(Type.KEY_VALUE, label)
 
 /**
- * Model class for NOTE operation attribute.
+ * Attribute that describes note, that should be handled as "long text message"
  */
-data class NoteAttribute(override val id: String?,
-                         override val label: String?,
-                         val note: String?) : Attribute(Type.NOTE)
+class NoteAttribute(
+
+        /**
+         * Note value
+         */
+        val note: String?,
+
+        label: Label?) : Attribute(Type.NOTE, label)
 
 /**
- * Model class for HEADING operation attribute.
+ * Heading. This attribute has no value. It only acts as a "section separator"
  */
-data class HeadingAttribute(override val id: String?,
-                            override val label: String?) : Attribute(Type.HEADING)
+class HeadingAttribute(label: Label?) : Attribute(Type.HEADING, label)
 
 /**
- * Model class for PARTY_INFO operation attribute.
+ * Third party info is for providing structured information about third party data.
+ *
+ * This can be used for example when you're approving payment in some retail eshop,
+ * in such case, information about the eshop will be filled here.
  */
-data class PartyInfoAttribute(override val id: String?,
-                              override val label: String?,
-                              val partyInfo: PartyInfo) : Attribute(Type.PARTY_INFO)
+class PartyInfoAttribute(
+        /**
+         * Information about the 3rd party info
+         */
+        val partyInfo: PartyInfo,
 
-/**
- * Model class for PARTY_INFO attribute data.
- */
-data class PartyInfo(val map: Map<String, String>) {
-    val logoUrl: String by map
-    val name: String by map
-    val description: String by map
-    val websiteUrl: String by map
+        label: Label?) : Attribute(Type.PARTY_INFO, label) {
+
+    /**
+     * 3rd party retailer information
+     */
+    class PartyInfo(map: Map<String, String>) {
+        /**
+         * URL address to the logo image
+         */
+        val logoUrl: String by map
+
+        /**
+         * Name of the retailer
+         */
+        val name: String by map
+
+        /**
+         * Description of the retailer
+         */
+        val description: String by map
+
+        /**
+         * Retailer website
+         */
+        val websiteUrl: String by map
+    }
 }

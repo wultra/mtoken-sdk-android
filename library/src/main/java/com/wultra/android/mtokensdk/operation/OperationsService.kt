@@ -122,7 +122,7 @@ class OperationsService: IOperationsService {
         }
     }
 
-    override fun authorizeOperation(operation: Operation, authentication: PowerAuthAuthentication, listener: IAcceptOperationListener) {
+    override fun authorizeOperation(operation: UserOperation, authentication: PowerAuthAuthentication, listener: IAcceptOperationListener) {
         val authorizeRequest = AuthorizeRequest(AuthorizeRequestObject(operation.id, operation.data))
         operationApi.authorize(authorizeRequest, authentication, object : IApiCallResponseListener<StatusResponse> {
             override fun onSuccess(result: StatusResponse) {
@@ -135,7 +135,7 @@ class OperationsService: IOperationsService {
         })
     }
 
-    override fun rejectOperation(operation: Operation, reason: RejectionReason, listener: IRejectOperationListener) {
+    override fun rejectOperation(operation: UserOperation, reason: RejectionReason, listener: IRejectOperationListener) {
         val rejectRequest = RejectRequest(RejectRequestObject(operation.id, reason.reason))
         operationApi.reject(rejectRequest, object : IApiCallResponseListener<StatusResponse> {
             override fun onSuccess(result: StatusResponse) {
