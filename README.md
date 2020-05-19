@@ -19,7 +19,7 @@
 
 ## Introduction
  
-With Wultra Mobile Token (WMT) SDK, you can integrate an out-of-band operation approval into an existing mobile app, instead of using a standalone mobile token application. WMT is built on top of [PowerAuth Mobile SDK](https://github.com/wultra/powerauth-mobile-sdk#docucheck-keep-link). It communicates with the "Mobile Token REST API" and "Mobile Push Registration API." Individual endpoints are described in the [PowerAuth Webflow documentation](https://developers.wultra.com/docs/2019.11/powerauth-webflow/).
+With Wultra Mobile Token (WMT) SDK, you can integrate an out-of-band operation approval into an existing mobile app, instead of using a standalone mobile token application. WMT is built on top of [PowerAuth Mobile SDK](https://github.com/wultra/powerauth-mobile-sdk). It communicates with the "Mobile Token REST API" and "Mobile Push Registration API". Individual endpoints are described in the [PowerAuth Webflow documentation](https://github.com/wultra/powerauth-webflow/).
 
 To understand the Wultra Mobile Token SDK purpose on a business level better, you can visit our own [Mobile Token application](https://www.wultra.com/mobile-token#docucheck-keep-link). We use Wultra Mobile Token SDK in our mobile token application as well.
 
@@ -29,14 +29,14 @@ Wultra Mobile Token SDK library does precisely this:
 - Retrieves the list of operations that are pending for approval for a given user.
 - Approves or rejects operations with PowerAuth transaction signing.
 
-_Note: We also provide an [iOS version of this library](https://github.com/wultra/mtoken-sdk-ios#docucheck-keep-link)_
+_Note: We also provide an [iOS version of this library](https://github.com/wultra/mtoken-sdk-ios)_
 
 ## Installation
 
 ### Requirements
 
 - `minSdkVersion 16` (Android 4.1 Jelly Bean)
-- [PowerAuth Mobile SDK](https://github.com/wultra/powerauth-mobile-sdk#docucheck-keep-link) needs to be available in your project.
+- [PowerAuth Mobile SDK](https://github.com/wultra/powerauth-mobile-sdk) needs to be available in your project.
 
 ### Gradle
 
@@ -46,7 +46,7 @@ To use **WMT** in your Android app, add this dependency:
 implementation "com.wultra.android.mtokensdk:wultra-mtoken-sdk:1.0.0"
 ```
 
-Note that this documentation is using version `1.0.0` as an example. You can find the latest version at [github's release](https://github.com/wultra/mtoken-sdk-android/releases#docucheck-keep-link) page.
+Note that this documentation is using version `1.0.0` as an example. You can find the latest version at [github's release](https://github.com/wultra/mtoken-sdk-android/releases) page.
 
 Also, make sure you have `mavenLocal()` repository among the project repositories and the version you are linking available in your local Maven repository.
 
@@ -78,7 +78,7 @@ fun PowerAuthSDK.createOperationsService(appContext: Context, baseURL: String, s
 
 #### Factory Extension With OkHttpClient
 
-Convenience factory method that will return a new instance with provided `OkHttpClient` that you can configure on your own.
+Convenience factory method that will return a new instance with provided [`OkHttpClient`](https://square.github.io/okhttp/) that you can configure on your own.
 
 ```kotlin
 fun PowerAuthSDK.createOperationsService(appContext: Context, baseURL: String, httpClient: OkHttpClient): IOperationsService
@@ -86,7 +86,7 @@ fun PowerAuthSDK.createOperationsService(appContext: Context, baseURL: String, h
 
 - `appContext` - application context
 - `baseURL`-  address, where your operations server can be reached
-- `httpClient` - `OkHttpClient` instance used for API requests 
+- `httpClient` - [`OkHttpClient`](https://square.github.io/okhttp/) instance used for API requests 
 
 #### Retrieve the Pending Operations
 
@@ -218,7 +218,7 @@ All available methods and attributes of `IOperationsService` API are:
     - `biometry` - Biometry data retrieved from `powerAuthSDK.authenticateUsingBiometry` call.
     - `offlineOperation` - Offline operation retrieved via `processOfflineQrPayload` method.
 
-For more details on the API, visit [`IOperationsService` code documentation](https://github.com/wultra/mtoken-sdk-android/blob/master/library/src/main/java/com/wultra/android/mtokensdk/operation/IOperationsService.kt).
+For more details on the API, visit [`IOperationsService` code documentation](https://github.com/wultra/mtoken-sdk-android/blob/master/library/src/main/java/com/wultra/android/mtokensdk/operation/IOperationsService.kt#docucheck-keep-link).
 
 #### UserOperations
 
@@ -299,7 +299,7 @@ To register PowerAuth enabled application to receive push notifications, use one
 
 #### Extension Factory With SSL Validation Strategy
 
-This factory method will create its own `OkHttpClient` instance based on the chosen SSL validation strategy.
+This factory method will create its own [`OkHttpClient`](https://square.github.io/okhttp/) instance based on the chosen SSL validation strategy.
 
 ```kotlin
 fun PowerAuthSDK.createPushService(appContext: Context, baseURL: String, strategy: SSLValidationStrategy): IPushService
@@ -319,7 +319,7 @@ fun PowerAuthSDK.createPushService(appContext: Context, baseURL: String, httpCli
 ``` 
 - `appContext` - application context
 - `baseURL` - address, where your operations server can be reached
-- `httpClient` - `OkHttpClient` instance used for API requests 
+- `httpClient` - [`OkHttpClient`](https://square.github.io/okhttp/) instance used for API requests 
 
 #### Registering to Push Notifications
 
