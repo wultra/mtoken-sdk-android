@@ -218,7 +218,7 @@ All available methods and attributes of `IOperationsService` API are:
     - `biometry` - Biometry data retrieved from `powerAuthSDK.authenticateUsingBiometry` call.
     - `offlineOperation` - Offline operation retrieved via `processOfflineQrPayload` method.
 
-For more details on the API, visit [`IOperationsService` code documentation](https://github.com/wultra/mtoken-sdk-android/blob/master/library/src/main/java/com/wultra/android/mtokensdk/operation/IOperationsService.kt#docucheck-keep-link).
+For more details on the API, visit [`IOperationsService` code documentation](https://github.com/wultra/mtoken-sdk-android/blob/develop/library/src/main/java/com/wultra/android/mtokensdk/operation/IOperationsService.kt#docucheck-keep-link).
 
 #### UserOperations
 
@@ -355,11 +355,11 @@ All available methods of the `IPushService` API are:
     - `fcmToken` - Firebase Cloud Messaging token.
     - `listener` - Called request finishes
 
-For more details on the API, visit [`IPushService` code documentation](https://github.com/wultra/mtoken-sdk-android/blob/master/library/src/main/java/com/wultra/android/mtokensdk/push/IPushService.kt).
+For more details on the API, visit [`IPushService` code documentation](https://github.com/wultra/mtoken-sdk-android/blob/develop/library/src/main/java/com/wultra/android/mtokensdk/push/IPushService.kt#docucheck-keep-link).
 
 ### Error Handling
 
-All methods that communicate with server APIs return an [`ApiError`](https://github.com/wultra/mtoken-sdk-android/blob/master/library/src/main/java/com/wultra/android/mtokensdk/api/general/ApiError.kt) instance in case of an error.
+All methods that communicate with server APIs return an [`ApiError`](https://github.com/wultra/mtoken-sdk-android/blob/develop/library/src/main/java/com/wultra/android/mtokensdk/api/general/ApiError.kt#docucheck-keep-link) instance in case of an error.
 Every API error contains an original exception that was thrown, and a convenience error property for known API error states (for example, if the operation is already canceled during approval).
 
 ## License
