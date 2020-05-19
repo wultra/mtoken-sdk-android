@@ -12,12 +12,12 @@
 package com.wultra.android.mtokensdk.operation
 
 import com.wultra.android.mtokensdk.api.general.ApiError
-import com.wultra.android.mtokensdk.api.operation.model.Operation
+import com.wultra.android.mtokensdk.api.operation.model.UserOperation
 import com.wultra.android.mtokensdk.api.operation.model.QROperation
 import io.getlime.security.powerauth.sdk.PowerAuthAuthentication
 
 abstract class OperationsResult
-data class SuccessOperationsResult(val operations: List<Operation>): OperationsResult()
+data class SuccessOperationsResult(val operations: List<UserOperation>): OperationsResult()
 data class ErrorOperationsResult(val error: ApiError): OperationsResult()
 
 /**
@@ -79,7 +79,7 @@ interface IOperationsService {
      * @param authentication PowerAuth authentication object
      * @param listener Result listener
      */
-    fun authorizeOperation(operation: Operation, authentication: PowerAuthAuthentication, listener: IAcceptOperationListener)
+    fun authorizeOperation(operation: UserOperation, authentication: PowerAuthAuthentication, listener: IAcceptOperationListener)
 
     /**
      * Rejects operation with provided reason
@@ -88,7 +88,7 @@ interface IOperationsService {
      * @param reason Rejection reason
      * @param listener Result listener
      */
-    fun rejectOperation(operation: Operation, reason: RejectionReason, listener: IRejectOperationListener)
+    fun rejectOperation(operation: UserOperation, reason: RejectionReason, listener: IRejectOperationListener)
 
     /**
      * Sign offline QR operation with provided authentication.

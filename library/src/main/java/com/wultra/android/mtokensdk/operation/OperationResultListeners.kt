@@ -12,7 +12,7 @@
 package com.wultra.android.mtokensdk.operation
 
 import com.wultra.android.mtokensdk.api.general.ApiError
-import com.wultra.android.mtokensdk.api.operation.model.Operation
+import com.wultra.android.mtokensdk.api.operation.model.UserOperation
 
 interface IAcceptOperationListener {
     fun onSuccess()
@@ -26,5 +26,5 @@ interface IRejectOperationListener {
 
 interface IGetOperationListener {
     fun onError(error: ApiError)
-    fun onSuccess(operations: List<Operation>)
+    fun onSuccess(operations: List<UserOperation>)
 }
