@@ -46,9 +46,7 @@ To use **WMT** in your Android app, add this dependency:
 implementation "com.wultra.android.mtokensdk:wultra-mtoken-sdk:1.0.0"
 ```
 
-Note that this documentation is using version `1.0.0` as an example. You can find the latest version at [github's release](https://github.com/wultra/mtoken-sdk-android/releases) page.
-
-Also, make sure you have `mavenLocal()` repository among the project repositories and the version you are linking available in your local Maven repository.
+Note that this documentation is using version `1.0.0` as an example.
 
 ## Usage
 
