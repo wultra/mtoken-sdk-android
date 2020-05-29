@@ -201,12 +201,12 @@ All available methods and attributes of `IOperationsService` API are:
 - `startPollingOperations(pollingInterval: Long)` - Starts periodic operation polling.
     - `pollingInterval` - How often should operations be refreshed.
 - `stopPollingOperations()` - Stops periodic operation polling.
-- `authorizeOperation(operation: UserOperation, authentication: PowerAuthAuthentication, listener: IAcceptOperationListener)` - Authorize provided operation.
-    - `operation` - Operation to approve, retrieved from `getOperations` call.
+- `authorizeOperation(operation: IOperation, authentication: PowerAuthAuthentication, listener: IAcceptOperationListener)` - Authorize provided operation.
+    - `operation` - An operation to approve, retrieved from `getOperations` call or [created locally](#creating-a-custom-operation).
     - `authentication` - PowerAuth authentication object for operation signing.
     - `listener` - Called when authorization request finishes.
-- `rejectOperation(operation: UserOperation, reason: RejectionReason, listener: IRejectOperationListener)` - Reject provided operation.
-    - `operation` - Operation to reject, retrieved from `getOperations` call.
+- `rejectOperation(operation: IOperation, reason: RejectionReason, listener: IRejectOperationListener)` - Reject provided operation.
+    - `operation` - An operation to reject, retrieved from `getOperations` call or [created locally](#creating-a-custom-operation).
     - `reason` - Rejection reason.
     - `listener` - Called when rejection request finishes.
 - `fun authorizeOfflineOperation(operation: QROperation, authentication: PowerAuthAuthentication)` - Sign offline (QR) operation
@@ -229,7 +229,7 @@ Visually, the operation should be displayed as an info page with all the attribu
 Definition of the `UserOperations`:
 
 ```kotlin
-class UserOperation {
+class UserOperation: IOperation {
 
 	// Unique operation identifier
 	val id: String
@@ -288,6 +288,30 @@ Attributes types:
 - `NOTE` just like keyValue, emphasizing that the value is a note or message  
 - `HEADING` single highlighted text, written in a larger font, used as a section heading  
 - `PARTY_INFO` providing structured information about third party data (for example known eshop)
+
+#### Creating a custom operation
+
+In some specific scenarios, you might need to approve or reject an operation that you received through a different channel than `getOperations`. In such cases, you can implement the `IOperation` interface in your custom class and then feed created objects to both `authorizeOperation` and `rejectOperation` methods.
+
+_Note: For such cases, you can use concrete convenient class `LocalOperation`, that implements this interface._
+
+Definition of the `IOperation`:
+
+```kotlin
+interface IOperation {
+
+    /**
+     * Operation identifier
+     */
+    val id: String
+
+    /**
+     * Data for signing
+     */
+    val data: String
+}
+```
+
 
 ### Push Messages
 
