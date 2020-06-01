@@ -12,6 +12,7 @@
 package com.wultra.android.mtokensdk.operation
 
 import com.wultra.android.mtokensdk.api.general.ApiError
+import com.wultra.android.mtokensdk.api.operation.model.IOperation
 import com.wultra.android.mtokensdk.api.operation.model.UserOperation
 import com.wultra.android.mtokensdk.api.operation.model.QROperation
 import io.getlime.security.powerauth.sdk.PowerAuthAuthentication
@@ -79,7 +80,7 @@ interface IOperationsService {
      * @param authentication PowerAuth authentication object
      * @param listener Result listener
      */
-    fun authorizeOperation(operation: UserOperation, authentication: PowerAuthAuthentication, listener: IAcceptOperationListener)
+    fun authorizeOperation(operation: IOperation, authentication: PowerAuthAuthentication, listener: IAcceptOperationListener)
 
     /**
      * Rejects operation with provided reason
@@ -88,7 +89,7 @@ interface IOperationsService {
      * @param reason Rejection reason
      * @param listener Result listener
      */
-    fun rejectOperation(operation: UserOperation, reason: RejectionReason, listener: IRejectOperationListener)
+    fun rejectOperation(operation: IOperation, reason: RejectionReason, listener: IRejectOperationListener)
 
     /**
      * Sign offline QR operation with provided authentication.

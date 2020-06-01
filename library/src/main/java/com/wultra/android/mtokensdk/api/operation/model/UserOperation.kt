@@ -23,7 +23,7 @@ data class UserOperation(
         /**
          * Unique operation identifier
          */
-        val id: String,
+        override val id: String,
 
         /**
          * System name of the operation (for example login).
@@ -38,7 +38,7 @@ data class UserOperation(
          *
          * This shouldn't be visible to the user.
          */
-        val data: String,
+        override val data: String,
 
         /**
          * Date and time when the operation was created.
@@ -60,7 +60,7 @@ data class UserOperation(
          *
          * For example in some cases, biometric authentication might not available for security reasons.
          */
-        val allowedSignatureType: AllowedSignatureType)
+        val allowedSignatureType: AllowedSignatureType) : IOperation
 
 /**
  * Model class wrapping allowed signature types.
