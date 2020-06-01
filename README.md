@@ -1,6 +1,8 @@
 # Wultra Mobile Token SDK for Android
 
 <!-- begin remove -->
+![build](https://github.com/wultra/mtoken-sdk-android/workflows/build/badge.svg)
+
 `Wultra Mobile Token SDK` is a high-level SDK for operation approval.
 <!-- end -->
 <!-- begin TOC -->
