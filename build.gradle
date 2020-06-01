@@ -15,14 +15,14 @@
  */
 
 buildscript {
-    ext.kotlin_version = '1.3.71'
+    ext.kotlinVersion = "1.3.71"
     repositories {
         jcenter()
         google()
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:3.6.3'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlinVersion}"
         // releasing
         classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4"
         classpath "com.github.dcendents:android-maven-gradle-plugin:2.1"
@@ -51,4 +51,6 @@ ext {
     okHttpVersion = "3.12.1"
     gsonVersion = "2.8.5"
     threetenabpVersion = "1.1.1"
+
+    junitVersion = "4.12"
 }
