@@ -9,8 +9,11 @@
  * before the Municipal Court of Prague.
  */
 
-package com.wultra.android.mtokensdk.api.operation.model
+package com.wultra.android.mtokensdk.api.operation
 
+import com.wultra.android.mtokensdk.api.operation.model.QROperationData
+import com.wultra.android.mtokensdk.api.operation.model.QROperationParser
+import com.wultra.android.mtokensdk.api.operation.model.QROperationSignature
 import org.junit.Assert.*
 import org.junit.Test
 import java.lang.Exception
@@ -19,7 +22,7 @@ import java.util.*
 
 class QRParserTests {
 
-    /**
+    /*
      * Main tests
      */
 
@@ -130,7 +133,7 @@ class QRParserTests {
     @Test
     fun `test missing operation id`() {
         try {
-            val operation= QROperationParser.parse(makeCode(operationId = ""))
+            QROperationParser.parse(makeCode(operationId = ""))
             fail("Exception expected")
         } catch (e: Exception) {
             // expected
@@ -292,7 +295,7 @@ class QRParserTests {
         // Invalid
         listOf("ACZK", "A", "A0", "AxCZK").forEach { field ->
             try {
-                val operation= QROperationParser.parse(makeCode(operationData = "A1*$field"))
+                QROperationParser.parse(makeCode(operationData = "A1*$field"))
                 fail("This should not be parsed")
             } catch (e: Exception) {
                 // expected
@@ -325,7 +328,7 @@ class QRParserTests {
         // Invalid
         listOf("I", "Isomeiban,", "IGOODIBAN,badbic").forEach { field ->
             try {
-                val operation= QROperationParser.parse(makeCode(operationData = "A1*$field"))
+                QROperationParser.parse(makeCode(operationData = "A1*$field"))
                 fail("This should not be parsed")
             } catch (e: Exception) {
                 // expected
