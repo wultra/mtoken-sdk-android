@@ -1,4 +1,4 @@
-name: build
+name: tests
 
 on:
   push:
@@ -8,11 +8,11 @@ on:
   pull_request:
 
 jobs:
-  build:
-    name: Build
+  tests:
+    name: Tests
     runs-on: macos-latest
     steps:
       - name: Checkout the repo
         uses: actions/checkout@v2
-      - name: Build the app
-        run: ./gradlew clean build
+      - name: Test the app
+        run: ./gradlew clean test

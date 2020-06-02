@@ -178,7 +178,7 @@ data class QROperationSignature(
         /**
          * Defines which key has been used for ECDSA signature calculation.
          */
-        val signingKey: SigningKey?,
+        val signingKey: SigningKey,
 
         /**
          * Raw signature data
@@ -205,9 +205,9 @@ data class QROperationSignature(
         PERSONALIZED('1');
 
         companion object {
-            val map = mutableMapOf<Char, SigningKey>()
+            private val map = mutableMapOf<Char, SigningKey>()
             init {
-                for (type in SigningKey.values()) {
+                for (type in values()) {
                     map[type.typeValue] = type
                 }
             }
