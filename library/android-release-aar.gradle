@@ -91,9 +91,9 @@ artifacts {
 
 // Bintray
 Properties properties = new Properties()
-def propFile = new File("${project.rootProject}", "local.properties")
+def propFile = project.rootProject.file('local.properties')
 if (propFile.canRead()) {
-    properties.load(new FileInputStream(propFile))
+    properties.load(propFile.newDataInputStream())
 }
 
 bintray {
