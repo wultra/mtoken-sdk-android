@@ -11,6 +11,7 @@
 
 package com.wultra.android.mtokensdk.api.operation.model
 
+import android.annotation.SuppressLint
 import android.util.Base64
 import java.math.BigDecimal
 import java.text.SimpleDateFormat
@@ -31,7 +32,8 @@ class QROperationParser {
         // Maximum number of operation data fields supported in this version.
         private const val maximumDataFields = 5
 
-        private val dateFormatter = SimpleDateFormat("yyyyMMdd")
+        @SuppressLint("SimpleDateFormat")
+        private val dateFormatter = SimpleDateFormat("yyyyMMdd").also { it.isLenient = false }
 
         /**
          * Process loaded payload from a scanned offline QR.
@@ -100,7 +102,7 @@ class QROperationParser {
             if (signaturePayload.isEmpty()) {
                 throw IllegalArgumentException("Empty offline operation signature")
             }
-            val signingKey = QROperationSignature.SigningKey.fromTypeValue(signaturePayload[0])
+            val signingKey = QROperationSignature.SigningKey.fromTypeValue(signaturePayload[0]) ?: throw IllegalArgumentException("Invalid offline operation signature key")
             val signatureBase64 = signaturePayload.substring(1)
             val signatureByteArray = Base64.decode(signatureBase64, Base64.DEFAULT)
             if (signatureByteArray.size < 64 || signatureByteArray.size > 255) {
@@ -156,7 +158,7 @@ class QROperationParser {
                     var prev = fields.lastOrNull()
                     if (prev != null) {
                         // Remove backslash from last stored value and append this new sequence
-                        prev = prev.substring(0, prev.lastIndex - 1)
+                        prev = prev.substring(0, prev.lastIndex)
                         prev = "$prev*$substring"
                         // Replace last element with updated string
                         fields[fields.count() - 1] = prev
@@ -228,7 +230,7 @@ class QROperationParser {
         private fun parseIban(string: String): QROperationData.AccountField {
             // Try to split IBAN to IBAN & BIC
             val ibanBic = string.substring(1)
-            val components = ibanBic.split(",")
+            val components = ibanBic.split(",").filter { it.isNotEmpty() }
             if (components.count() > 2 || components.count() == 0) {
                 throw IllegalArgumentException("Unsupported format")
             }

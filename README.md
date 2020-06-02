@@ -2,6 +2,10 @@
 
 <!-- begin remove -->
 ![build](https://github.com/wultra/mtoken-sdk-android/workflows/build/badge.svg)
+![tests](https://github.com/wultra/mtoken-sdk-android/workflows/tests/badge.svg)
+[![jcenter](https://img.shields.io/bintray/v/lime-company/WultraMobileTokenSDK/com.wultra.android.mtokensdk)](https://bintray.com/lime-company/WultraMobileTokenSDK/com.wultra.android.mtokensdk?tab=overview)
+![date](https://img.shields.io/github/release-date/wultra/mtoken-sdk-android)
+[![license](https://img.shields.io/github/license/wultra/mtoken-sdk-android)](LICENSE)
 
 `Wultra Mobile Token SDK` is a high-level SDK for operation approval.
 <!-- end -->
