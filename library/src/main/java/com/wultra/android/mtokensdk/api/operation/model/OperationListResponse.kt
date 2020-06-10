@@ -11,7 +11,14 @@
 
 package com.wultra.android.mtokensdk.api.operation.model
 
+import com.google.gson.annotations.SerializedName
+
 /**
  * Operation list response model class.
  */
-data class OperationListResponse(val status: String, val responseObject: List<UserOperation>)
+data class OperationListResponse(
+        @SerializedName("status")
+        val status: String,
+
+        @SerializedName("responseObject")
+        val responseObject: List<UserOperation>)

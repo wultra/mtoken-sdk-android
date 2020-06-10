@@ -11,13 +11,20 @@
 
 package com.wultra.android.mtokensdk.api.general
 
+import com.google.gson.annotations.SerializedName
 import com.wultra.android.mtokensdk.api.MTokenErrorCode
 
 
 /**
  * Model class for error response.
  */
-data class ErrorResponseObject(val code: String, val message: String) {
+data class ErrorResponseObject(
+        @SerializedName("code")
+        val code: String,
+
+        @SerializedName("message")
+        val message: String) {
+
     val errorCode: MTokenErrorCode?
         get() {
             return MTokenErrorCode.errorCodeFromCodeString(code)
