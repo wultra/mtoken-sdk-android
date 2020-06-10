@@ -11,7 +11,14 @@
 
 package com.wultra.android.mtokensdk.api.general
 
+import com.google.gson.annotations.SerializedName
+
 /**
  * Model class for error response - the wrapper responseObject.
  */
-data class ErrorResponse(val status: String, val responseObject: ErrorResponseObject)
+data class ErrorResponse(
+        @SerializedName("status")
+        val status: String,
+
+        @SerializedName("responseObject")
+        val responseObject: ErrorResponseObject)

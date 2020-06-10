@@ -11,6 +11,7 @@
 
 package com.wultra.android.mtokensdk.api.operation.model
 
+import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
 import org.threeten.bp.ZonedDateTime
 
@@ -23,6 +24,7 @@ data class UserOperation(
         /**
          * Unique operation identifier
          */
+        @SerializedName("id")
         override val id: String,
 
         /**
@@ -31,6 +33,7 @@ data class UserOperation(
          * Name of the operation shouldn't be visible to the user. You can use it to distinguish how
          * the operation will be presented. (for example when the template for login is different than payment).
          */
+        @SerializedName("name")
         val name: String,
 
         /**
@@ -38,21 +41,25 @@ data class UserOperation(
          *
          * This shouldn't be visible to the user.
          */
+        @SerializedName("data")
         override val data: String,
 
         /**
          * Date and time when the operation was created.
          */
+        @SerializedName("created")
         val created: ZonedDateTime,
 
         /**
          * Date and time when the operation will expire.
          */
+        @SerializedName("expires")
         val expires: ZonedDateTime,
 
         /**
          * Data that should be presented to the user.
          */
+        @SerializedName("formData")
         val formData: FormData,
 
         /**
@@ -60,6 +67,7 @@ data class UserOperation(
          *
          * For example in some cases, biometric authentication might not available for security reasons.
          */
+        @SerializedName("allowedSignatureType")
         val allowedSignatureType: AllowedSignatureType) : IOperation
 
 /**
@@ -70,6 +78,7 @@ data class AllowedSignatureType(
         /**
          * If operation should be signed with 1 or 2 factor authentication
          */
+        @SerializedName("type")
         val type: Type,
 
         /**
@@ -97,7 +106,7 @@ data class AllowedSignatureType(
         MULTIFACTOR_2FA("2FA"),
 
         @SerializedName("ECDSA")
-        ASSYMETRIC_ECDSA("ECDSA");
+        ASYMMETRIC_ECDSA("ECDSA");
     }
 
     /**
@@ -123,11 +132,13 @@ data class FormData(
         /**
          * Title of the operation
          */
+        @SerializedName("title")
         val title: String,
 
         /**
          * Message for the user
          */
+        @SerializedName("message")
         val message: String,
 
         /**
@@ -135,4 +146,5 @@ data class FormData(
          *
          * Note that attributes can be presented with different classes (Starting with Attribute*) based on the attribute type.
          */
+        @SerializedName("attributes")
         val attributes: List<Attribute>)
