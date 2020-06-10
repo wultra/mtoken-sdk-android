@@ -11,10 +11,14 @@
 
 package com.wultra.android.mtokensdk.api.operation.model
 
+import com.google.gson.annotations.SerializedName
+
 /**
  * Authorization  request model class - the wrapper requestObject.
  */
-internal data class AuthorizeRequest(val requestObject: AuthorizeRequestObject)
+internal data class AuthorizeRequest(
+        @SerializedName("requestObject")
+        val requestObject: AuthorizeRequestObject)
 
 /**
  * Authorize request model class.
@@ -22,4 +26,9 @@ internal data class AuthorizeRequest(val requestObject: AuthorizeRequestObject)
  * @property id Operation ID.
  * @property data Operation data.
  */
-internal data class AuthorizeRequestObject(val id: String, val data: String)
+internal data class AuthorizeRequestObject(
+        @SerializedName("id")
+        val id: String,
+
+        @SerializedName("data")
+        val data: String)

@@ -11,9 +11,15 @@
 
 package com.wultra.android.mtokensdk.api.push.model
 
+import com.google.gson.annotations.SerializedName
+
 /**
  * Push registration request model class.
  */
-data class PushRegistrationRequestObject(val token: String) {
+data class PushRegistrationRequestObject(
+        @SerializedName("token")
+        val token: String) {
+
+    @SerializedName("platform")
     val platform: String = "android"
 }

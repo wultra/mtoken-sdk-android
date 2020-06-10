@@ -30,12 +30,12 @@ sealed class Attribute(
          */
         val label: Label?) {
 
-    enum class Type(val typeInt: Int) {
-        AMOUNT(0),
-        KEY_VALUE(1),
-        NOTE(2),
-        HEADING(3),
-        PARTY_INFO(4)
+    enum class Type {
+        AMOUNT,
+        KEY_VALUE,
+        NOTE,
+        HEADING,
+        PARTY_INFO
     }
 
     /**

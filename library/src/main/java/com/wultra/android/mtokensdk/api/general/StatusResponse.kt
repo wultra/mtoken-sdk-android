@@ -11,7 +11,11 @@
 
 package com.wultra.android.mtokensdk.api.general
 
+import com.google.gson.annotations.SerializedName
+
 /**
  * Model class for activation status responses.
  */
-internal data class StatusResponse(val status: String)
+internal data class StatusResponse(
+        @SerializedName("status")
+        val status: String)

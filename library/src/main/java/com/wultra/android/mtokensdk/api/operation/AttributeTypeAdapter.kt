@@ -82,9 +82,7 @@ internal class AttributeTypeAdapter : TypeAdapter<Attribute>() {
             "KEY_VALUE" -> return KeyValueAttribute(attrMap["value"], labelObject)
             "NOTE" -> return NoteAttribute(attrMap["note"], labelObject)
             "HEADING" -> return HeadingAttribute(labelObject)
-            "PARTY_INFO" -> {
-                return PartyInfoAttribute(PartyInfoAttribute.PartyInfo(partyInfoMap), labelObject)
-            }
+            "PARTY_INFO" -> return PartyInfoAttribute(PartyInfoAttribute.PartyInfo(partyInfoMap), labelObject)
         }
         return null
     }
