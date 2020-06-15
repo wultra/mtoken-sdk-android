@@ -36,14 +36,19 @@ internal class TokenManager constructor(
         } else {
             val authentication = PowerAuthAuthentication()
             authentication.usePossession = true
-            powerAuthTokenStore.requestAccessToken(appContext, TOKEN_NAME, authentication, object : IGetTokenListener {
-                override fun onGetTokenSucceeded(token: PowerAuthToken) {
-                    listener.onReceived(token)
-                }
-                override fun onGetTokenFailed(t: Throwable) {
-                    listener.onFailed(t)
-                }
-            })
+            try {
+                powerAuthTokenStore.requestAccessToken(appContext, TOKEN_NAME, authentication, object : IGetTokenListener {
+                    override fun onGetTokenSucceeded(token: PowerAuthToken) {
+                        listener.onReceived(token)
+                    }
+
+                    override fun onGetTokenFailed(t: Throwable) {
+                        listener.onFailed(t)
+                    }
+                })
+            } catch (t: Throwable) {
+                listener.onFailed(t)
+            }
         }
     }
 }
