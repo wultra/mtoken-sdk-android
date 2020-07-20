@@ -1,7 +1,7 @@
 # Wultra Mobile Token SDK for Android
 
 <!-- begin remove -->
-<p align="center"><img src="images/intro.png" alt="react native chat" width="40%" /></p>
+<p align="center"><img src="images/intro.png" alt="Wultra Mobile Token SDK for Android" width="60%" /></p>
 
 ![build](https://github.com/wultra/mtoken-sdk-android/workflows/build/badge.svg)
 ![tests](https://github.com/wultra/mtoken-sdk-android/workflows/tests/badge.svg)

@@ -1,5 +1,12 @@
 # Using Push Service
 
+<!-- begin TOC -->
+- [Introduction](#introduction)
+- [Creating an Instance](#creating-an-instance)
+- [Registering to Push Notifications](#registering-to-push-notifications)
+- [Push Service API Reference](#push-service-api-reference)
+<!-- end -->
+
 ## Introduction
 
 Push Service is responsible for registering the device for the push notifications about the Operations that are tied to the current PowerAuth activation.
@@ -59,7 +66,7 @@ FirebaseInstanceId.getInstance().instanceId.addOnCompleteListener { task ->
 }
 ```
 
-## Push Message API Reference
+## Push Service API Reference
 
 All available methods of the `IPushService` API are:
 
