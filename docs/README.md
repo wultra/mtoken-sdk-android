@@ -30,7 +30,7 @@ _Note: We also provide an [iOS version of this library](https://github.com/wultr
 
 ## Integration Tutorials
 - [SDK Integration](SDK-Integration.md)
-- [Using Operations service](Using-Operations-Service.md)
+- [Using Operations Service](Using-Operations-Service.md)
 - [Using Push Service](Using-Push-Service.md)
 - [Error Handling](Error-Handling.md)
 - [Language Configuration](Language-Configuration.md)

@@ -4,7 +4,7 @@
 - [Introduction](#introduction)
 - [Creating an Instance](#creating-an-instance)
 - [Retrieve Pending Operations](#retrieve-pending-operations)
-- [Start Periodic Polling](#start-periodic-oolling)
+- [Start Periodic Polling](#start-periodic-polling)
 - [Approve an Operation](#approve-an-operation)
 - [Reject an Operation](#reject-an-operation)
 - [Off-line Authorization](#off-line-authorization)
@@ -200,35 +200,35 @@ Definition of the `UserOperations`:
 ```kotlin
 class UserOperation: IOperation {
 
-	// Unique operation identifier
-	val id: String
-	    
-	// System name of the operation.
+    // Unique operation identifier
+    val id: String
+        
+    // System name of the operation.
     //
     // This property lets you adjust the UI for various operation types. 
     // For example, the "login" operation may display a specialized interface with 
     // an icon or an illustration, instead of an empty list of attributes, 
     // "payment" operation can include a special icon that denotes payments, etc.
-	val name: String
-	    
-	// Actual data that will be signed.
-	val data: String
-	    
-	// Date and time when the operation was created.
-	val created: ZonedDateTime
-	    
-	// Date and time when the operation will expire.
-	val expires: ZonedDateTime
-	    
-	// Data that should be presented to the user.
-	val formData: FormData
-	    
-	// Allowed signature types.
+    val name: String
+    
+    // Actual data that will be signed.
+    val data: String
+    
+    // Date and time when the operation was created.
+    val created: ZonedDateTime
+    
+    // Date and time when the operation will expire.
+    val expires: ZonedDateTime
+    
+    // Data that should be presented to the user.
+    val formData: FormData
+    
+    // Allowed signature types.
     //
-	// This hints if the operation needs a 2nd factor or can be approved simply by 
-	// tapping an approve button. If the operation requires 2FA, this value also hints if 
-	// the user may use the biometry, or if a password is required.
-	val allowedSignatureType: AllowedSignatureType
+    // This hints if the operation needs a 2nd factor or can be approved simply by 
+    // tapping an approve button. If the operation requires 2FA, this value also hints if 
+    // the user may use the biometry, or if a password is required.
+    val allowedSignatureType: AllowedSignatureType
 }
 ```
 

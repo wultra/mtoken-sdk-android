@@ -12,4 +12,4 @@ Both `IOperationsService` and `IPushService` contains an `acceptLanguage` proper
 
 The default value is always `en`. With other languages, use values compliant with standard RFC [Accept-Language](https://tools.ietf.org/html/rfc7231#section-5.3.5)
 
-_Note that language capabilities are limited by the implementation of the server_.
+_Note that content language capabilities are limited by the implementation of the server_.
