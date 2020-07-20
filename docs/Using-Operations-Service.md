@@ -82,6 +82,26 @@ if (!operationsService.isPollingOperations()) {
 }
 ```
 
+To receive the result of the polling, set up a listener.
+
+_Note that the listener is called for all "fetch operations" requests (not just the polling)._
+
+```kotlin
+operationsService.listener = object: IOperationsServiceListener {
+    override fun operationsFailed(error: ApiError) {
+        // show UI the last fetch has failed
+    }
+
+    override fun operationsLoaded(operations: List<UserOperation>) {
+        // refresh operation list UI
+    }
+
+    override fun operationsLoading(loading: Boolean) {
+        // show loading UI
+    }
+}
+```
+
 ## Approve an Operation
 
 To approve an operation use `IOperationsService.authorizeOperation`. You can simply use it with the following example:
@@ -136,7 +156,7 @@ To process the operation QR code, you can use:
 @Throws(IllegalArgumentException::class)
 fun onQROperationScanned(scannedCode: String): QROperation {
     // retrieve parsed operation
-    val operation = QROperationParser.parse(payload)
+    val operation = QROperationParser.parse(scannedCode)
     // verify the signature against the powerauth instance
     val verified = powerAuthSDK.verifyServerSignedData(operation.signedData, operation.signature.signature, operation.signature.isMaster())
     if (!verified) {
