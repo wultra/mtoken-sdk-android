@@ -5,7 +5,7 @@
 - `minSdkVersion 16` (Android 4.1 Jelly Bean)
 - [PowerAuth Mobile SDK](https://github.com/wultra/powerauth-mobile-sdk) needs to be available in your project.
 
-##	 Gradle
+## Gradle
 
 To use __WMT__ in your Android application include the following dependency to your gradle file.
 
