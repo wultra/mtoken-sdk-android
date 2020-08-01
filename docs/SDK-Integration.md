@@ -18,6 +18,7 @@ implementation "io.getlime.security.powerauth:powerauth-android-sdk:1.0.0"
 _Note that this documentation is using version `1.0.0` as an example._
 
 ## PowerAuth compatibility
+
 | WMT SDK | PowerAuth SDK |  
 |---|---|
 | `1.x.x` | `1.x.x` |
