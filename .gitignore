@@ -12,7 +12,7 @@ jd-gui.cfg
 /release
 
 # configurations
-configs
+#configs
 
 # temp data
 /tmp-*
