@@ -29,6 +29,7 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
 import java.lang.Exception
+import java.util.UUID
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
@@ -49,7 +50,7 @@ class IntegrationUtils {
         private val appSecret = getInstrumentationParameter("appSecret")
         private val masterPublicKey = getInstrumentationParameter("masterServerPublicKey")
         private val appId = getInstrumentationParameter("appId")
-        private val activationName = "mtokenSdkAndroidTests"
+        private val activationName = UUID.randomUUID().toString()
 
         @Throws
         fun prepareActivation(pin: String): Pair<PowerAuthSDK, IOperationsService> {
