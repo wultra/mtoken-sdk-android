@@ -101,7 +101,9 @@ override fun onMessageReceived(remoteMessage: RemoteMessage) {
     super.onMessageReceived(remoteMessage)
     val push = PushParser.parseNotification(remoteMessage.data)
     if (push != null) {
-        // process the notification and react to it in the UI
+        // process the mtoken notification and react to it in the UI
+    } else {
+        // process all the other notification types using your own logic
     }
 }
 ```

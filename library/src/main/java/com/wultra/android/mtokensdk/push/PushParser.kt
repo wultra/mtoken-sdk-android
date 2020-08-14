@@ -35,10 +35,10 @@ class PushParser {
 
             return when (notificationData["messageType"]) {
                 "mtoken.operationInit" -> {
-                    PushMessageOperationCreated(id, name)
+                    PushMessageOperationCreated(id, name, notificationData)
                 }
                 "mtoken.operationFinished" -> {
-                    notificationData["mtokenOperationResult"]?.let { return PushMessageOperationFinished(id, name, PushMessageOperationFinished.parseResult(it))  }
+                    notificationData["mtokenOperationResult"]?.let { return PushMessageOperationFinished(id, name, PushMessageOperationFinished.parseResult(it), notificationData)  }
                 }
                 else -> {
                     null
@@ -51,17 +51,53 @@ class PushParser {
 /**
  * Known push message abstract class.
  */
-abstract class PushMessage
+abstract class PushMessage(
+        /**
+         * Original data on which was the push message constructed.
+         */
+        val originalData: Map<String, String>
+)
 
 /**
  * Created when a new operation was triggered.
  */
-data class PushMessageOperationCreated(val id: String, val name: String): PushMessage()
+class PushMessageOperationCreated(
+        /**
+         * Id of the operation.
+         */
+        val id: String,
+
+        /**
+         * Name of the operation
+         */
+        val name: String,
+
+        originalData: Map<String, String>): PushMessage(originalData)
 
 /**
  * Created when an operation was finished, successfully or non-successfully.
  */
-data class PushMessageOperationFinished(val id: String, val name: String, val result: Result): PushMessage() {
+class PushMessageOperationFinished(
+        /**
+         * Id of the operation.
+         */
+        val id: String,
+
+        /**
+         * Name of the operation
+         */
+        val name: String,
+
+        /**
+         * Action which finished the operation
+         */
+        val result: Result,
+
+        originalData: Map<String, String>): PushMessage(originalData) {
+
+    /**
+     * Action which finished the operation.
+     */
     enum class Result {
         /**
          * Operation was successfully confirmed.
