@@ -4,7 +4,7 @@
 - [Introduction](#introduction)
 - [Creating an Instance](#creating-an-instance)
 - [Push Service API Reference](#push-service-api-reference)
-- [Registering to WMT Push Notifications](#registering-to-wmt-push-notifications)
+- [Registering to WMT Push Notifications](#registering-to-push-notifications)
 - [Receiving WMT Push Notifications](#receiving-wmt-push-notifications)
 <!-- end -->
 
