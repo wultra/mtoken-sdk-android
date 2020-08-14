@@ -3,8 +3,9 @@
 <!-- begin TOC -->
 - [Introduction](#introduction)
 - [Creating an Instance](#creating-an-instance)
-- [Registering to Push Notifications](#registering-to-push-notifications)
 - [Push Service API Reference](#push-service-api-reference)
+- [Registering to WMT Push Notifications](#registering-to-wmt-push-notifications)
+- [Receiving WMT Push Notifications](#receiving-wmt-push-notifications)
 <!-- end -->
 
 ## Introduction
@@ -41,9 +42,18 @@ fun PowerAuthSDK.createPushService(appContext: Context, baseURL: String, httpCli
 - `baseURL` - address, where your operations server can be reached
 - `httpClient` - [`OkHttpClient`](https://square.github.io/okhttp/) instance used for API requests 
 
+## Push Service API Reference
+
+All available methods of the `IPushService` API are:
+
+- `acceptLanguage` - Language settings, that will be sent along with each request.
+- `register(fcmToken: String, listener: IPushRegisterListener)` - Registers Firebase Cloud Messaging token on the backend
+    - `fcmToken` - Firebase Cloud Messaging token.
+    - `listener` - Called when the request finishes.
+
 ## Registering to Push Notifications
 
-To register an app to push notifications, you can simply call the register method:
+To register an app to push notifications, you can simply call the `register` method:
 
 ```kotlin
 // first, retrieve FireBase token
@@ -56,7 +66,7 @@ FirebaseInstanceId.getInstance().instanceId.addOnCompleteListener { task ->
                 }
 
                 override fun onFailure(e: ApiError) {
-                    // push notification failed
+                    // push notification registration failed
                 }
             })
         }       
@@ -66,11 +76,36 @@ FirebaseInstanceId.getInstance().instanceId.addOnCompleteListener { task ->
 }
 ```
 
-## Push Service API Reference
+_To be able to successfully process notifications, you need to register the app to receive push notifications in the first place. For more information visit [official documentation](https://firebase.google.com/docs/cloud-messaging/android/client)._
 
-All available methods of the `IPushService` API are:
+## Receiving WMT Push Notifications
 
-- `acceptLanguage` - Language settings, that will be sent along with each request.
-- `register(fcmToken: String, listener: IPushRegisterListener)` - Registers Firebase Cloud Messaging token on the backend
-    - `fcmToken` - Firebase Cloud Messaging token.
-    - `listener` - Called when the request finishes.
+To process the raw notification obtained from Firebase Cloud Messaging service (FCM), you can use `PushParser` helper class that will parse the notification into a `PushMessage` result.
+
+The `PushMessage` is an abstract class that is implemented by following classes for concrete results
+
+- `PushMessageOperationCreated` - a new operation was triggered with the following properties
+  -  `id` of the operation
+  -  `name` of the operation
+  -  `originalData` - data on which was the push message constructed
+- `PushMessageOperationFinished` - an operation was finished, successfully or non-successfully with following properties
+  -  `id` of the operation
+  -  `name` of the operation
+  -  `result` of the operation (for example that the operation was canceled by the user).
+  -  `originalData` - data on which was the push message constructed
+
+
+_Example push notification processing:_
+
+```kotlin
+// Overriden method of FirebaseMessagingService
+override fun onMessageReceived(remoteMessage: RemoteMessage) {
+    super.onMessageReceived(remoteMessage)
+    val push = PushParser.parseNotification(remoteMessage.data)
+    if (push != null) {
+        // process the mtoken notification and react to it in the UI
+    } else {
+        // process all the other notification types using your own logic
+    }
+}
+```
