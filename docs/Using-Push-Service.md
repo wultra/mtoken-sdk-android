@@ -87,10 +87,12 @@ The `PushMessage` is an abstract class that is implemented by following classes 
 - `PushMessageOperationCreated` - a new operation was triggered with the following properties
   -  `id` of the operation
   -  `name` of the operation
+  -  `originalData` - data on which was the push message constructed
 - `PushMessageOperationFinished` - an operation was finished, successfully or non-successfully with following properties
   -  `id` of the operation
   -  `name` of the operation
   -  `result` of the operation (for example that the operation was canceled by the user).
+  -  `originalData` - data on which was the push message constructed
 
 
 _Example push notification processing:_
