@@ -14,55 +14,44 @@ package com.wultra.android.mtokensdk.api
 /**
  * Error codes denoting API errors.
  */
+@Suppress("unused")
 enum class MTokenErrorCode(val message: String) {
 
-    /* PUSH */
+    /** When unexpected error happened */
     ERROR_GENERIC("ERROR_GENERIC"),
 
-    /*** webflow errors ***/
-
-    PUSH_REGISTRATION_FAILED("PUSH_REGISTRATION_FAILED"),
-
-    /* MOBILE TOKEN API */
-
-    /// General authentication failure (wrong password, wrong activation state, etc...)
+    /** General authentication failure (wrong password, wrong activation state, etc...) **/
     POWERAUTH_AUTH_FAIL("POWERAUTH_AUTH_FAIL"),
 
-    /// Invalid request sent - missing request object in request
+    /** Invalid request sent - missing request object in the request **/
     INVALID_REQUEST("INVALID_REQUEST"),
 
-    /// Activation is not valid (it is different from configured activation)
+    /** Activation is not valid (it is different from configured activation) **/
     INVALID_ACTIVATION("INVALID_ACTIVATION"),
 
-    /// Operation is already finished
+    /** Error code for a situation when registration to push notification fails **/
+    PUSH_REGISTRATION_FAILED("PUSH_REGISTRATION_FAILED"),
+
+    /** Operation is already finished **/
     OPERATION_ALREADY_FINISHED("OPERATION_ALREADY_FINISHED"),
 
-    /// Operation is already failed
+    /** Operation is already failed **/
     OPERATION_ALREADY_FAILED("OPERATION_ALREADY_FAILED"),
 
-    /// Operation is cancelled
+    /** Operation is canceled **/
     OPERATION_ALREADY_CANCELED("OPERATION_ALREADY_CANCELED"),
 
-    /// Operation is expired
+    /** Operation is expired **/
     OPERATION_EXPIRED("OPERATION_EXPIRED"),
 
-    /*** PowerAuth restful integration (enrollment) ***/
-
-    ERR_ACTIVATION("ERR_ACTIVATION"),
-
+    /** Error in case that PowerAuth authentication fails **/
     ERR_AUTHENTICATION("ERR_AUTHENTICATION"),
 
+    /** Error during secure vault unlocking **/
     ERR_SECURE_VAULT("ERR_SECURE_VAULT"),
 
-    /**
-     * Since crypto 3.0
-     */
-    ERR_ENCRYPTION("ERR_ENCRYPTION"),
-
-    /**
-     * Since crypto 3.0
-     */
-    ERR_UPGRADE("ERR_UPGRADE");
+    /** Returned in case encryption or decryption fails **/
+    ERR_ENCRYPTION("ERR_ENCRYPTION");
 
     companion object {
         private val map = mutableMapOf<String, MTokenErrorCode>()
