@@ -18,6 +18,7 @@ import com.wultra.android.mtokensdk.api.general.StatusResponse
 import com.wultra.android.mtokensdk.api.operation.OperationApi
 import com.wultra.android.mtokensdk.api.operation.model.*
 import com.wultra.android.mtokensdk.common.IPowerAuthTokenProvider
+import com.wultra.android.mtokensdk.common.Logger
 import com.wultra.android.mtokensdk.common.SSLValidationStrategy
 import com.wultra.android.mtokensdk.common.TokenManager
 import io.getlime.security.powerauth.sdk.PowerAuthAuthentication
@@ -49,6 +50,7 @@ fun PowerAuthSDK.createOperationsService(appContext: Context, baseURL: String, h
 fun PowerAuthSDK.createOperationsService(appContext: Context, baseURL: String, strategy: SSLValidationStrategy): IOperationsService {
     val builder = OkHttpClient.Builder()
     strategy.configure(builder)
+    Logger.configure(builder)
     return createOperationsService(appContext, baseURL, builder.build())
 }
 
@@ -115,6 +117,7 @@ class OperationsService: IOperationsService {
         synchronized(mutex) {
             listener?.let { tasks.add(listener) }
             if (operationsLoading) {
+                Logger.d("getOperation requested, but another request already running")
                 return
             }
             operationsLoading = true
@@ -159,6 +162,7 @@ class OperationsService: IOperationsService {
     @Synchronized
     override fun startPollingOperations(pollingInterval: Long) {
         if (timer != null) {
+            Logger.w("Polling already in progress")
             return
         }
 
@@ -169,11 +173,13 @@ class OperationsService: IOperationsService {
             }
         }, pollingInterval, pollingInterval)
         timer = t
+        Logger.d("Polling started with $pollingInterval milliseconds interval")
     }
 
     override fun stopPollingOperations() {
         timer?.cancel()
         timer = null
+        Logger.d("Operation polling stopped")
     }
 
     private fun updateOperationsListAsync() {

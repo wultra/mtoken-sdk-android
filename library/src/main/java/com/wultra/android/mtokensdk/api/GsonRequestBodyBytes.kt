@@ -13,6 +13,7 @@ package com.wultra.android.mtokensdk.api
 
 import com.google.gson.Gson
 import com.google.gson.TypeAdapter
+import com.wultra.android.mtokensdk.common.Logger
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.OutputStreamWriter
@@ -27,12 +28,17 @@ internal class GsonRequestBodyBytes<T>(private val gson: Gson, private val adapt
 
     @Throws(IOException::class)
     fun convert(value: T): ByteArray {
-        val outputStream = ByteArrayOutputStream()
-        val writer = OutputStreamWriter(outputStream, UTF_8)
-        val jsonWriter = gson.newJsonWriter(writer)
-        adapter.write(jsonWriter, value)
-        jsonWriter.close()
-        return outputStream.toByteArray()
+        try {
+            val outputStream = ByteArrayOutputStream()
+            val writer = OutputStreamWriter(outputStream, UTF_8)
+            gson.newJsonWriter(writer).use {
+                adapter.write(it, value)
+            }
+            return outputStream.toByteArray()
+        } catch (t: Throwable) {
+            Logger.e("Failed to process request", t)
+            throw t
+        }
     }
 
     companion object {
