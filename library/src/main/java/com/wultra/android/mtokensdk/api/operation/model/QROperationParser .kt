@@ -13,6 +13,7 @@ package com.wultra.android.mtokensdk.api.operation.model
 
 import android.annotation.SuppressLint
 import android.util.Base64
+import com.wultra.android.mtokensdk.common.Logger
 import java.math.BigDecimal
 import java.text.SimpleDateFormat
 
@@ -45,47 +46,52 @@ class QROperationParser {
          */
         @Throws(IllegalArgumentException::class)
         fun parse(string: String): QROperation {
-            // Split string by newline
-            val attributes = string.split("\n")
+            try {
+                // Split string by newline
+                val attributes = string.split("\n")
 
-            if (attributes.count() < minimumAttributeFields) {
-                throw IllegalArgumentException("QR operation needs to have at least $minimumAttributeFields attributes")
+                if (attributes.count() < minimumAttributeFields) {
+                    throw IllegalArgumentException("QR operation needs to have at least $minimumAttributeFields attributes")
+                }
+
+                // Acquire all attributes
+                val operationId = attributes[0]
+                val title = parseAttributeText(attributes[1])
+                val message = parseAttributeText(attributes[2])
+                val dataString = attributes[3]
+                val flagsString = attributes[4]
+                // Signature and nonce are always located at last lines
+                val nonce = attributes[attributes.lastIndex - 1]
+                val signatureString = attributes[attributes.lastIndex]
+
+                // Validate operationId
+                if (operationId.isEmpty()) {
+                    throw IllegalArgumentException("QR operation ID is empty!.")
+                }
+
+                val signature = parseSignature(signatureString)
+
+                // validate nonce
+                val nonceByteArray = Base64.decode(nonce, Base64.DEFAULT)
+                if (nonceByteArray.size != 16) {
+                    throw IllegalArgumentException("Invalid nonce data")
+                }
+
+                // Parse operation data fields
+                val formData = parseOperationData(dataString)
+
+                // Rebuild signed data, without pure signature string
+                val signedData = string.substring(0, string.length - signature.signatureString.length).toByteArray()
+
+                // Parse flags
+                val flags = parseOperationFlags(flagsString)
+                val isNewerFormat = attributes.count() > currentAttributeFields
+
+                return QROperation(operationId, title, message, formData, nonce, flags, signedData, signature, isNewerFormat)
+            } catch (e: IllegalArgumentException) {
+                Logger.e(e.message ?:  "Payload is not a valid QR operation")
+                throw e
             }
-
-            // Acquire all attributes
-            val operationId = attributes[0]
-            val title = parseAttributeText(attributes[1])
-            val message = parseAttributeText(attributes[2])
-            val dataString = attributes[3]
-            val flagsString = attributes[4]
-            // Signature and nonce are always located at last lines
-            val nonce = attributes[attributes.lastIndex - 1]
-            val signatureString = attributes[attributes.lastIndex]
-
-            // Validate operationId
-            if (operationId.isEmpty()) {
-                throw IllegalArgumentException("QR operation ID is empty!.")
-            }
-
-            val signature = parseSignature(signatureString)
-
-            // validate nonce
-            val nonceByteArray = Base64.decode(nonce, Base64.DEFAULT)
-            if (nonceByteArray.size != 16) {
-                throw IllegalArgumentException("Invalid nonce data")
-            }
-
-            // Parse operation data fields
-            val formData = parseOperationData(dataString)
-
-            // Rebuild signed data, without pure signature string
-            val signedData = string.substring(0,string.length - signature.signatureString.length).toByteArray()
-
-            // Parse flags
-            val flags = parseOperationFlags(flagsString)
-            val isNewerFormat = attributes.count() > currentAttributeFields
-
-            return QROperation(operationId, title, message, formData, nonce, flags, signedData, signature, isNewerFormat)
         }
 
         private fun parseAttributeText(text: String): String {

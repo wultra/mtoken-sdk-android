@@ -19,6 +19,7 @@ import com.wultra.android.mtokensdk.api.general.ErrorResponse
 import com.wultra.android.mtokensdk.api.operation.AttributeTypeAdapter
 import com.wultra.android.mtokensdk.api.operation.ZonedDateTimeDeserializer
 import com.wultra.android.mtokensdk.api.operation.model.Attribute
+import com.wultra.android.mtokensdk.common.Logger
 import okhttp3.*
 import org.threeten.bp.ZonedDateTime
 import java.io.IOException
@@ -47,6 +48,9 @@ internal abstract class Api(protected val okHttpClient: OkHttpClient, private va
      * Make an API call.
      */
     protected inline fun <reified T> makeCall(request: Request, listener: IApiCallResponseListener<T>) {
+        if (!request.url().isHttps) {
+            Logger.w("Using HTTP for communication may create a serious security issue! Use HTTPS in production.")
+        }
         val call = okHttpClient.newCall(request)
         call.enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {

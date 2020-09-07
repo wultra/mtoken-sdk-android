@@ -18,6 +18,7 @@ import com.wultra.android.mtokensdk.api.general.StatusResponse
 import com.wultra.android.mtokensdk.api.push.PushApi
 import com.wultra.android.mtokensdk.api.push.model.PushRegistrationRequest
 import com.wultra.android.mtokensdk.common.IPowerAuthTokenProvider
+import com.wultra.android.mtokensdk.common.Logger
 import com.wultra.android.mtokensdk.common.SSLValidationStrategy
 import com.wultra.android.mtokensdk.common.TokenManager
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
@@ -46,6 +47,7 @@ fun PowerAuthSDK.createPushService(appContext: Context, baseURL: String, okHttpC
 fun PowerAuthSDK.createPushService(appContext: Context, baseURL: String, strategy: SSLValidationStrategy): IPushService {
     val builder = OkHttpClient.Builder()
     strategy.configure(builder)
+    Logger.configure(builder)
     return createPushService(appContext, baseURL, builder.build())
 }
 
@@ -66,6 +68,7 @@ class PushService(okHttpClient: OkHttpClient, baseURL: String, tokenProvider: IP
             }
 
             override fun onFailure(e: Throwable) {
+                Logger.e("Failed to register fcm token for WMT push notifications.")
                 listener.onFailure(ApiError(e))
             }
         })
