@@ -14,6 +14,7 @@ package com.wultra.android.mtokensdk.common
 import android.util.Log
 import okhttp3.Headers
 import okhttp3.OkHttpClient
+import okhttp3.Response
 import okio.Buffer
 import java.lang.StringBuilder
 
@@ -97,7 +98,20 @@ class Logger {
                     "\n- Headers: ${request.headers().forLog()}" +
                     "\n- Body: $body"
                 }
-                val response = chain.proceed(request)
+
+
+                val response: Response
+
+                try {
+                    response = chain.proceed(request)
+                } catch (e: Exception) {
+                    d {
+                        "\n--- WMT REQUEST FAILED ---" +
+                        "\n- URL: ${request.method()} - ${request.url()}" +
+                        "\n- Error: $e"
+                    }
+                    throw e
+                }
 
                 d {
                     "\n--- WMT RESPONSE ---" +
