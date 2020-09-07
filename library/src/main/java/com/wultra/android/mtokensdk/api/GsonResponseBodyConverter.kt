@@ -15,6 +15,7 @@ import com.google.gson.Gson
 import com.google.gson.JsonIOException
 import com.google.gson.TypeAdapter
 import com.google.gson.stream.JsonToken
+import com.wultra.android.mtokensdk.common.Logger
 import okhttp3.ResponseBody
 import java.io.IOException
 
@@ -29,13 +30,16 @@ internal class GsonResponseBodyConverter<T>(private val gson: Gson, private val 
     fun convert(value: ResponseBody): T {
         val jsonReader = gson.newJsonReader(value.charStream())
         try {
-            val result = adapter.read(jsonReader)
-            if (jsonReader.peek() != JsonToken.END_DOCUMENT) {
-                throw JsonIOException("JSON document was not fully consumed.")
+            value.use {
+                val result = adapter.read(jsonReader)
+                if (jsonReader.peek() != JsonToken.END_DOCUMENT) {
+                    throw JsonIOException("JSON document was not fully consumed.")
+                }
+                return result
             }
-            return result
-        } finally {
-            value.close()
+        } catch (t: Throwable) {
+            Logger.e("Failed to process response", t)
+            throw t
         }
     }
 }

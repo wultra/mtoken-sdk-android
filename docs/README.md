@@ -34,6 +34,7 @@ _Note: We also provide an [iOS version of this library](https://github.com/wultr
 - [Using Push Service](Using-Push-Service.md)
 - [Error Handling](Error-Handling.md)
 - [Language Configuration](Language-Configuration.md)
+- [Logging](Logging.md)
 
 ## License
 
