@@ -7,4 +7,4 @@ DEPLOY_GRADLE_PATH="."
 DEPLOY_GRADLE_PARAMS="clean assembleRelease install bintrayUpload"
 
 # Versioning files
-DEPLOY_VERSIONING_FILES=( "Deploy/gradle.properties,library/gradle.properties" )
+DEPLOY_VERSIONING_FILES=( ".deploy/gradle.properties,library/gradle.properties" )
