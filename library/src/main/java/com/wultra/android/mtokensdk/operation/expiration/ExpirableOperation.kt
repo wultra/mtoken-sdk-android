@@ -16,7 +16,7 @@ import com.wultra.android.mtokensdk.common.Logger
 import org.threeten.bp.ZonedDateTime
 
 /**
- * Interface defining an operation for the OperationExpirationWatcher.
+ * Interface defining an operation for the [OperationExpirationWatcher].
  */
 interface ExpirableOperation {
 

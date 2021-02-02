@@ -17,7 +17,6 @@ import android.os.Handler
 import android.os.Looper
 import com.wultra.android.mtokensdk.common.Logger
 import java.util.*
-import java.util.concurrent.Semaphore
 import kotlin.math.max
 
 /**
@@ -28,7 +27,7 @@ import kotlin.math.max
  *
  * The default behavior of the expiration is based on the system date and time (by using `now()`).
  * So if the user chooses to change it, it might not work. If you have for example your server time, you can provide
- * it via `getCurrentDateProvider` function.
+ * it via [currentDateProvider] property.
  *
  * Since expiration checking is implemented in the best-effort way, the primary way
  * of operation expiration verification is reloading the operation from the server.
@@ -51,14 +50,14 @@ class OperationExpirationWatcher {
 
     private val operationsToWatch = mutableListOf<ExpirableOperation>() // source of "truth" of what is being watched
     private var timer: Timer? = null // timer for scheduling
-    private val lock = Semaphore(1)
+    private val mutex = Object()
 
     /**
      * Provides currently watched operations.
      * @return Operations that are watched
      */
     fun getWatchedOperations(): List<ExpirableOperation> {
-        return lock.synchronized {
+        return synchronized(mutex) {
             return@synchronized operationsToWatch
         }
     }
@@ -78,7 +77,7 @@ class OperationExpirationWatcher {
      * @return Operations that are watched
      */
     fun add(operations: List<ExpirableOperation>): List<ExpirableOperation> {
-        return lock.synchronized {
+        return synchronized(mutex) {
             val currentDate = currentDateProvider.getCurrentDate()
             for (op in operations) {
                 // we do not remove expired operations.
@@ -145,7 +144,7 @@ class OperationExpirationWatcher {
     // Private methods
 
     private fun stop(operations: List<ExpirableOperation>?): List<ExpirableOperation> {
-        return lock.synchronized {
+        return synchronized(mutex) {
             // is there anything to stop?
             if (operationsToWatch.isNotEmpty()) {
                 // when nil is provided, we consider it as "stop all"
@@ -190,7 +189,7 @@ class OperationExpirationWatcher {
             val t = Timer("OperationsExpirationWatcherTimer", false)
             t.schedule(object : TimerTask() {
                 override fun run() {
-                    lock.synchronized {
+                    synchronized(mutex) {
                         val currentDate = currentDateProvider.getCurrentDate()
                         val expiredOps = operationsToWatch.filter { it.isExpired(currentDate) }
 
@@ -222,11 +221,4 @@ interface OperationExpirationWatcherListener {
      * @param expiredOperations array of operations that expired
      */
     fun operationsExpired(expiredOperations: List<ExpirableOperation>)
-}
-
-private fun <T> Semaphore.synchronized(block: () -> T): T {
-    acquire()
-    val result = block()
-    release()
-    return result
 }

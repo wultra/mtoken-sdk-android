@@ -48,13 +48,13 @@ data class UserOperation(
         /**
          * Date and time when the operation was created.
          */
-        @SerializedName("created")
+        @SerializedName("operationCreated")
         val created: ZonedDateTime,
 
         /**
          * Date and time when the operation will expire.
          */
-        @SerializedName("expires")
+        @SerializedName("operationExpires")
         override val expires: ZonedDateTime,
 
         /**
