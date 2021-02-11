@@ -64,9 +64,13 @@ interface IOperationsService {
     /**
      * Starts polling operations from the server. You can observe the polling via [listener].
      *
+     * If operations are already polling, this call is ignored
+     * and the polling interval won't be changed.
+     *
      * @param pollingInterval Polling interval in milliseconds
+     * @param delayStart When true, polling starts after the first [pollingInterval] time passes
      */
-    fun startPollingOperations(pollingInterval: Long)
+    fun startPollingOperations(pollingInterval: Long, delayStart: Boolean)
 
     /**
      * Stops operation polling

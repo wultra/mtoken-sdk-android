@@ -78,7 +78,7 @@ Mobile token API is highly asynchronous - to simplify the work for you, we added
 ```kotlin
 // fetch new operations every 7 seconds periodically
 if (!operationsService.isPollingOperations()) {
-    operationsService.startPollingOperations(7_000)
+    operationsService.startPollingOperations(7_000, false)
 }
 ```
 
@@ -189,8 +189,9 @@ All available methods and attributes of `IOperationsService` API are:
 - `getOperations(listener: IGetOperationListener?)` - Retrieves pending operations from the server.
     - `listener` - Called when operation finishes.
 - `isPollingOperations()` - If the app is periodically polling for the operations from the server.
-- `startPollingOperations(pollingInterval: Long)` - Starts periodic operation polling.
+- `startPollingOperations(pollingInterval: Long, delayStart: Boolean)` - Starts periodic operation polling.
     - `pollingInterval` - How often should operations be refreshed.
+    - `delayStart` - When true, polling starts after the first `pollingInterval` time passes.
 - `stopPollingOperations()` - Stops periodic operation polling.
 - `authorizeOperation(operation: IOperation, authentication: PowerAuthAuthentication, listener: IAcceptOperationListener)` - Authorize provided operation.
     - `operation` - An operation to approve, retrieved from `getOperations` call or [created locally](#creating-a-custom-operation).
