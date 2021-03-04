@@ -34,7 +34,7 @@ class IntegrationTests {
 
         lateinit var pa: PowerAuthSDK
         lateinit var ops: IOperationsService
-        val pin = "1234"
+        const val pin = "1234"
 
         @BeforeClass
         @JvmStatic
@@ -227,7 +227,7 @@ class IntegrationTests {
 
             }
         }
-        ops.startPollingOperations(1_000)
+        ops.startPollingOperations(1_000, true)
         Assert.assertNull(future.get(20, TimeUnit.SECONDS))
         ops.stopPollingOperations()
         Assert.assertFalse(ops.isPollingOperations())

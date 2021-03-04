@@ -104,7 +104,7 @@ class Logger {
 
                 try {
                     response = chain.proceed(request)
-                } catch (e: Exception) {
+                } catch (e: Throwable) {
                     d {
                         "\n--- WMT REQUEST FAILED ---" +
                         "\n- URL: ${request.method()} - ${request.url()}" +

@@ -54,7 +54,7 @@ fun PowerAuthSDK.createOperationsService(appContext: Context, baseURL: String, s
     return createOperationsService(appContext, baseURL, builder.build())
 }
 
-@Suppress("EXPERIMENTAL_API_USAGE")
+@Suppress("EXPERIMENTAL_API_USAGE", "ConvertSecondaryConstructorToPrimary")
 class OperationsService: IOperationsService {
 
     override var listener: IOperationsServiceListener? = null
@@ -160,18 +160,23 @@ class OperationsService: IOperationsService {
     override fun isPollingOperations() = timer != null
 
     @Synchronized
-    override fun startPollingOperations(pollingInterval: Long) {
+    override fun startPollingOperations(pollingInterval: Long, delayStart: Boolean) {
         if (timer != null) {
             Logger.w("Polling already in progress")
             return
         }
 
+        val delay = if (delayStart) {
+            pollingInterval
+        } else {
+            0
+        }
         val t = Timer("OperationsServiceTimer")
         t.scheduleAtFixedRate(object : TimerTask() {
             override fun run() {
                 getOperations(null)
             }
-        }, pollingInterval, pollingInterval)
+        }, delay, pollingInterval)
         timer = t
         Logger.d("Polling started with $pollingInterval milliseconds interval")
     }

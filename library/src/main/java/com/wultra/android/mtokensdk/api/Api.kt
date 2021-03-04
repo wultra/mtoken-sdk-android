@@ -23,7 +23,6 @@ import com.wultra.android.mtokensdk.common.Logger
 import okhttp3.*
 import org.threeten.bp.ZonedDateTime
 import java.io.IOException
-import java.lang.Exception
 
 interface IApiCallResponseListener<T> {
     fun onSuccess(result: T)
@@ -58,22 +57,22 @@ internal abstract class Api(protected val okHttpClient: OkHttpClient, private va
             }
 
             override fun onResponse(call: Call, response: Response) {
-                if (response.isSuccessful) {
-                    val gson = getGson()
-                    val typeAdapter = getTypeAdapter<T>(gson)
-                    val converter = GsonResponseBodyConverter(gson, typeAdapter)
-                    listener.onSuccess(converter.convert(response.body()!!))
-                } else {
-                    val gson = getGson()
-                    val typeAdapter = getTypeAdapter<ErrorResponse>(gson)
-                    val converter = GsonResponseBodyConverter(gson, typeAdapter)
-                    try {
+                try {
+                    if (response.isSuccessful) {
+                        val gson = getGson()
+                        val typeAdapter = getTypeAdapter<T>(gson)
+                        val converter = GsonResponseBodyConverter(gson, typeAdapter)
+                        listener.onSuccess(converter.convert(response.body()!!))
+                    } else {
+                        val gson = getGson()
+                        val typeAdapter = getTypeAdapter<ErrorResponse>(gson)
+                        val converter = GsonResponseBodyConverter(gson, typeAdapter)
                         val errorResponse = converter.convert(response.body()!!)
                         listener.onFailure(MTokenHttpException(response, errorResponse))
-                    } catch (e: Exception) {
-                        // there's no error response
-                        listener.onFailure(MTokenHttpException(response))
                     }
+                } catch (e: Throwable) {
+                    // do not allow the app to crash when unexpected body is returned
+                    listener.onFailure(MTokenHttpException(response))
                 }
             }
         })
