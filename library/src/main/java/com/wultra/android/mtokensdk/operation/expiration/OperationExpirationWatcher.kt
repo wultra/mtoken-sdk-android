@@ -15,6 +15,7 @@ package com.wultra.android.mtokensdk.operation.expiration
 
 import android.os.Handler
 import android.os.Looper
+import androidx.annotation.MainThread
 import com.wultra.android.mtokensdk.common.Logger
 import java.util.*
 import kotlin.math.max
@@ -220,5 +221,6 @@ interface OperationExpirationWatcherListener {
      * The method is called on the main thread by the `OperationExpirationWatcher`.
      * @param expiredOperations array of operations that expired
      */
+    @MainThread
     fun operationsExpired(expiredOperations: List<ExpirableOperation>)
 }

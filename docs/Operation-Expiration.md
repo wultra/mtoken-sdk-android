@@ -44,6 +44,7 @@ class OperationsManager(private val ops: IOperationsService) {
     
     init {
         operationWatcher.listener = object : OperationExpirationWatcherListener {
+            // operationsExpired is called on main thread
             override fun operationsExpired(expiredOperations: List<ExpirableOperation>) {
                 // some operation expired, refresh the list
                 launchFetchOperations()

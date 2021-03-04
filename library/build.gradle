@@ -49,13 +49,14 @@ dependencies {
 
     // Bundled
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:${kotlinVersion}"
-    implementation "com.android.support:support-annotations:${supportVersion}"
+    implementation "androidx.annotation:annotation:${androidXAnnotations}"
     implementation "com.google.code.gson:gson:${gsonVersion}"
     implementation "com.jakewharton.threetenabp:threetenabp:${threetenabpVersion}"
     implementation "com.squareup.okhttp3:okhttp:${okHttpVersion}"
 
     // Dependencies
     compileOnly "io.getlime.security.powerauth:powerauth-android-sdk:${powerAuthSdkVersion}"
+    compileOnly "io.getlime.core:rest-model-base:${restModelBaseVersion}"
 
     // TestDependencies
     testImplementation "junit:junit:${junitVersion}"
