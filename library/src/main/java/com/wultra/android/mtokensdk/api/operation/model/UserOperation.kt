@@ -13,6 +13,7 @@ package com.wultra.android.mtokensdk.api.operation.model
 
 import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
+import com.wultra.android.mtokensdk.operation.expiration.ExpirableOperation
 import org.threeten.bp.ZonedDateTime
 
 /**
@@ -47,14 +48,14 @@ data class UserOperation(
         /**
          * Date and time when the operation was created.
          */
-        @SerializedName("created")
+        @SerializedName("operationCreated")
         val created: ZonedDateTime,
 
         /**
          * Date and time when the operation will expire.
          */
-        @SerializedName("expires")
-        val expires: ZonedDateTime,
+        @SerializedName("operationExpires")
+        override val expires: ZonedDateTime,
 
         /**
          * Data that should be presented to the user.
@@ -68,7 +69,7 @@ data class UserOperation(
          * For example in some cases, biometric authentication might not available for security reasons.
          */
         @SerializedName("allowedSignatureType")
-        val allowedSignatureType: AllowedSignatureType) : IOperation
+        val allowedSignatureType: AllowedSignatureType) : IOperation, ExpirableOperation
 
 /**
  * Model class wrapping allowed signature types.
