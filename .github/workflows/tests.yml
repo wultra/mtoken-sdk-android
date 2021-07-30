@@ -26,7 +26,7 @@ jobs:
           MASTER_SERVER_PUBLIC_KEY: ${{ secrets.TESTS_MASTER_SERVER_PUBLIC_KEY }}
           ER_URL: ${{ secrets.TESTS_ER_URL }}
           OP_URL: ${{ secrets.TESTS_OP_URL }}
-        run: echo -e tests.sdk.cloudServerUrl="$TESTS_CL_URL"\\ntests.sdk.cloudServerLogin="$TESTS_CL_LGN"\\ntests.sdk.cloudServerPassword="$TESTS_CL_PWD"\\ntests.sdk.enrollmentServerUrl="$ER_URL"\\ntests.sdk.operationsServerUrl="$OP_URL"\\ntests.sdk.appKey="$APP_KEY"\\ntests.sdk.appSecret="$APP_SECRET"\\ntests.sdk.masterServerPublicKey="$MASTER_SERVER_PUBLIC_KEY" > configs/integration-tests.properties
+        run: echo -e tests.sdk.cloudServerUrl="$CL_URL"\\ntests.sdk.cloudServerLogin="$CL_LGN"\\ntests.sdk.cloudServerPassword="$CL_PWD"\\ntests.sdk.enrollmentServerUrl="$ER_URL"\\ntests.sdk.operationsServerUrl="$OP_URL"\\ntests.sdk.appKey="$APP_KEY"\\ntests.sdk.appSecret="$APP_SECRET"\\ntests.sdk.masterServerPublicKey="$MASTER_SERVER_PUBLIC_KEY" > configs/integration-tests.properties
       - name: Test the app (integration tests)
         uses: reactivecircus/android-emulator-runner@v2
         with:
