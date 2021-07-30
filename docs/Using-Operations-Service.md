@@ -170,13 +170,25 @@ After that, you can produce an off-line signature using the following code:
 
 ```kotlin
 @Throws
-fun approveQROperation(operation: QROperation, password: String): String {
-    val authentication = PowerAuthAuthentication()
-    authentication.usePossession = true
-    authentication.usePassword = password
-    return operationsService.authorizeOfflineOperation(operation, authentication)
+fun approveQROperation(operation: QROperation, password: String?): String {
+    val auth = PowerAuthAuthentication()
+    auth.usePossession = true
+    if (password != null) {
+        // if a password is passed, use it as the second factor
+        auth.usePassword = password
+    } else if (operation.flags.biometryAllowed) {
+        // if no password was passed and operation supports biometry factor...
+        auth.useBiometry = true
+    } else {
+        // logical error, 2nd factor needs to be used
+    }
+    return operationsService.authorizeOfflineOperation(operation, auth)
 }
 ```
+
+<!-- begin box info -->
+An offline operation needs to be __always__ approved with __ 2-factor scheme__ (password or biometry). If biometry is allowed for offline operation can be found in the property `QROperation.flags.biometryAllowed`.
+<!-- end -->
 
 ## Operations API Reference
 
