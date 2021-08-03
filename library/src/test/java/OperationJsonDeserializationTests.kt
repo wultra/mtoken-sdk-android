@@ -44,7 +44,7 @@ class OperationJsonDeserializationTests {
         val json = "{\"responseObject\": {\"empty\": true},\"status\": \"OK\"}"
         var exception: Throwable? = null
         try {
-            val response = typeAdapter.fromJson(json)
+            typeAdapter.fromJson(json)
         } catch (t: Throwable) {
             exception = t
         }
