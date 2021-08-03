@@ -24,11 +24,13 @@ import io.getlime.security.powerauth.networking.response.ICreateActivationListen
 import io.getlime.security.powerauth.sdk.PowerAuthClientConfiguration
 import io.getlime.security.powerauth.sdk.PowerAuthConfiguration
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
+import io.getlime.security.powerauth.util.otp.OtpUtil
 import okhttp3.MediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
 import java.lang.Exception
+import java.util.Base64.getEncoder
 import java.util.UUID
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
@@ -42,14 +44,14 @@ class IntegrationUtils {
         private val gson = Gson()
         private val jsonMediaType = MediaType.parse("application/json; charset=UTF-8")!!
 
-        private val paUrl = getInstrumentationParameter("paServerUrl")
-        private val nextStepUrl = getInstrumentationParameter("nextStepServerUrl")
+        private val cloudServerUrl = getInstrumentationParameter("cloudServerUrl")
+        private val cloudServerLogin = getInstrumentationParameter("cloudServerLogin")
+        private val cloudServerPassword = getInstrumentationParameter("cloudServerPassword")
         private val enrollmentUrl = getInstrumentationParameter("enrollmentServerUrl")
         private val operationsUrl = getInstrumentationParameter("operationsServerUrl")
         private val appKey = getInstrumentationParameter("appKey")
         private val appSecret = getInstrumentationParameter("appSecret")
         private val masterPublicKey = getInstrumentationParameter("masterServerPublicKey")
-        private val appId = getInstrumentationParameter("appId")
         private val activationName = UUID.randomUUID().toString()
 
         @Throws
@@ -69,20 +71,15 @@ class IntegrationUtils {
 
             val body = """
                 {
-                    "requestObject": {
-                        "activationOtpValidation": "NONE",
-                        "applicationId": $appId,
-                        "maxFailureCount": 5,
-                        "userId": "$activationName"
-                    }
+                  "userId": "$activationName"
                 }
                 """
-            val resp = makeCall<PAObject<PAInitResponseObject>>(body, "$paUrl/rest/v3/activation/init")
+            val resp = makeCall<RegistrationObject>(body, "$cloudServerUrl/registration")
 
             // CREATE ACTIVATION LOCALLY
 
             val calFuture = CompletableFuture<Any>()
-            pa.createActivation("tests", resp.responseObject.activationCode, object : ICreateActivationListener {
+            pa.createActivation("tests", resp.activationCode(), object : ICreateActivationListener {
                 override fun onActivationCreateFailed(t: Throwable) {
                     calFuture.completeExceptionally(t)
                 }
@@ -98,178 +95,45 @@ class IntegrationUtils {
             pa.commitActivationWithPassword(context, pin)
 
             // COMMIT ACTIVATION ON THE SERVER
-
-            val serverCommitBody = """
-            {
-              "requestObject": {
-                "activationId": "${resp.responseObject.activationId}"
-              }
-            }
-            """
-            makeCall<PAObject<PACommitObject>>(serverCommitBody, "$paUrl/rest/v3/activation/commit")
-
-            // MAKE ACTIVATION PRIMARY ON THE SERVER
-
-            val primaryBody = """
-            {
-                "requestObject": {
-                    "userId": "$activationName",
-                    "authMethod": "POWERAUTH_TOKEN",
-                    "config": {
-                        "activationId": "${resp.responseObject.activationId}"
-                    }
-                }
-            }
-            """
-            makeCall<PASimpleObject>(primaryBody, "$nextStepUrl/user/auth-method")
+            makeCall<CommitObject>(body, "$cloudServerUrl/registration/commit")
 
             return Pair(pa, pa.createOperationsService(context, operationsUrl, SSLValidationStrategy.noValidation()))
         }
 
+        enum class Factors {
+            //F_1FA,
+            F_2FA
+        }
+
         @Throws
-        fun createOperation(oneFactor: Boolean) {
-            val opBody: String
-            if (oneFactor) {
-                opBody = """
+        fun createOperation(factors: Factors) {
+            val opBody = when (factors) {
+                Factors.F_2FA -> { """
                 {
-                    "requestObject": {
-                        "operationName": "login_sca",
-                        "operationData": "A2",
-                        "formData": {
-                          "title": {
-                            "id": "login.title"
-                          },
-                          "greeting": {
-                            "id": "login.greeting"
-                          },
-                          "summary": {
-                            "id": "login.summary"
-                          }
-                        }
-                    }
+                  "userId": "$activationName",
+                  "template": "login-tpp",
+                   "parameters": {
+                     "party.id": "666",
+                     "party.name": "Datová schránka",
+                         "session.id": "123",
+                         "session.ip-address": "192.168.0.1"
+                   }
                 }
                 """
-            } else {
-                opBody = """
-                {
-                  "requestObject": {
-                    "operationName": "authorize_payment",
-                    "operationId": null,
-                    "operationData": "A1*A100CZK*Q238400856/0300**D20170629*NUtility Bill Payment - 05/2017",
-                    "params": [],
-                    "formData": {
-                      "title": {
-                        "id": "operation.title",
-                        "value": "Charge karta"
-                      },
-                      "greeting": {
-                        "id": "operation.greeting",
-                        "value": "Hello"
-                      },
-                      "summary": {
-                        "id": "operation.summary",
-                        "value": "Potvrďte platbu."
-                      },
-                      "config": [],
-                      "parameters": [
-                        {
-                          "type": "AMOUNT",
-                          "id": "operation.amount",
-                          "label": null,
-                          "valueFormatType": "AMOUNT",
-                          "formattedValue": null,
-                          "amount": 10000000000.99,
-                          "currency": "EUR",
-                          "currencyId": "operation.currency"
-                        },
-                        {
-                          "type": "HEADING",
-                          "id": "operation.heading",
-                          "label": "Nadpis",
-                          "valueFormatType": "TEXT",
-                          "formattedValue": null,
-                          "value": "000000-25000377732500037773037773/5800"
-                        },
-                        {
-                          "type": "KEY_VALUE",
-                          "id": "operation.account",
-                          "label": null,
-                          "valueFormatType": "ACCOUNT",
-                          "formattedValue": null,
-                          "value": "test test test"
-                        }
-                      ],
-                      "dynamicDataLoaded": false,
-                      "userInput": {}
-                    }
-                  }
                 }
-                """
             }
 
-            // step1: create an operation on the nextstep server
-            val op = makeCall<PAObject<PAOperationCreateObject>>(opBody, "$nextStepUrl/operation")
-
-            // step2: assign the operation to the user
-            val assignBody = """
-            {
-              "requestObject": {
-                "operationId": "${op.responseObject.operationId}",
-                "userId": "$activationName",
-                "organizationId": "RETAIL",
-                "accountStatus": "ACTIVE"
-              }
-            }
-            """
-            makeCall<PASimpleObject>(assignBody, "$nextStepUrl/operation/user/update")
-
-            // step3: if the operation needs to be authorized with
-            // a knowledge factor, move it to the "confirmed" state
-            if (!oneFactor) {
-                val b = """
-                {
-                  "requestObject": {
-                    "operationId": "${op.responseObject.operationId}",
-                    "userId": "$activationName",
-                    "organizationId": "RETAIL",
-                    "authMethod": "USER_ID_ASSIGN",
-                    "authStepResult": "CONFIRMED",
-                    "authStepResultDescription": null,
-                    "params": []
-                  }
-                }
-                """
-                makeCall<PASimpleObject>(b, "$nextStepUrl/operation/update")
-            }
-
-            // step4: make the op "approvable" by the mobile token
-            val appBody = """
-            {
-              "requestObject": {
-                "operationId": "${op.responseObject.operationId}",
-                "mobileTokenActive": true
-              }
-            }
-            """
-            makeCall<PASimpleObject>(appBody,  "$nextStepUrl/operation/mobileToken/status/update")
-
-            // step5: step auth method to the operation
-            val authBody = """
-            {
-              "requestObject": {
-                "operationId": "${op.responseObject.operationId}",
-                "chosenAuthMethod": "${if (oneFactor) "LOGIN_SCA" else "POWERAUTH_TOKEN"}"
-              }
-            }
-            """
-            makeCall<PASimpleObject>(authBody, "$nextStepUrl/operation/chosenAuthMethod/update")
+            // create an operation on the nextstep server
+            makeCall<OperationObject>(opBody, "$cloudServerUrl/operations")
         }
 
         @Throws
         private inline fun <reified T> makeCall(payload: String, url: String): T {
+            val creds = getEncoder().encodeToString("$cloudServerLogin:$cloudServerPassword".toByteArray())
             val bodyBytes = payload.toByteArray()
             val body = RequestBody.create(jsonMediaType, bodyBytes)
             val request = Request.Builder()
+                    .header("authorization", "Basic $creds")
                     .url(url)
                     .post(body)
                     .build()
@@ -284,18 +148,18 @@ class IntegrationUtils {
     }
 }
 
-data class PASimpleObject(val status: String)
+data class RegistrationObject(val activationQrCodeData: String) {
+    fun activationCode(): String = OtpUtil.parseFromActivationCode(activationQrCodeData)!!.activationCode
+}
 
-data class PAObject<T>(val responseObject: T,
-                       val status: String)
+data class CommitObject(val status: String)
 
-data class PAInitResponseObject(
-        val activationId: String,
-        val activationCode: String,
-        val activationSignature: String,
-        val userId: String,
-        val applicationId: Int)
-
-data class PACommitObject(val activated: Boolean, val activationId: String)
-
-data class PAOperationCreateObject(val operationId: String)
+data class OperationObject(val operationId: String,
+                           val userId: String,
+                           val status : String,
+                           val operationType: String,
+                           //val parameters: [] // not needed for test right now
+                           val failureCount: Int,
+                           val maxFailureCount: Int,
+                           val timestampCreated: Double,
+                           val timestampExpires: Double)
