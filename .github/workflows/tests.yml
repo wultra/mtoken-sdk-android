@@ -18,15 +18,15 @@ jobs:
         run: ./gradlew clean test
       - name: Prepare configuration for integration tests
         env:
-          APP_ID: ${{ secrets.TESTS_APP_ID }}
+          CL_URL: ${{ secrets.TESTS_CL_URL }}
+          CL_LGN: ${{ secrets.TESTS_CL_LGN }}
+          CL_PWD: ${{ secrets.TESTS_CL_PWD }}
           APP_KEY: ${{ secrets.TESTS_APP_KEY }}
           APP_SECRET: ${{ secrets.TESTS_APP_SECRET }}
           MASTER_SERVER_PUBLIC_KEY: ${{ secrets.TESTS_MASTER_SERVER_PUBLIC_KEY }}
-          PA_URL: ${{ secrets.TESTS_PA_URL }}
           ER_URL: ${{ secrets.TESTS_ER_URL }}
           OP_URL: ${{ secrets.TESTS_OP_URL }}
-          NS_URL: ${{ secrets.TESTS_NS_URL }}
-        run: echo -e tests.sdk.paServerUrl="$PA_URL"\\ntests.sdk.nextStepServerUrl="$NS_URL"\\ntests.sdk.enrollmentServerUrl="$ER_URL"\\ntests.sdk.operationsServerUrl="$OP_URL"\\ntests.sdk.appKey="$APP_KEY"\\ntests.sdk.appSecret="$APP_SECRET"\\ntests.sdk.masterServerPublicKey="$MASTER_SERVER_PUBLIC_KEY"\\ntests.sdk.appId="$APP_ID" > configs/integration-tests.properties
+        run: echo -e tests.sdk.cloudServerUrl="$CL_URL"\\ntests.sdk.cloudServerLogin="$CL_LGN"\\ntests.sdk.cloudServerPassword="$CL_PWD"\\ntests.sdk.enrollmentServerUrl="$ER_URL"\\ntests.sdk.operationsServerUrl="$OP_URL"\\ntests.sdk.appKey="$APP_KEY"\\ntests.sdk.appSecret="$APP_SECRET"\\ntests.sdk.masterServerPublicKey="$MASTER_SERVER_PUBLIC_KEY" > configs/integration-tests.properties
       - name: Test the app (integration tests)
         uses: reactivecircus/android-emulator-runner@v2
         with:
