@@ -74,14 +74,14 @@ static def loadInstrumentationTestConfigProperties(project, defaultConfig) {
     def configPropertiesFile = new File(configsRoot, "integration-tests.properties")
 
     def instrumentationArguments = [
-            "tests.sdk.paServerUrl",
-            "tests.sdk.nextStepServerUrl",
+            "tests.sdk.cloudServerUrl",
+            "tests.sdk.cloudServerLogin",
+            "tests.sdk.cloudServerPassword",
             "tests.sdk.enrollmentServerUrl",
             "tests.sdk.operationsServerUrl",
             "tests.sdk.appKey",
             "tests.sdk.appSecret",
-            "tests.sdk.masterServerPublicKey",
-            "tests.sdk.appId"
+            "tests.sdk.masterServerPublicKey"
     ]
 
     project.logger.info("LOADING_PROPERTIES Reading $configPropertiesFile")
