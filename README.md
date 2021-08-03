@@ -32,14 +32,9 @@ Remarks:
 - This library does not contain any UI.
 - We also provide an [iOS version of this library](https://github.com/wultra/mtoken-sdk-ios). 
 
-## Integration Tutorials
-- [SDK Integration](docs/SDK-Integration.md)
-- [Using Operations Service](docs/Using-Operations-Service.md)
-- [Using Push Service](docs/Using-Push-Service.md)
-- [Operation Expiration Handling](docs/Operation-Expiration.md)
-- [Error Handling](docs/Error-Handling.md)
-- [Language Configuration](docs/Language-Configuration.md)
-- [Logging](docs/Logging.md)
+## Documentation
+
+The documentation is available at the [Wultra Developer Portal](https://developers.wultra.com/components/mtoken-sdk-android) or inside the [docs folder](docs).
 
 ## License
 
