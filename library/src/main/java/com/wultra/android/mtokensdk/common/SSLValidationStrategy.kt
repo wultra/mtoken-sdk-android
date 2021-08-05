@@ -11,7 +11,7 @@
 
 package com.wultra.android.mtokensdk.common
 
-import io.getlime.security.powerauth.networking.ssl.PA2ClientSslNoValidationStrategy
+import io.getlime.security.powerauth.networking.ssl.HttpClientSslNoValidationStrategy
 import okhttp3.OkHttpClient
 
 /**
@@ -52,10 +52,10 @@ internal class DefaultSSLValidationStrategy: SSLValidationStrategy() {
 }
 internal class NoSSLValidationStrategy: SSLValidationStrategy() {
     override fun configure(builder: OkHttpClient.Builder) {
-        val pA2ClientValidationStrategy = PA2ClientSslNoValidationStrategy()
+        val noValidationStrategy = HttpClientSslNoValidationStrategy()
         val trustAllCertsTrustManager = TrustAllCertsTrustManager()
-        builder.sslSocketFactory(pA2ClientValidationStrategy.sslSocketFactory!!, trustAllCertsTrustManager)
-        builder.hostnameVerifier(pA2ClientValidationStrategy.hostnameVerifier!!)
+        builder.sslSocketFactory(noValidationStrategy.sslSocketFactory!!, trustAllCertsTrustManager)
+        builder.hostnameVerifier(noValidationStrategy.hostnameVerifier!!)
     }
 
 }
