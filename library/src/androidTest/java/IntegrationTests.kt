@@ -12,15 +12,15 @@
 package com.wultra.android.mtokensdk.test
 
 import com.wultra.android.mtokensdk.api.general.ApiError
+import com.wultra.android.mtokensdk.api.operation.model.OperationHistoryEntry
+import com.wultra.android.mtokensdk.api.operation.model.OperationHistoryEntryStatus
 import com.wultra.android.mtokensdk.api.operation.model.UserOperation
 import com.wultra.android.mtokensdk.operation.*
 import io.getlime.security.powerauth.networking.response.IActivationRemoveListener
 import io.getlime.security.powerauth.sdk.PowerAuthAuthentication
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
-import org.junit.AfterClass
-import org.junit.Assert
-import org.junit.BeforeClass
-import org.junit.Test
+import org.junit.*
+import org.junit.runners.MethodSorters
 import java.lang.Exception
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
@@ -28,6 +28,7 @@ import java.util.concurrent.TimeUnit
 /**
  * Integration tests are calling a real backend server (based on configuration inside the "${ROOT_FOLDER}/configs/integration-tests.properties" file).
  */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class IntegrationTests {
 
     companion object {
@@ -35,6 +36,8 @@ class IntegrationTests {
         lateinit var pa: PowerAuthSDK
         lateinit var ops: IOperationsService
         const val pin = "1234"
+        private var operationsApproved = 0
+        private var operationsRejected = 0
 
         @BeforeClass
         @JvmStatic
@@ -65,7 +68,6 @@ class IntegrationTests {
             })
             future.get(20, TimeUnit.SECONDS)
         }
-
     }
 
     @Test
@@ -160,6 +162,7 @@ class IntegrationTests {
         val opFuture = CompletableFuture<Any?>()
         ops.authorizeOperation(operations.first(), auth, object : IAcceptOperationListener {
             override fun onSuccess() {
+                operationsApproved += 1
                 opFuture.completeExceptionally(Exception("Operation should not be authorized"))
             }
             override fun onError(error: ApiError) {
@@ -172,6 +175,7 @@ class IntegrationTests {
         val opFuture2 = CompletableFuture<Any?>()
         ops.authorizeOperation(operations.first(), auth, object : IAcceptOperationListener {
             override fun onSuccess() {
+                operationsApproved += 1
                 opFuture2.complete(null)
             }
             override fun onError(error: ApiError) {
@@ -198,6 +202,7 @@ class IntegrationTests {
         val opFuture = CompletableFuture<Any?>()
         ops.rejectOperation(operations.first(), RejectionReason.UNEXPECTED_OPERATION, object : IRejectOperationListener {
             override fun onSuccess() {
+                operationsRejected += 1
                 opFuture.complete(null)
             }
             override fun onError(error: ApiError) {
@@ -233,5 +238,36 @@ class IntegrationTests {
         Assert.assertNull(future.get(20, TimeUnit.SECONDS))
         ops.stopPollingOperations()
         Assert.assertFalse(ops.isPollingOperations())
+    }
+
+    @Test // the z to make sure the test runs last
+    fun zTestOperationHistory() {
+        // lets create 1 operation and leave it in the state of "pending"
+        IntegrationUtils.createOperation(IntegrationUtils.Companion.Factors.F_2FA)
+        val auth = PowerAuthAuthentication()
+        auth.usePossession = true
+        auth.usePassword = pin
+        val future = CompletableFuture<List<OperationHistoryEntry>?>()
+        ops.getHistory(auth, object : IGetHistoryListener {
+            override fun onSuccess(operations: List<OperationHistoryEntry>) {
+                future.complete(operations)
+            }
+
+            override fun onError(error: ApiError) {
+                future.complete(null)
+            }
+        })
+
+        val operations = future.get(20, TimeUnit.SECONDS)
+        Assert.assertNotNull("Operations not retrieved" ,operations)
+        if (operations == null) {
+            return
+        }
+
+        Assert.assertEquals(operations.count(), 1 + operationsApproved + operationsRejected)
+        Assert.assertEquals(operations.count { it.status == OperationHistoryEntryStatus.APPROVED }, operationsApproved)
+        Assert.assertEquals(operations.count { it.status == OperationHistoryEntryStatus.REJECTED }, operationsRejected)
+        Assert.assertEquals(operations.count { it.status == OperationHistoryEntryStatus.PENDING }, 1)
+
     }
 }

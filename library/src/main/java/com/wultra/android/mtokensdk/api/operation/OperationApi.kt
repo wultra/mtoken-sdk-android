@@ -17,6 +17,7 @@ import com.wultra.android.mtokensdk.api.GsonRequestBodyBytes
 import com.wultra.android.mtokensdk.api.IApiCallResponseListener
 import com.wultra.android.mtokensdk.api.general.StatusResponse
 import com.wultra.android.mtokensdk.api.operation.model.AuthorizeRequest
+import com.wultra.android.mtokensdk.api.operation.model.OperationHistoryResponse
 import com.wultra.android.mtokensdk.api.operation.model.OperationListResponse
 import com.wultra.android.mtokensdk.api.operation.model.RejectRequest
 import com.wultra.android.mtokensdk.common.IPowerAuthTokenListener
@@ -39,18 +40,18 @@ internal class OperationApi constructor(okHttpClient: OkHttpClient,
                                         private val powerAuthSDK: PowerAuthSDK) : Api(okHttpClient, baseUrl) {
 
     companion object {
-        const val AUTHORIZE_URL_ID = "/operation/authorize"
-        const val REJECT_URL_ID = "/operation/cancel"
-        const val OFFLINE_AUTHORIZE_URL_ID = "/operation/authorize/offline"
+        const val HISTORY_URI_UD = "/operation/history"
+        const val AUTHORIZE_URI_ID = "/operation/authorize"
+        const val REJECT_URI_ID = "/operation/cancel"
+        const val OFFLINE_AUTHORIZE_URI_ID = "/operation/authorize/offline"
     }
 
     private val LIST_URL = constructApiUrl("api/auth/token/app/operation/list")
+    private val HISTORY_URL = constructApiUrl("api/auth/token/app/operation/history")
     private val AUTHORIZE_URL = constructApiUrl("api/auth/token/app/operation/authorize")
     private val REJECT_URL = constructApiUrl("api/auth/token/app/operation/cancel")
 
-    /**
-     * List pending operations.
-     */
+    /** List pending operations. */
     fun list(listener: IApiCallResponseListener<OperationListResponse>) {
         val json = "{}"
         val body = RequestBody.create(JSON_MEDIA_TYPE, json)
@@ -72,16 +73,27 @@ internal class OperationApi constructor(okHttpClient: OkHttpClient,
         })
     }
 
-    /**
-     * Reject an operation.
-     */
+    /** Retrieves operation history */
+    fun history(authentication: PowerAuthAuthentication, listener: IApiCallResponseListener<OperationHistoryResponse>) {
+        val jsonData = "{}".toByteArray()
+        val body = RequestBody.create(JSON_MEDIA_TYPE, jsonData)
+        val authorizationHeader = powerAuthSDK.requestSignatureWithAuthentication(appContext, authentication, "POST", HISTORY_URI_UD, jsonData)
+        val request = Request.Builder()
+            .url(HISTORY_URL)
+            .post(body)
+            .header(authorizationHeader.key, authorizationHeader.value)
+            .build()
+        return makeCall(request, listener)
+    }
+
+    /** Reject an operation. */
     fun reject(rejectRequest: RejectRequest, listener: IApiCallResponseListener<StatusResponse>) {
         val gson = getGson()
         val typeAdapter = getTypeAdapter<RejectRequest>(gson)
         val bodyBytes = GsonRequestBodyBytes(gson, typeAdapter).convert(rejectRequest)
         val authentication = PowerAuthAuthentication()
         authentication.usePossession = true
-        val authorizationHeader = powerAuthSDK.requestSignatureWithAuthentication(appContext, authentication, "POST", REJECT_URL_ID, bodyBytes)
+        val authorizationHeader = powerAuthSDK.requestSignatureWithAuthentication(appContext, authentication, "POST", REJECT_URI_ID, bodyBytes)
         val body = RequestBody.create(JSON_MEDIA_TYPE, bodyBytes)
         val request = Request.Builder()
                 .url(REJECT_URL)
@@ -91,14 +103,12 @@ internal class OperationApi constructor(okHttpClient: OkHttpClient,
         return makeCall(request, listener)
     }
 
-    /**
-     * Authorize an operation.
-     */
+    /** Authorize an operation. */
     fun authorize(authorizeRequest: AuthorizeRequest, authentication: PowerAuthAuthentication, listener: IApiCallResponseListener<StatusResponse>) {
         val gson = getGson()
         val typeAdapter = getTypeAdapter<AuthorizeRequest>(gson)
         val bodyBytes = GsonRequestBodyBytes(gson, typeAdapter).convert(authorizeRequest)
-        val authorizationHeader = powerAuthSDK.requestSignatureWithAuthentication(appContext, authentication, "POST", AUTHORIZE_URL_ID, bodyBytes)
+        val authorizationHeader = powerAuthSDK.requestSignatureWithAuthentication(appContext, authentication, "POST", AUTHORIZE_URI_ID, bodyBytes)
         val body = RequestBody.create(JSON_MEDIA_TYPE, bodyBytes)
         val request = Request.Builder()
                 .url(AUTHORIZE_URL)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020, Wultra s.r.o. (www.wultra.com).
+ * Copyright (c) 2021, Wultra s.r.o. (www.wultra.com).
  *
  * All rights reserved. This source code can be used only for purposes specified
  * by the given license contract signed by the rightful deputy of Wultra s.r.o.
@@ -9,17 +9,17 @@
  * before the Municipal Court of Prague.
  */
 
-package com.wultra.android.mtokensdk.api.push.model
+package com.wultra.android.mtokensdk.api.operation.model
 
 import com.google.gson.annotations.SerializedName
 
 /**
- * Push registration request model class.
+ * Response of the getHistory call.
+ * Note that the OperationHistoryEntry has it's own deserializer.
  */
-internal data class PushRegistrationRequestObject(
-    @SerializedName("token")
-    val token: String) {
+internal data class OperationHistoryResponse(
+    @SerializedName("status")
+    val status: String,
 
-    @SerializedName("platform")
-    val platform: String = "android"
-}
+    @SerializedName("responseObject")
+    val responseObject: List<OperationHistoryEntry>)

@@ -125,6 +125,18 @@ class OperationsService: IOperationsService {
         }
     }
 
+    override fun getHistory(authentication: PowerAuthAuthentication, listener: IGetHistoryListener) {
+        operationApi.history(authentication, object : IApiCallResponseListener<OperationHistoryResponse> {
+            override fun onSuccess(result: OperationHistoryResponse) {
+                listener.onSuccess(result.responseObject)
+            }
+
+            override fun onFailure(e: Throwable) {
+                listener.onError(ApiError(e))
+            }
+        })
+    }
+
     override fun authorizeOperation(operation: IOperation, authentication: PowerAuthAuthentication, listener: IAcceptOperationListener) {
         val authorizeRequest = AuthorizeRequest(AuthorizeRequestObject(operation.id, operation.data))
         operationApi.authorize(authorizeRequest, authentication, object : IApiCallResponseListener<StatusResponse> {
@@ -153,7 +165,7 @@ class OperationsService: IOperationsService {
 
     @Throws
     override fun authorizeOfflineOperation(operation: QROperation, authentication: PowerAuthAuthentication): String {
-        return powerAuthSDK.offlineSignatureWithAuthentication(appContext, authentication, OperationApi.OFFLINE_AUTHORIZE_URL_ID, operation.dataForOfflineSigning(), operation.nonce)
+        return powerAuthSDK.offlineSignatureWithAuthentication(appContext, authentication, OperationApi.OFFLINE_AUTHORIZE_URI_ID, operation.dataForOfflineSigning(), operation.nonce)
                 ?: throw Exception("Cannot sign this operation")
     }
 
