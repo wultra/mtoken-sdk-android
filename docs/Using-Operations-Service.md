@@ -191,6 +191,32 @@ fun reject(operation: IOperation, reason: RejectionReason) {
 }
 ```
 
+## Operation History
+
+You can retrieve an operation history via the `IOperationsService.getHistory` method. The returned result is operations and their current status.
+
+```kotlin
+// Retrieve operation history with password
+func history(password: String) {
+
+    val auth = PowerAuthAuthentication()
+    auth.usePossession = true
+    auth.usePassword = password
+    
+    this.operationService.getHistory(auth, object : IGetHistoryListener {
+        override fun onSuccess(operations: List<OperationHistoryEntry>) {
+            // process operation history
+        }
+
+        override fun onError(error: ApiError) {
+            // process error
+        }
+    })
+}
+```
+
+_Note that the operation history availability depends on the backend implementation and might not be available. Please consult this with your backend developers._
+
 ## Off-line Authorization
 
 In case the user is not online, you can use off-line authorizations. In this operation mode, the user needs to scan a QR code, enter PIN code or use biometry, and rewrite the resulting code. Wultra provides a special format for [the operation QR codes](https://github.com/wultra/powerauth-webflow/blob/develop/docs/Off-line-Signatures-QR-Code.md), that are automatically processed with the SDK.
@@ -297,6 +323,9 @@ All available methods and attributes of `IOperationsService` API are:
     - `pollingInterval` - How often should operations be refreshed.
     - `delayStart` - When true, polling starts after the first `pollingInterval` time passes.
 - `stopPollingOperations()` - Stops periodic operation polling.
+- `getHistory(authentication: PowerAuthAuthentication, listener: IGetHistoryListener)` - Retrieves operation history
+  - `authentication` - PowerAuth authentication object for signing.
+  - `listener` - Called when rejection request finishes. 
 - `authorizeOperation(operation: IOperation, authentication: PowerAuthAuthentication, listener: IAcceptOperationListener)` - Authorize provided operation.
     - `operation` - An operation to approve, retrieved from `getOperations` call or [created locally](#creating-a-custom-operation).
     - `authentication` - PowerAuth authentication object for operation signing.
