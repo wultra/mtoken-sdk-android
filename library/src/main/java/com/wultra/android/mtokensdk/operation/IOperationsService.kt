@@ -57,6 +57,14 @@ interface IOperationsService {
     fun getOperations(listener: IGetOperationListener?)
 
     /**
+     * Retrieves the history of user operations with its current status.
+     *
+     * @param authentication PowerAuth authentication object
+     * @param listener Result listener
+     */
+    fun getHistory(authentication: PowerAuthAuthentication, listener: IGetHistoryListener)
+
+    /**
      * Returns if operation polling is running
      */
     fun isPollingOperations(): Boolean
