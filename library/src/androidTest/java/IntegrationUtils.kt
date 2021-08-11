@@ -19,12 +19,12 @@ import com.google.gson.reflect.TypeToken
 import com.wultra.android.mtokensdk.common.SSLValidationStrategy
 import com.wultra.android.mtokensdk.operation.IOperationsService
 import com.wultra.android.mtokensdk.operation.createOperationsService
+import io.getlime.security.powerauth.core.ActivationCodeUtil
 import io.getlime.security.powerauth.networking.response.CreateActivationResult
 import io.getlime.security.powerauth.networking.response.ICreateActivationListener
 import io.getlime.security.powerauth.sdk.PowerAuthClientConfiguration
 import io.getlime.security.powerauth.sdk.PowerAuthConfiguration
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
-import io.getlime.security.powerauth.util.otp.OtpUtil
 import okhttp3.MediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -39,7 +39,7 @@ import java.util.concurrent.TimeUnit
 class IntegrationUtils {
     companion object {
 
-        val context = ApplicationProvider.getApplicationContext<Context>()
+        val context: Context = ApplicationProvider.getApplicationContext()
         private val client = OkHttpClient.Builder().build()
         private val gson = Gson()
         private val jsonMediaType = MediaType.parse("application/json; charset=UTF-8")!!
@@ -106,7 +106,7 @@ class IntegrationUtils {
         }
 
         @Throws
-        fun createOperation(factors: Factors) {
+        fun createOperation(factors: Factors): OperationObject {
             val opBody = when (factors) {
                 Factors.F_2FA -> { """
                 {
@@ -124,7 +124,7 @@ class IntegrationUtils {
             }
 
             // create an operation on the nextstep server
-            makeCall<OperationObject>(opBody, "$cloudServerUrl/operations")
+            return makeCall(opBody, "$cloudServerUrl/operations")
         }
 
         @Throws
@@ -138,7 +138,7 @@ class IntegrationUtils {
                     .post(body)
                     .build()
             val resp = client.newCall(request).execute()
-            return gson.fromJson<T>(resp.body()!!.string(), object: TypeToken<T>(){}.type)
+            return gson.fromJson(resp.body()!!.string(), object: TypeToken<T>(){}.type)
         }
 
         @Throws
@@ -149,7 +149,7 @@ class IntegrationUtils {
 }
 
 data class RegistrationObject(val activationQrCodeData: String) {
-    fun activationCode(): String = OtpUtil.parseFromActivationCode(activationQrCodeData)!!.activationCode
+    fun activationCode(): String = ActivationCodeUtil.parseFromActivationCode(activationQrCodeData)!!.activationCode
 }
 
 data class CommitObject(val status: String)

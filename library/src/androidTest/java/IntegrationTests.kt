@@ -20,7 +20,6 @@ import io.getlime.security.powerauth.networking.response.IActivationRemoveListen
 import io.getlime.security.powerauth.sdk.PowerAuthAuthentication
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
 import org.junit.*
-import org.junit.runners.MethodSorters
 import java.lang.Exception
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
@@ -28,16 +27,13 @@ import java.util.concurrent.TimeUnit
 /**
  * Integration tests are calling a real backend server (based on configuration inside the "${ROOT_FOLDER}/configs/integration-tests.properties" file).
  */
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class IntegrationTests {
 
     companion object {
 
-        lateinit var pa: PowerAuthSDK
         lateinit var ops: IOperationsService
+        private lateinit var pa: PowerAuthSDK
         const val pin = "1234"
-        private var operationsApproved = 0
-        private var operationsRejected = 0
 
         @BeforeClass
         @JvmStatic
@@ -71,7 +67,7 @@ class IntegrationTests {
     }
 
     @Test
-    fun testEmptyList() {
+    fun testList() {
         val future = CompletableFuture<List<UserOperation>>()
         ops.getOperations(object : IGetOperationListener {
             override fun onSuccess(operations: List<UserOperation>) {
@@ -82,7 +78,7 @@ class IntegrationTests {
             }
         })
         val oplist = future.get(20, TimeUnit.SECONDS)
-        Assert.assertTrue("Test Empty Failed, ${oplist.count()}", oplist.isEmpty())
+        Assert.assertNotNull(oplist)
     }
 
     // 1FA test are temporalily disabled
@@ -162,7 +158,6 @@ class IntegrationTests {
         val opFuture = CompletableFuture<Any?>()
         ops.authorizeOperation(operations.first(), auth, object : IAcceptOperationListener {
             override fun onSuccess() {
-                operationsApproved += 1
                 opFuture.completeExceptionally(Exception("Operation should not be authorized"))
             }
             override fun onError(error: ApiError) {
@@ -175,7 +170,6 @@ class IntegrationTests {
         val opFuture2 = CompletableFuture<Any?>()
         ops.authorizeOperation(operations.first(), auth, object : IAcceptOperationListener {
             override fun onSuccess() {
-                operationsApproved += 1
                 opFuture2.complete(null)
             }
             override fun onError(error: ApiError) {
@@ -187,7 +181,7 @@ class IntegrationTests {
 
     @Test
     fun testRejectPayment() {
-        IntegrationUtils.createOperation(IntegrationUtils.Companion.Factors.F_2FA)
+        val op = IntegrationUtils.createOperation(IntegrationUtils.Companion.Factors.F_2FA)
         val future = CompletableFuture<List<UserOperation>>()
         ops.getOperations(object : IGetOperationListener {
             override fun onSuccess(operations: List<UserOperation>) {
@@ -198,11 +192,14 @@ class IntegrationTests {
             }
         })
         val operations = future.get(20, TimeUnit.SECONDS)
-        Assert.assertTrue("Missing operation", operations.count() == 1)
+        val opFromList = operations.firstOrNull { it.id == op.operationId }
+        if (opFromList == null) {
+            Assert.fail("Operation was not in the list")
+            return
+        }
         val opFuture = CompletableFuture<Any?>()
-        ops.rejectOperation(operations.first(), RejectionReason.UNEXPECTED_OPERATION, object : IRejectOperationListener {
+        ops.rejectOperation(opFromList, RejectionReason.UNEXPECTED_OPERATION, object : IRejectOperationListener {
             override fun onSuccess() {
-                operationsRejected += 1
                 opFuture.complete(null)
             }
             override fun onError(error: ApiError) {
@@ -240,10 +237,10 @@ class IntegrationTests {
         Assert.assertFalse(ops.isPollingOperations())
     }
 
-    @Test // the z to make sure the test runs last
-    fun zTestOperationHistory() {
+    @Test
+    fun testOperationHistory() {
         // lets create 1 operation and leave it in the state of "pending"
-        IntegrationUtils.createOperation(IntegrationUtils.Companion.Factors.F_2FA)
+        val op = IntegrationUtils.createOperation(IntegrationUtils.Companion.Factors.F_2FA)
         val auth = PowerAuthAuthentication()
         auth.usePossession = true
         auth.usePassword = pin
@@ -264,10 +261,8 @@ class IntegrationTests {
             return
         }
 
-        Assert.assertEquals(operations.count(), 1 + operationsApproved + operationsRejected)
-        Assert.assertEquals(operations.count { it.status == OperationHistoryEntryStatus.APPROVED }, operationsApproved)
-        Assert.assertEquals(operations.count { it.status == OperationHistoryEntryStatus.REJECTED }, operationsRejected)
-        Assert.assertEquals(operations.count { it.status == OperationHistoryEntryStatus.PENDING }, 1)
-
+        val opRecord = operations.firstOrNull { it.operation.id == op.operationId }
+        Assert.assertNotNull(opRecord)
+        Assert.assertTrue(opRecord?.status == OperationHistoryEntryStatus.PENDING)
     }
 }
