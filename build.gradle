@@ -15,17 +15,16 @@
  */
 
 buildscript {
-    ext.kotlinVersion = "1.4.21"
+    ext.kotlinVersion = "1.5.21"
     repositories {
         mavenCentral()
         jcenter()
         google()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.6.4'
+        classpath 'com.android.tools.build:gradle:4.2.2'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlinVersion}"
         // releasing
-        classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4"
         classpath "com.github.dcendents:android-maven-gradle-plugin:2.1"
     }
 }
