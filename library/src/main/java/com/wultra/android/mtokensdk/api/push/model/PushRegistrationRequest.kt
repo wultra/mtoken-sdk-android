@@ -16,7 +16,7 @@ import com.google.gson.annotations.SerializedName
 /**
  * Push registration request model class - the wrapper requestObject.
  */
-data class PushRegistrationRequest(
+internal data class PushRegistrationRequest(
         @SerializedName("requestObject")
         val requestObject: PushRegistrationRequestObject) {
 

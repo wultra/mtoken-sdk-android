@@ -17,8 +17,10 @@ import com.google.gson.TypeAdapter
 import com.google.gson.reflect.TypeToken
 import com.wultra.android.mtokensdk.api.general.ErrorResponse
 import com.wultra.android.mtokensdk.api.operation.AttributeTypeAdapter
+import com.wultra.android.mtokensdk.api.operation.OperationHistoryEntryDeserializer
 import com.wultra.android.mtokensdk.api.operation.ZonedDateTimeDeserializer
 import com.wultra.android.mtokensdk.api.operation.model.Attribute
+import com.wultra.android.mtokensdk.api.operation.model.OperationHistoryEntry
 import com.wultra.android.mtokensdk.common.Logger
 import okhttp3.*
 import org.threeten.bp.ZonedDateTime
@@ -93,6 +95,7 @@ internal abstract class Api(protected val okHttpClient: OkHttpClient, private va
         val builder = GsonBuilder()
         builder.registerTypeHierarchyAdapter(Attribute::class.java, AttributeTypeAdapter())
         builder.registerTypeAdapter(ZonedDateTime::class.java, ZonedDateTimeDeserializer())
+        builder.registerTypeAdapter(OperationHistoryEntry::class.java, OperationHistoryEntryDeserializer())
         return builder.create()
     }
 }

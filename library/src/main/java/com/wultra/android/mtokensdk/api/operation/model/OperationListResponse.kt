@@ -16,7 +16,7 @@ import com.google.gson.annotations.SerializedName
 /**
  * Operation list response model class.
  */
-data class OperationListResponse(
+internal data class OperationListResponse(
         @SerializedName("status")
         val status: String,
 

@@ -5,7 +5,7 @@
 
 ![build](https://github.com/wultra/mtoken-sdk-android/workflows/build/badge.svg)
 ![tests](https://github.com/wultra/mtoken-sdk-android/workflows/tests/badge.svg)
-[![jcenter](https://img.shields.io/bintray/v/lime-company/WultraMobileTokenSDK/com.wultra.android.mtokensdk)](https://bintray.com/lime-company/WultraMobileTokenSDK/com.wultra.android.mtokensdk?tab=overview)
+[![jcenter](https://img.shields.io/maven-central/v/com.wultra.android.mtokensdk/wultra-mtoken-sdk)](https://mvnrepository.com/artifact/com.wultra.android.mtokensdk/wultra-mtoken-sdk)
 ![date](https://img.shields.io/github/release-date/wultra/mtoken-sdk-android)
 [![license](https://img.shields.io/github/license/wultra/mtoken-sdk-android)](LICENSE)
 
@@ -32,14 +32,9 @@ Remarks:
 - This library does not contain any UI.
 - We also provide an [iOS version of this library](https://github.com/wultra/mtoken-sdk-ios). 
 
-## Integration Tutorials
-- [SDK Integration](docs/SDK-Integration.md)
-- [Using Operations Service](docs/Using-Operations-Service.md)
-- [Using Push Service](docs/Using-Push-Service.md)
-- [Operation Expiration Handling](docs/Operation-Expiration.md)
-- [Error Handling](docs/Error-Handling.md)
-- [Language Configuration](docs/Language-Configuration.md)
-- [Logging](docs/Logging.md)
+## Documentation
+
+The documentation is available at the [Wultra Developer Portal](https://developers.wultra.com/components/mtoken-sdk-android) or inside the [docs folder](docs).
 
 ## License
 

@@ -174,7 +174,7 @@ class OperationExpirationWatcher {
             return
         }
 
-        val firstOp = operationsToWatch.minBy { it.expires }.let {
+        val firstOp = operationsToWatch.minByOrNull { it.expires }.let {
             it ?: return@prepareTimer
         }
 
