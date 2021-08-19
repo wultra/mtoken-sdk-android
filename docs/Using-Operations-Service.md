@@ -261,7 +261,7 @@ fun approveQROperation(operation: QROperation, password: String) {
 }
 ```
 
-<!-- warning box info -->
+<!-- begin box info -->
 An offline operation can and will be signed even with an incorrect password. The signature cannot be used for manual approval in such a case. This behavior cannot be detected, so you should warn the user that an incorrect password will result in an incorrect "approval code".
 <!-- end -->
 
