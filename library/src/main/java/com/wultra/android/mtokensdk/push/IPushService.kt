@@ -11,7 +11,7 @@
 
 package com.wultra.android.mtokensdk.push
 
-import com.wultra.android.mtokensdk.api.general.ApiError
+import com.wultra.android.powerauth.networking.error.ApiError
 
 /**
  * Protocol for service, that communicates with Mobile Token API that handles registration for

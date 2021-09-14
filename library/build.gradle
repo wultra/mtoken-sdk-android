@@ -53,6 +53,7 @@ dependencies {
     implementation "com.google.code.gson:gson:${gsonVersion}"
     implementation "com.jakewharton.threetenabp:threetenabp:${threetenabpVersion}"
     implementation "com.squareup.okhttp3:okhttp:${okHttpVersion}"
+    implementation "com.wultra.android.powerauth:powerauth-networking:0.9.0"
 
     // Dependencies
     compileOnly "com.wultra.android.powerauth:powerauth-sdk:${powerAuthSdkVersion}"
@@ -62,6 +63,7 @@ dependencies {
     testImplementation "junit:junit:${junitVersion}"
 
     // Android tests
+    androidTestImplementation "com.wultra.android.powerauth:powerauth-networking:0.9.0"
     androidTestImplementation "com.wultra.android.powerauth:powerauth-sdk:${powerAuthSdkVersion}"
     androidTestImplementation "androidx.test:runner:${androidXTestVersion}"
     androidTestImplementation "junit:junit:${junitVersion}"

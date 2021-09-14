@@ -11,9 +11,9 @@
 
 package com.wultra.android.mtokensdk.operation
 
-import com.wultra.android.mtokensdk.api.general.ApiError
 import com.wultra.android.mtokensdk.api.operation.model.OperationHistoryEntry
 import com.wultra.android.mtokensdk.api.operation.model.UserOperation
+import com.wultra.android.powerauth.networking.error.ApiError
 
 interface IAcceptOperationListener {
     fun onSuccess()

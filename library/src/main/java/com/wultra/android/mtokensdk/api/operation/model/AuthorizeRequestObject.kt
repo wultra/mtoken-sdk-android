@@ -9,14 +9,19 @@
  * before the Municipal Court of Prague.
  */
 
-package com.wultra.android.mtokensdk.common
+package com.wultra.android.mtokensdk.api.operation.model
 
-import io.getlime.security.powerauth.sdk.PowerAuthToken
+import com.google.gson.annotations.SerializedName
 
 /**
- * Consumer of the PowerAuth token.
+ * Authorize request model class.
+ *
+ * @property id Operation ID.
+ * @property data Operation data.
  */
-interface IPowerAuthTokenListener {
-    fun onReceived(token: PowerAuthToken)
-    fun onFailed(e: Throwable)
-}
+internal data class AuthorizeRequestObject(
+        @SerializedName("id")
+        val id: String,
+
+        @SerializedName("data")
+        val data: String)

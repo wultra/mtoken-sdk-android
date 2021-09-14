@@ -11,10 +11,10 @@
 
 package com.wultra.android.mtokensdk.operation
 
-import com.wultra.android.mtokensdk.api.general.ApiError
 import com.wultra.android.mtokensdk.api.operation.model.IOperation
 import com.wultra.android.mtokensdk.api.operation.model.UserOperation
 import com.wultra.android.mtokensdk.api.operation.model.QROperation
+import com.wultra.android.powerauth.networking.error.ApiError
 import io.getlime.security.powerauth.sdk.PowerAuthAuthentication
 
 abstract class OperationsResult
