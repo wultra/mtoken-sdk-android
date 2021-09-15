@@ -13,17 +13,17 @@ package com.wultra.android.mtokensdk.api.push
 
 import android.content.Context
 import com.google.gson.GsonBuilder
-import com.google.gson.annotations.SerializedName
 import com.wultra.android.mtokensdk.api.push.model.PushRegistrationRequestObject
 import com.wultra.android.powerauth.networking.Api
 import com.wultra.android.powerauth.networking.EndpointSignedWithToken
 import com.wultra.android.powerauth.networking.IApiCallResponseListener
+import com.wultra.android.powerauth.networking.data.ObjectRequest
 import com.wultra.android.powerauth.networking.data.StatusResponse
 import com.wultra.android.powerauth.networking.tokens.IPowerAuthTokenProvider
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
 import okhttp3.OkHttpClient
 
-internal class PushRegistrationRequest(@SerializedName("requestObject") val requestObject: PushRegistrationRequestObject)
+internal class PushRegistrationRequest(requestObject: PushRegistrationRequestObject): ObjectRequest<PushRegistrationRequestObject>(requestObject)
 
 /**
  * API for registering with push server.

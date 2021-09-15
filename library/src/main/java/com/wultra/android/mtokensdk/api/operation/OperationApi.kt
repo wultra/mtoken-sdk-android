@@ -13,7 +13,6 @@ package com.wultra.android.mtokensdk.api.operation
 
 import android.content.Context
 import com.google.gson.GsonBuilder
-import com.google.gson.annotations.SerializedName
 import com.wultra.android.mtokensdk.api.operation.model.*
 import com.wultra.android.powerauth.networking.*
 import com.wultra.android.powerauth.networking.data.*
@@ -23,10 +22,10 @@ import io.getlime.security.powerauth.sdk.PowerAuthSDK
 import okhttp3.OkHttpClient
 import org.threeten.bp.ZonedDateTime
 
-internal class OperationListResponse(@SerializedName("responseObject") val responseObject: List<UserOperation>, status: Status): StatusResponse(status)
-internal class OperationHistoryResponse(@SerializedName("responseObject") val responseObject: List<OperationHistoryEntry>, status: Status): StatusResponse(status)
-internal class AuthorizeRequest(@SerializedName("requestObject") val requestObject: AuthorizeRequestObject)
-internal class RejectRequest(@SerializedName("requestObject") val requestObject: RejectRequestObject)
+internal class OperationListResponse(responseObject: List<UserOperation>, status: Status): ObjectResponse<List<UserOperation>>(responseObject, status)
+internal class OperationHistoryResponse(responseObject: List<OperationHistoryEntry>, status: Status): ObjectResponse<List<OperationHistoryEntry>>(responseObject, status)
+internal class AuthorizeRequest(requestObject: AuthorizeRequestObject): ObjectRequest<AuthorizeRequestObject>(requestObject)
+internal class RejectRequest(requestObject: RejectRequestObject): ObjectRequest<RejectRequestObject>(requestObject)
 
 /**
  * API for operations requests.
@@ -38,7 +37,7 @@ internal class OperationApi(okHttpClient: OkHttpClient,
                             powerAuthSDK: PowerAuthSDK,
                             tokenProvider: IPowerAuthTokenProvider?) : Api(baseUrl, okHttpClient, powerAuthSDK, getGson(), appContext, tokenProvider) {
 
-    private class EmptyRequest
+    private object EmptyRequest: BaseRequest()
 
     companion object {
         private val historyEndpoint = EndpointSigned<EmptyRequest, OperationHistoryResponse>("api/auth/token/app/operation/history", "/operation/history")
@@ -58,12 +57,12 @@ internal class OperationApi(okHttpClient: OkHttpClient,
 
     /** List pending operations. */
     fun list(listener: IApiCallResponseListener<OperationListResponse>) {
-        post(EmptyRequest(), listEndpoint, null, null, listener)
+        post(EmptyRequest, listEndpoint, null, null, listener)
     }
 
     /** Retrieves operation history */
     fun history(authentication: PowerAuthAuthentication, listener: IApiCallResponseListener<OperationHistoryResponse>) {
-        post(EmptyRequest(), historyEndpoint, authentication, null, null, listener)
+        post(EmptyRequest, historyEndpoint, authentication, null, null, listener)
     }
 
     /** Reject an operation. */
