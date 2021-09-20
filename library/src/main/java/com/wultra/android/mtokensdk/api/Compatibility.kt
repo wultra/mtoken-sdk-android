@@ -9,6 +9,8 @@
  * before the Municipal Court of Prague.
  */
 
+@file:Suppress("unused")
+
 package com.wultra.android.mtokensdk.api
 
 import com.wultra.android.powerauth.networking.error.ApiErrorCode
