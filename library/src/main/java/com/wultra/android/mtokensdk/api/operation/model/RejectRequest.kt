@@ -14,13 +14,6 @@ package com.wultra.android.mtokensdk.api.operation.model
 import com.google.gson.annotations.SerializedName
 
 /**
- * Reject request model class - the wrapper requestObject.
- */
-internal data class RejectRequest(
-        @SerializedName("requestObject")
-        val requestObject: RejectRequestObject)
-
-/**
  * Reject request model class.
  *
  * @property id Operation ID.

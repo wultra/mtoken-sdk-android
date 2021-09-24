@@ -48,6 +48,7 @@ ext {
 
     androidXAnnotations = "1.2.0"
     powerAuthSdkVersion = "1.6.1"
+    powerAuthNetworkingVersion = "1.0.0"
     restModelBaseVersion = "1.2.0"
 
     // DO NOT UPGRADE ABOVE 3.12.X! Version 3.12 is the last version supporting TLS 1 and 1.1

@@ -11,11 +11,11 @@
 
 package com.wultra.android.mtokensdk.test
 
-import com.wultra.android.mtokensdk.api.general.ApiError
 import com.wultra.android.mtokensdk.api.operation.model.OperationHistoryEntry
 import com.wultra.android.mtokensdk.api.operation.model.OperationHistoryEntryStatus
 import com.wultra.android.mtokensdk.api.operation.model.UserOperation
 import com.wultra.android.mtokensdk.operation.*
+import com.wultra.android.powerauth.networking.error.ApiError
 import io.getlime.security.powerauth.networking.response.IActivationRemoveListener
 import io.getlime.security.powerauth.sdk.PowerAuthAuthentication
 import io.getlime.security.powerauth.sdk.PowerAuthSDK

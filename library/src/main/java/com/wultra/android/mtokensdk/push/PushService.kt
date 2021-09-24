@@ -12,15 +12,15 @@
 package com.wultra.android.mtokensdk.push
 
 import android.content.Context
-import com.wultra.android.mtokensdk.api.IApiCallResponseListener
-import com.wultra.android.mtokensdk.api.general.ApiError
-import com.wultra.android.mtokensdk.api.general.StatusResponse
 import com.wultra.android.mtokensdk.api.push.PushApi
-import com.wultra.android.mtokensdk.api.push.model.PushRegistrationRequest
-import com.wultra.android.mtokensdk.common.IPowerAuthTokenProvider
+import com.wultra.android.mtokensdk.api.push.PushRegistrationRequest
+import com.wultra.android.mtokensdk.api.push.model.PushRegistrationRequestObject
 import com.wultra.android.mtokensdk.common.Logger
-import com.wultra.android.mtokensdk.common.SSLValidationStrategy
-import com.wultra.android.mtokensdk.common.TokenManager
+import com.wultra.android.powerauth.networking.IApiCallResponseListener
+import com.wultra.android.powerauth.networking.data.StatusResponse
+import com.wultra.android.powerauth.networking.error.ApiError
+import com.wultra.android.powerauth.networking.ssl.SSLValidationStrategy
+import com.wultra.android.powerauth.networking.tokens.IPowerAuthTokenProvider
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
 import okhttp3.OkHttpClient
 
@@ -33,7 +33,7 @@ import okhttp3.OkHttpClient
  * @param okHttpClient HTTP client instance for networking
  */
 fun PowerAuthSDK.createPushService(appContext: Context, baseURL: String, okHttpClient: OkHttpClient): IPushService {
-    return PushService(okHttpClient, baseURL, TokenManager(appContext, this.tokenStore))
+    return PushService(okHttpClient, baseURL, this, appContext)
 }
 
 /**
@@ -51,7 +51,7 @@ fun PowerAuthSDK.createPushService(appContext: Context, baseURL: String, strateg
     return createPushService(appContext, baseURL, builder.build())
 }
 
-class PushService(okHttpClient: OkHttpClient, baseURL: String, tokenProvider: IPowerAuthTokenProvider): IPushService {
+class PushService(okHttpClient: OkHttpClient, baseURL: String, powerAuthSDK: PowerAuthSDK, appContext: Context, tokenProvider: IPowerAuthTokenProvider? = null): IPushService {
 
     override var acceptLanguage: String
         get() = pushApi.acceptLanguage
@@ -59,17 +59,18 @@ class PushService(okHttpClient: OkHttpClient, baseURL: String, tokenProvider: IP
             pushApi.acceptLanguage = value
         }
 
-    private val pushApi = PushApi(okHttpClient, baseURL, tokenProvider)
+    private val pushApi = PushApi(okHttpClient, baseURL, powerAuthSDK, appContext, tokenProvider)
 
     override fun register(fcmToken: String, listener: IPushRegisterListener) {
-        pushApi.registerToken(PushRegistrationRequest(token = fcmToken), object : IApiCallResponseListener<StatusResponse> {
+        pushApi.registerToken(PushRegistrationRequest(PushRegistrationRequestObject(fcmToken)), object :
+            IApiCallResponseListener<StatusResponse> {
             override fun onSuccess(result: StatusResponse) {
                 listener.onSuccess()
             }
 
-            override fun onFailure(e: Throwable) {
+            override fun onFailure(error: ApiError) {
                 Logger.e("Failed to register fcm token for WMT push notifications.")
-                listener.onFailure(ApiError(e))
+                listener.onFailure(error)
             }
         })
     }

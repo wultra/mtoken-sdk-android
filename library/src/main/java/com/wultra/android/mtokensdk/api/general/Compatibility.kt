@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020, Wultra s.r.o. (www.wultra.com).
+ * Copyright (c) 2021, Wultra s.r.o. (www.wultra.com).
  *
  * All rights reserved. This source code can be used only for purposes specified
  * by the given license contract signed by the rightful deputy of Wultra s.r.o.
@@ -11,11 +11,11 @@
 
 package com.wultra.android.mtokensdk.api.general
 
-import com.google.gson.annotations.SerializedName
+import com.wultra.android.powerauth.networking.error.ApiError
 
-/**
- * Model class for activation status responses.
- */
-internal data class StatusResponse(
-        @SerializedName("status")
-        val status: String)
+// Type aliases to for easier migration
+
+@Deprecated(
+    "This class was moved to different package (com.wultra.android.powerauth.networking.error).",
+    ReplaceWith("com.wultra.android.powerauth.networking.error.ApiError"))
+typealias ApiError = ApiError

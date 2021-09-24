@@ -226,7 +226,7 @@ class QROperationParser {
             if (value.length < 4) {
                 throw IllegalArgumentException("Insufficient length for number+currency")
             }
-            val currency = value.substring(value.lastIndex - 2).toUpperCase()
+            val currency = value.substring(value.lastIndex - 2).uppercase()
             val amountString = value.substring(0, value.lastIndex - 2)
             val amount = BigDecimal(amountString)
             return QROperationData.AmountField(amount, currency)
