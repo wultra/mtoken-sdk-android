@@ -16,6 +16,7 @@ import com.google.gson.GsonBuilder
 import com.google.gson.TypeAdapter
 import com.google.gson.reflect.TypeToken
 import com.wultra.android.mtokensdk.api.operation.model.*
+import com.wultra.android.powerauth.networking.data.StatusResponse
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -61,7 +62,7 @@ class OperationJsonDeserializationTests {
         val json = "{\"status\":\"OK\",\"responseObject\":[]}"
         val response = typeAdapter.fromJson(json)
         Assert.assertNotNull(response)
-        Assert.assertEquals("OK", response.status)
+        Assert.assertEquals(StatusResponse.Status.OK, response.status)
         Assert.assertEquals(0, response.responseObject.size)
     }
 
@@ -94,7 +95,7 @@ class OperationJsonDeserializationTests {
 }"""
         val response = typeAdapter.fromJson(json)
         Assert.assertNotNull(response)
-        Assert.assertEquals("OK", response.status)
+        Assert.assertEquals(StatusResponse.Status.OK, response.status)
         Assert.assertEquals(1, response.responseObject.size)
         val operation = response.responseObject[0]
         Assert.assertEquals(0, operation.formData.attributes.size)

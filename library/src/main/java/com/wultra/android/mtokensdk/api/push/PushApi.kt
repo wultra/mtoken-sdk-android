@@ -11,50 +11,37 @@
 
 package com.wultra.android.mtokensdk.api.push
 
-import com.wultra.android.mtokensdk.api.Api
-import com.wultra.android.mtokensdk.api.GsonRequestBodyBytes
-import com.wultra.android.mtokensdk.api.IApiCallResponseListener
-import com.wultra.android.mtokensdk.api.general.StatusResponse
-import com.wultra.android.mtokensdk.api.push.model.PushRegistrationRequest
-import com.wultra.android.mtokensdk.common.IPowerAuthTokenListener
-import com.wultra.android.mtokensdk.common.IPowerAuthTokenProvider
-import io.getlime.security.powerauth.sdk.PowerAuthToken
+import android.content.Context
+import com.google.gson.GsonBuilder
+import com.wultra.android.mtokensdk.api.push.model.PushRegistrationRequestObject
+import com.wultra.android.powerauth.networking.Api
+import com.wultra.android.powerauth.networking.EndpointSignedWithToken
+import com.wultra.android.powerauth.networking.IApiCallResponseListener
+import com.wultra.android.powerauth.networking.data.ObjectRequest
+import com.wultra.android.powerauth.networking.data.StatusResponse
+import com.wultra.android.powerauth.networking.tokens.IPowerAuthTokenProvider
+import io.getlime.security.powerauth.sdk.PowerAuthSDK
 import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.RequestBody
+
+internal class PushRegistrationRequest(requestObject: PushRegistrationRequestObject): ObjectRequest<PushRegistrationRequestObject>(requestObject)
 
 /**
  * API for registering with push server.
  */
 internal class PushApi constructor(okHttpClient: OkHttpClient,
                                    baseURL: String,
-                                   private val tokenManager: IPowerAuthTokenProvider) : Api(okHttpClient,baseURL) {
+                                   powerAuthSDK: PowerAuthSDK,
+                                   appContext: Context,
+                                   tokenProvider: IPowerAuthTokenProvider?) : Api(baseURL, okHttpClient, powerAuthSDK, GsonBuilder(), appContext, tokenProvider) {
 
-    private val PUSH_URL = constructApiUrl("api/push/device/register/token")
+    companion object {
+        private val endpoint = EndpointSignedWithToken<PushRegistrationRequest, StatusResponse>("api/push/device/register/token", "possession_universal")
+    }
 
     /**
      * Register FCM token with push server.
      */
     fun registerToken(requestObject: PushRegistrationRequest, listener: IApiCallResponseListener<StatusResponse>) {
-        val gson = getGson()
-        val typeAdapter = getTypeAdapter<PushRegistrationRequest>(gson)
-        val bodyBytes = GsonRequestBodyBytes(gson, typeAdapter).convert(requestObject)
-        val body = RequestBody.create(JSON_MEDIA_TYPE, bodyBytes)
-
-        val requestBuilder = Request.Builder()
-                .url(PUSH_URL)
-                .post(body)
-
-        tokenManager.getTokenAsync(object : IPowerAuthTokenListener {
-            override fun onReceived(token: PowerAuthToken) {
-                val tokenHeader = token.generateHeader()
-                requestBuilder.header(tokenHeader.key, tokenHeader.value)
-                return makeCall(requestBuilder.build(), listener)
-            }
-
-            override fun onFailed(e: Throwable) {
-                listener.onFailure(e)
-            }
-        })
+        post(requestObject, endpoint, null, null, listener)
     }
 }

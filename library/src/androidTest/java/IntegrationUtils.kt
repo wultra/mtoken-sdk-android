@@ -16,9 +16,9 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import com.wultra.android.mtokensdk.common.SSLValidationStrategy
 import com.wultra.android.mtokensdk.operation.IOperationsService
 import com.wultra.android.mtokensdk.operation.createOperationsService
+import com.wultra.android.powerauth.networking.ssl.SSLValidationStrategy
 import io.getlime.security.powerauth.core.ActivationCodeUtil
 import io.getlime.security.powerauth.networking.response.CreateActivationResult
 import io.getlime.security.powerauth.networking.response.ICreateActivationListener

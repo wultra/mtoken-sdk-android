@@ -12,19 +12,20 @@
 package com.wultra.android.mtokensdk.operation
 
 import android.content.Context
-import com.wultra.android.mtokensdk.api.IApiCallResponseListener
-import com.wultra.android.mtokensdk.api.general.ApiError
-import com.wultra.android.mtokensdk.api.general.StatusResponse
+import com.wultra.android.mtokensdk.api.operation.*
+import com.wultra.android.mtokensdk.api.operation.AuthorizeRequest
 import com.wultra.android.mtokensdk.api.operation.OperationApi
+import com.wultra.android.mtokensdk.api.operation.RejectRequest
 import com.wultra.android.mtokensdk.api.operation.model.*
-import com.wultra.android.mtokensdk.common.IPowerAuthTokenProvider
 import com.wultra.android.mtokensdk.common.Logger
-import com.wultra.android.mtokensdk.common.SSLValidationStrategy
-import com.wultra.android.mtokensdk.common.TokenManager
+import com.wultra.android.powerauth.networking.IApiCallResponseListener
+import com.wultra.android.powerauth.networking.data.StatusResponse
+import com.wultra.android.powerauth.networking.error.ApiError
+import com.wultra.android.powerauth.networking.ssl.SSLValidationStrategy
+import com.wultra.android.powerauth.networking.tokens.IPowerAuthTokenProvider
 import io.getlime.security.powerauth.sdk.PowerAuthAuthentication
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
 import okhttp3.OkHttpClient
-import java.lang.Exception
 import java.util.*
 
 /**
@@ -36,7 +37,7 @@ import java.util.*
  * @param httpClient OkHttpClient for API communication
  */
 fun PowerAuthSDK.createOperationsService(appContext: Context, baseURL: String, httpClient: OkHttpClient): IOperationsService {
-    return OperationsService(this, appContext, httpClient, baseURL, TokenManager(appContext, this.tokenStore))
+    return OperationsService(this, appContext, httpClient, baseURL)
 }
 
 /**
@@ -103,10 +104,10 @@ class OperationsService: IOperationsService {
      * @param tokenProvider PowerAuthToken provider. If null is provided, default internal implementation is provided.
      *
      */
-    constructor(powerAuthSDK: PowerAuthSDK, appContext: Context, httpClient: OkHttpClient, baseURL: String, tokenProvider: IPowerAuthTokenProvider) {
+    constructor(powerAuthSDK: PowerAuthSDK, appContext: Context, httpClient: OkHttpClient, baseURL: String, tokenProvider: IPowerAuthTokenProvider? = null) {
         this.powerAuthSDK = powerAuthSDK
         this.appContext = appContext
-        this.operationApi = OperationApi(httpClient, baseURL, appContext, tokenProvider, powerAuthSDK)
+        this.operationApi = OperationApi(httpClient, baseURL, appContext, powerAuthSDK, tokenProvider)
     }
 
     override fun isLoadingOperations() = operationsLoading
@@ -131,8 +132,8 @@ class OperationsService: IOperationsService {
                 listener.onSuccess(result.responseObject)
             }
 
-            override fun onFailure(e: Throwable) {
-                listener.onError(ApiError(e))
+            override fun onFailure(error: ApiError) {
+                listener.onError(error)
             }
         })
     }
@@ -144,8 +145,8 @@ class OperationsService: IOperationsService {
                 listener.onSuccess()
             }
 
-            override fun onFailure(e: Throwable) {
-                listener.onError(ApiError(e))
+            override fun onFailure(error: ApiError) {
+                listener.onError(error)
             }
         })
     }
@@ -157,8 +158,8 @@ class OperationsService: IOperationsService {
                 listener.onSuccess()
             }
 
-            override fun onFailure(e: Throwable) {
-                listener.onError(ApiError(e))
+            override fun onFailure(error: ApiError) {
+                listener.onError(error)
             }
         })
     }
@@ -208,8 +209,7 @@ class OperationsService: IOperationsService {
                     operationsLoading = false
                 }
             }
-            override fun onFailure(e: Throwable) {
-                val error = ApiError(e)
+            override fun onFailure(error: ApiError) {
                 lastOperationsResult = ErrorOperationsResult(error)
                 synchronized(mutex) {
                     tasks.forEach { it.onError(error) }.also { tasks.clear() }
