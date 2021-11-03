@@ -1,4 +1,4 @@
-# SDK integration
+# SDK Integration
 
 ## Requirements
 
@@ -19,7 +19,7 @@ implementation "com.wultra.android.mtokensdk:wultra-mtoken-sdk:1.x.y"
 implementation "com.wultra.android.powerauth:powerauth-sdk:1.x.y"
 ```
 
-## PowerAuth compatibility
+## PowerAuth Compatibility
 
 | WMT SDK | PowerAuth SDK |  
 |---|---|

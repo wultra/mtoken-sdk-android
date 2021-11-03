@@ -1,6 +1,6 @@
 # Using Push Service
 
-<!-- begin TOC -->
+<!-- begin remove -->
 - [Introduction](#introduction)
 - [Creating an Instance](#creating-an-instance)
 - [Push Service API Reference](#push-service-api-reference)
@@ -12,7 +12,9 @@
 
 Push Service is responsible for registering the device for the push notifications about the Operations that are tied to the current PowerAuth activation.
 
-> __Note:__ Before using Push Service, you need to have a `PowerAuthSDK` object available and initialized with a valid activation. Without a valid PowerAuth activation, service will return an error
+<!-- begin box warning -->
+Note: Before using Push Service, you need to have a `PowerAuthSDK` object available and initialized with a valid activation. Without a valid PowerAuth activation, service will return an error.
+<!-- end -->
 
 Push Service communicates with [Mobile Push Registration API](https://github.com/wultra/powerauth-webflow/blob/develop/docs/Mobile-Push-Registration-API.md).
 
@@ -24,7 +26,7 @@ This factory method will create its own [`OkHttpClient`](https://square.github.i
 
 ```kotlin
 fun PowerAuthSDK.createPushService(appContext: Context, baseURL: String, strategy: SSLValidationStrategy): IPushService
-``` 
+```
 
 - `appContext` - application context
 - `baseURL` - address, where your operations server can be reached
@@ -37,10 +39,10 @@ fun PowerAuthSDK.createPushService(appContext: Context, baseURL: String, strateg
 
 ```kotlin
 fun PowerAuthSDK.createPushService(appContext: Context, baseURL: String, httpClient: OkHttpClient): IPushService
-``` 
+```
 - `appContext` - application context
 - `baseURL` - address, where your operations server can be reached
-- `httpClient` - [`OkHttpClient`](https://square.github.io/okhttp/) instance used for API requests 
+- `httpClient` - [`OkHttpClient`](https://square.github.io/okhttp/) instance used for API requests
 
 ## Push Service API Reference
 
@@ -76,7 +78,7 @@ FirebaseInstanceId.getInstance().instanceId.addOnCompleteListener { task ->
 }
 ```
 
-_To be able to successfully process notifications, you need to register the app to receive push notifications in the first place. For more information visit [official documentation](https://firebase.google.com/docs/cloud-messaging/android/client)._
+To be able to successfully process notifications, you need to register the app to receive push notifications in the first place. For more information visit [official documentation](https://firebase.google.com/docs/cloud-messaging/android/client).
 
 ## Receiving WMT Push Notifications
 
@@ -95,7 +97,7 @@ The `PushMessage` is an abstract class that is implemented by following classes 
   -  `originalData` - data on which was the push message constructed
 
 
-_Example push notification processing:_
+Example push notification processing:
 
 ```kotlin
 // Overriden method of FirebaseMessagingService
