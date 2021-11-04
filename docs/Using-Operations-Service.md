@@ -1,6 +1,6 @@
 # Using Operations Service
 
-<!-- begin TOC -->
+<!-- begin remove -->
 - [Introduction](#introduction)
 - [Creating an Instance](#creating-an-instance)
 - [Retrieve Pending Operations](#retrieve-pending-operations)
@@ -19,7 +19,9 @@ Operations Service is responsible for fetching the operation list and for approv
 
 An operation can be anything you need to be approved or rejected by the user. It can be for example money transfer, login request, access approval, ...
 
-> __Note:__ Before using Operations Service, you need to have a `PowerAuthSDK` object available and initialized with a valid activation. Without a valid PowerAuth activation, all endpoints will return an error
+<!-- begin box warning -->
+Note: Before using Operations Service, you need to have a `PowerAuthSDK` object available and initialized with a valid activation. Without a valid PowerAuth activation, all endpoints will return an error.
+<!-- end -->
 
 Operations Service communicates with a backend via [Mobile Token API endpoints](https://github.com/wultra/powerauth-webflow/blob/develop/docs/Mobile-Token-API.md).
 
@@ -31,7 +33,7 @@ Convenience factory method that will return a new instance. A new [`OkHttpClient
 
 ```kotlin
 fun PowerAuthSDK.createOperationsService(appContext: Context, baseURL: String, strategy: SSLValidationStrategy): IOperationsService
-``` 
+```
 
 - `appContext` - application context
 - `baseURL` - address, where your operations server can be reached
@@ -46,11 +48,11 @@ Convenience factory method that will return a new instance with provided [`OkHtt
 
 ```kotlin
 fun PowerAuthSDK.createOperationsService(appContext: Context, baseURL: String, httpClient: OkHttpClient): IOperationsService
-``` 
+```
 
 - `appContext` - application context
 - `baseURL`-  address, where your operations server can be reached
-- `httpClient` - [`OkHttpClient`](https://square.github.io/okhttp/) instance used for API requests 
+- `httpClient` - [`OkHttpClient`](https://square.github.io/okhttp/) instance used for API requests
 
 ## Retrieve Pending Operations
 
@@ -69,7 +71,9 @@ operationsService.getOperations(object: IGetOperationListener {
 
 After you retrieve the pending operations, you can render them in the UI, for example, as a list of items with a detail of operation shown after a tap.
 
-*Note: The language of the UI data inside the operation depends on the configuration of the `IOperationsService.acceptLanguage`.*
+<!-- begin box warning -->
+Note: The language of the UI data inside the operation depends on the configuration of the `IOperationsService.acceptLanguage`.
+<!-- end -->
 
 ## Start Periodic Polling
 
@@ -84,7 +88,9 @@ if (!operationsService.isPollingOperations()) {
 
 To receive the result of the polling, set up a listener.
 
-_Note that the listener is called for all "fetch operations" requests (not just the polling)._
+<!-- begin box warning -->
+Note that the listener is called for all "fetch operations" requests (not just the polling).
+<!-- end -->
 
 ```kotlin
 operationsService.listener = object: IOperationsServiceListener {
@@ -109,7 +115,7 @@ To approve an operation use `IOperationsService.authorizeOperation`. You can sim
 ```kotlin
 // Approve operation with password
 fun approve(operation: IOperation, password: String) {
-    
+
     val auth = PowerAuthAuthentication()
     auth.usePossession = true
     auth.usePassword = password
@@ -119,14 +125,15 @@ fun approve(operation: IOperation, password: String) {
         override fun onSuccess() {
             // show success UI
         }
-    
+
         override fun onError(error: ApiError) {
             // show error UI
         }
     })
 }
 ```
-_To approve offline operations with biometry, your PowerAuth instance [need to be configured with biometry factor](https://github.com/wultra/powerauth-mobile-sdk/blob/develop/docs/PowerAuth-SDK-for-Android.md#biometric-authentication-setup)._
+
+To approve offline operations with biometry, your PowerAuth instance [need to be configured with biometry factor](https://github.com/wultra/powerauth-mobile-sdk/blob/develop/docs/PowerAuth-SDK-for-Android.md#biometric-authentication-setup).
 
 ```kotlin
 // Approve operation with biometry
@@ -141,19 +148,19 @@ fun approveWithBiometry(operation: IOperation) {
 
     this.powerAuthSDK.authenticateUsingBiometry(appContext, fragmentManager,
         "Operation approval",
-        "Use biometry to approve the operation", 
+        "Use biometry to approve the operation",
         object : IBiometricAuthenticationCallback {
-        
+
             override fun onBiometricDialogSuccess(biometricKeyData: BiometricKeyData) {
                 val auth = PowerAuthAuthentication()
                 auth.usePossession = true
                 auth.useBiometry = biometricKeyData.derivedData
-                
+
                 this.operationsService.authorizeOperation(operation, auth, object: IAcceptOperationListener {
                     override fun onSuccess() {
                         // show success UI
                     }
-                
+
                     override fun onError(error: ApiError) {
                         // show error UI
                     }
@@ -202,7 +209,7 @@ func history(password: String) {
     val auth = PowerAuthAuthentication()
     auth.usePossession = true
     auth.usePassword = password
-    
+
     this.operationService.getHistory(auth, object : IGetHistoryListener {
         override fun onSuccess(operations: List<OperationHistoryEntry>) {
             // process operation history
@@ -215,13 +222,13 @@ func history(password: String) {
 }
 ```
 
-_Note that the operation history availability depends on the backend implementation and might not be available. Please consult this with your backend developers._
+Note that the operation history availability depends on the backend implementation and might not be available. Please consult this with your backend developers.
 
 ## Off-line Authorization
 
 In case the user is not online, you can use off-line authorizations. In this operation mode, the user needs to scan a QR code, enter PIN code or use biometry, and rewrite the resulting code. Wultra provides a special format for [the operation QR codes](https://github.com/wultra/powerauth-webflow/blob/develop/docs/Off-line-Signatures-QR-Code.md), that are automatically processed with the SDK.
 
-### Processing scanned QR operation
+### Processing Scanned QR Operation
 
 ```kotlin
 @Throws(IllegalArgumentException::class)
@@ -237,13 +244,13 @@ fun onQROperationScanned(scannedCode: String): QROperation {
 }
 ```
 
-### Authorizing scanned QR operation
+### Authorizing Scanned QR Operation
 
 <!-- begin box info -->
 An offline operation needs to be __always__ approved with __2-factor scheme__ (password or biometry).
 <!-- end -->
 
-#### With password 
+#### With Password
 
 ```kotlin
 // Approves QR operation with password
@@ -265,10 +272,11 @@ fun approveQROperation(operation: QROperation, password: String) {
 An offline operation can and will be signed even with an incorrect password. The signature cannot be used for manual approval in such a case. This behavior cannot be detected, so you should warn the user that an incorrect password will result in an incorrect "approval code".
 <!-- end -->
 
-#### With biometry
+#### With Biometry
 
-_To approve offline operations with biometry, your PowerAuth instance [need to be configured with biometry factor](https://github.com/wultra/powerauth-mobile-sdk/blob/develop/docs/PowerAuth-SDK-for-Android.md#biometric-authentication-setup)._  
-_If biometry can be used for offline operation authorization is determined by `QROperation.flags.biometryAllowed`._
+To approve offline operations with biometry, your PowerAuth instance [need to be configured with biometry factor](https://github.com/wultra/powerauth-mobile-sdk/blob/develop/docs/PowerAuth-SDK-for-Android.md#biometric-authentication-setup).
+
+To determine if biometry can be used for offline operation authorization, use `QROperation.flags.biometryAllowed`.
 
 ```kotlin
 // Approves QR operation with biometry
@@ -281,9 +289,9 @@ fun approveQROperationWithBiometry(operation: QROperation, appContext: Context, 
 
     this.powerAuthSDK.authenticateUsingBiometry(appContext, fragmentManager,
         "Operation approval",
-        "Use biometry to approve the operation", 
+        "Use biometry to approve the operation",
         object : IBiometricAuthenticationCallback {
-        
+
             override fun onBiometricDialogSuccess(biometricKeyData: BiometricKeyData) {
                 val auth = PowerAuthAuthentication()
                 auth.usePossession = true
@@ -325,7 +333,7 @@ All available methods and attributes of `IOperationsService` API are:
 - `stopPollingOperations()` - Stops periodic operation polling.
 - `getHistory(authentication: PowerAuthAuthentication, listener: IGetHistoryListener)` - Retrieves operation history
   - `authentication` - PowerAuth authentication object for signing.
-  - `listener` - Called when rejection request finishes. 
+  - `listener` - Called when rejection request finishes.
 - `authorizeOperation(operation: IOperation, authentication: PowerAuthAuthentication, listener: IAcceptOperationListener)` - Authorize provided operation.
     - `operation` - An operation to approve, retrieved from `getOperations` call or [created locally](#creating-a-custom-operation).
     - `authentication` - PowerAuth authentication object for operation signing.
@@ -356,47 +364,47 @@ class UserOperation: IOperation {
 
     // Unique operation identifier
     val id: String
-        
+
     // System name of the operation.
     //
-    // This property lets you adjust the UI for various operation types. 
-    // For example, the "login" operation may display a specialized interface with 
-    // an icon or an illustration, instead of an empty list of attributes, 
+    // This property lets you adjust the UI for various operation types.
+    // For example, the "login" operation may display a specialized interface with
+    // an icon or an illustration, instead of an empty list of attributes,
     // "payment" operation can include a special icon that denotes payments, etc.
     val name: String
-    
+
     // Actual data that will be signed.
     val data: String
-    
+
     // Date and time when the operation was created.
     val created: ZonedDateTime
-    
+
     // Date and time when the operation will expire.
     val expires: ZonedDateTime
-    
+
     // Data that should be presented to the user.
     val formData: FormData
-    
+
     // Allowed signature types.
     //
-    // This hints if the operation needs a 2nd factor or can be approved simply by 
-    // tapping an approve button. If the operation requires 2FA, this value also hints if 
+    // This hints if the operation needs a 2nd factor or can be approved simply by
+    // tapping an approve button. If the operation requires 2FA, this value also hints if
     // the user may use the biometry, or if a password is required.
     val allowedSignatureType: AllowedSignatureType
 }
 ```
 
-Definition of `FormData`: 
+Definition of `FormData`:
 
 ```kotlin
 class FormData {
-    
+
     /// Title of the operation
     val title: String
-    
+
     /// Message for the user
     val message: String
-    
+
     /// Other attributes.
     ///
     /// Each attribute presents one line in the UI. Attributes are differentiated by type property
@@ -410,13 +418,15 @@ Attributes types:
 - `KEY_VALUE` any key value pair  
 - `NOTE` just like `KEY_VALUE`, emphasizing that the value is a note or message  
 - `HEADING` single highlighted text, written in a larger font, used as a section heading  
-- `PARTY_INFO` providing structured information about third-party data (for example known eshop)
+- `PARTY_INFO` providing structured information about third-party data (for example known e-shop)
 
 ## Creating a Custom Operation
 
 In some specific scenarios, you might need to approve or reject an operation that you received through a different channel than `getOperations`. In such cases, you can implement the `IOperation` interface in your custom class and then feed created objects to both `authorizeOperation` and `rejectOperation` methods.
 
-_Note: For such cases, you can use concrete convenient class `LocalOperation`, that implements this interface._
+<!-- begin box success -->
+You can use the `LocalOperation` convenience class that implements the `IOperation` protocol.
+<!-- end -->
 
 Definition of the `IOperation`:
 
