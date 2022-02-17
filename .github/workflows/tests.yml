@@ -5,7 +5,7 @@ on:
     branches:
       - develop
       - master
-      - release/*
+      - releases/*
   pull_request:
   schedule:
     - cron: '25 6 * * *'
