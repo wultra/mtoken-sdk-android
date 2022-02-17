@@ -1,12 +1,14 @@
 # Logging
 
-For logging purposes, WMT uses `Logger` class inside the `com.wultra.android.mtokensdk.common` package that prints to the console. 
+For logging purposes, WMT uses `Logger` class inside the `com.wultra.android.mtokensdk.common` package that prints to the console.
 
-_Note that `Logger` is internally using `android.util.Log` class with verbosity ERROR, WARNING, and DEBUG and is subjected to its internal logic._
+<!-- begin box warning -->
+Note that `Logger` is internally using `android.util.Log` class with verbosity ERROR, WARNING, and DEBUG and is subjected to its internal logic.
+<!-- end -->
 
 ### Verbosity Level
 
-You can limit the amount of logged information via `verboseLevel` static         property.
+You can limit the amount of logged information via `verboseLevel` static property.
 
 | Level | Description |
 | --- | --- |
@@ -23,8 +25,10 @@ import com.wultra.android.mtokensdk.common.Logger
 Logger.verboseLevel = Logger.VerboseLevel.DEBUG
 ```
 
-### Networking logs
+### Networking Logs
 
-All requests and responses are logged in `DEBUG` level. 
+All requests and responses are logged in `DEBUG` level.
 
-_In case that you provided your own okhttp instance, you need to setup your own logging for monitoring the traffic via the okhttp interceptors._
+<!-- begin box warning -->
+In case that you provided your own OkHttp instance, you need to setup your own logging for monitoring the traffic via the OkHttp interceptors.
+<!-- end -->
