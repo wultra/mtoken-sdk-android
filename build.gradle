@@ -15,7 +15,7 @@
  */
 
 buildscript {
-    ext.kotlinVersion = "1.5.21"
+    ext.kotlinVersion = "1.6.10"
     repositories {
         mavenCentral()
         jcenter()
@@ -46,17 +46,17 @@ ext {
     targetSdkVersion = 28
     minSdkVersion = 19
 
-    androidXAnnotations = "1.2.0"
-    powerAuthSdkVersion = "1.6.1"
-    powerAuthNetworkingVersion = "1.0.0"
+    androidXAnnotations = "1.3.0"
+    powerAuthSdkVersion = "1.6.2"
+    powerAuthNetworkingVersion = "1.0.2"
     restModelBaseVersion = "1.2.0"
 
     // DO NOT UPGRADE ABOVE 3.12.X! Version 3.12 is the last version supporting TLS 1 and 1.1
     // If upgraded, the app will crash on android 4.4
     okHttpVersion = "3.12.12"
-    gsonVersion = "2.8.6"
+    gsonVersion = "2.8.8"
     threetenabpVersion = "1.1.1"
 
-    junitVersion = "4.12"
+    junitVersion = "4.13.1"
     androidXTestVersion = "1.4.0"
 }
