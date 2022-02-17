@@ -270,10 +270,14 @@ class QROperationParser {
         private fun parseDate(string: String): QROperationData.DateField {
             val dateString = string.substring(1)
             if (dateString.length != 8) {
-               throw  IllegalArgumentException("Date needs to be 8 characters long")
+               throw IllegalArgumentException("Date needs to be 8 characters long")
             }
-            val date = dateFormatter.parse(dateString)
-            return QROperationData.DateField(date)
+            try {
+                val date = dateFormatter.parse(dateString) ?: throw IllegalArgumentException("Date cannot been processed")
+                return QROperationData.DateField(date)
+            } catch(t: Throwable) {
+                throw IllegalArgumentException("Unparseable date")
+            }
         }
 
         private fun parseOperationFlags(string: String): QROperationFlags {
