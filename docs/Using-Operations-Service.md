@@ -250,6 +250,10 @@ fun onQROperationScanned(scannedCode: String): QROperation {
 An offline operation needs to be __always__ approved with __2-factor scheme__ (password or biometry).
 <!-- end -->
 
+<!-- begin box info -->
+Each offline operation created on the server has an __URI ID__ to define its purpose and configuration. The default value used here is `/operation/authorize/offline` and can be modified with the `uriId` parameter in the `authrorize` method.
+<!-- end -->
+
 #### With Password
 
 ```kotlin
@@ -271,6 +275,24 @@ fun approveQROperation(operation: QROperation, password: String) {
 <!-- begin box info -->
 An offline operation can and will be signed even with an incorrect password. The signature cannot be used for manual approval in such a case. This behavior cannot be detected, so you should warn the user that an incorrect password will result in an incorrect "approval code".
 <!-- end -->
+
+#### With Password and Custom `uriId`
+
+```kotlin
+// Approves QR operation with password
+fun approveQROperation(operation: QROperation, password: String) {
+    val auth = PowerAuthAuthentication()
+    auth.usePossession = true
+    auth.usePassword = password
+    try {
+        val offlineSignature = this.operationsService.authorizeOfflineOperation(operation, auth, "/confirm/offline/operation")
+        // Display the signature to the user so it can be manually rewritten.
+        // Note that the operation will be signed even with the wrong password!
+    } catch (e: Exception) {
+       // Failed to sign the operation
+    }
+}
+```
 
 #### With Biometry
 
@@ -342,9 +364,10 @@ All available methods and attributes of `IOperationsService` API are:
     - `operation` - An operation to reject, retrieved from `getOperations` call or [created locally](#creating-a-custom-operation).
     - `reason` - Rejection reason.
     - `listener` - Called when rejection request finishes.
-- `fun authorizeOfflineOperation(operation: QROperation, authentication: PowerAuthAuthentication)` - Sign offline (QR) operation
+- `fun authorizeOfflineOperation(operation: QROperation, authentication: PowerAuthAuthentication, uriId: String)` - Sign offline (QR) operation
     - `operation` - Offline operation retrieved via `QROperationParser.parse` method.
     - `authentication` - PowerAuth authentication object for operation signing.
+    - `uriId` - Custom signature URI ID of the operation. Use URI ID under which the operation was created on the server. Default value is `/operation/authorize/offline`.
 - `signOfflineOperationWithBiometry(biometry: ByteArray, offlineOperation: QROperation)` - Sign offline (QR) operation with biometry data.
     - `biometry` - Biometry data retrieved from `powerAuthSDK.authenticateUsingBiometry` call.
     - `offlineOperation` - Offline operation retrieved via `processOfflineQrPayload` method.

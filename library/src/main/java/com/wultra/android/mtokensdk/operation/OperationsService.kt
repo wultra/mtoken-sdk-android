@@ -165,8 +165,8 @@ class OperationsService: IOperationsService {
     }
 
     @Throws
-    override fun authorizeOfflineOperation(operation: QROperation, authentication: PowerAuthAuthentication): String {
-        return powerAuthSDK.offlineSignatureWithAuthentication(appContext, authentication, OperationApi.OFFLINE_AUTHORIZE_URI_ID, operation.dataForOfflineSigning(), operation.nonce)
+    override fun authorizeOfflineOperation(operation: QROperation, authentication: PowerAuthAuthentication, uriId: String): String {
+        return powerAuthSDK.offlineSignatureWithAuthentication(appContext, authentication, uriId, operation.dataForOfflineSigning(), operation.nonce)
                 ?: throw Exception("Cannot sign this operation")
     }
 
