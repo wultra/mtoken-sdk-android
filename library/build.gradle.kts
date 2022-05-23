@@ -62,14 +62,14 @@ dependencies {
     implementation("com.wultra.android.powerauth:powerauth-networking:1.0.2")
 
     // Dependencies
-    compileOnly("com.wultra.android.powerauth:powerauth-sdk:1.6.2")
+    compileOnly("com.wultra.android.powerauth:powerauth-sdk:1.6.3")
     compileOnly("io.getlime.core:rest-model-base:1.2.0")
 
     // TestDependencies
     testImplementation("junit:junit:4.13.1")
 
     // Android tests
-    androidTestImplementation("com.wultra.android.powerauth:powerauth-sdk:1.6.2")
+    androidTestImplementation("com.wultra.android.powerauth:powerauth-sdk:1.6.3")
     androidTestImplementation("com.wultra.android.powerauth:powerauth-networking:1.0.2")
     androidTestImplementation("androidx.test:runner:1.4.0")
     androidTestImplementation("junit:junit:4.13.1")

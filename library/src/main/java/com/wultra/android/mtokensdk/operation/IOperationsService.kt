@@ -11,6 +11,7 @@
 
 package com.wultra.android.mtokensdk.operation
 
+import com.wultra.android.mtokensdk.api.operation.OperationApi
 import com.wultra.android.mtokensdk.api.operation.model.IOperation
 import com.wultra.android.mtokensdk.api.operation.model.UserOperation
 import com.wultra.android.mtokensdk.api.operation.model.QROperation
@@ -108,11 +109,13 @@ interface IOperationsService {
      *
      * @param operation Operation to approve
      * @param authentication PowerAuth authentication object
+     * @param uriId uriId: Custom signature URI ID of the operation. Use URI ID under which the operation was
+     * created on the server. Default value is `/operation/authorize/offline`.
      *
      * @throws Exception Various exceptions, based on the error.
      *
      * @return Signature that should be displayed to the user
      */
     @Throws
-    fun authorizeOfflineOperation(operation: QROperation, authentication: PowerAuthAuthentication): String
+    fun authorizeOfflineOperation(operation: QROperation, authentication: PowerAuthAuthentication, uriId: String = OperationApi.OFFLINE_AUTHORIZE_URI_ID): String
 }

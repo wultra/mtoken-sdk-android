@@ -73,8 +73,8 @@ class IntegrationUtils {
                 {
                   "userId": "$activationName"
                 }
-                """
-            val resp = makeCall<RegistrationObject>(body, "$cloudServerUrl/registration")
+                """.trimIndent()
+            val resp = makeCall<RegistrationObject>(body, "$cloudServerUrl/v2/registrations")
 
             // CREATE ACTIVATION LOCALLY
 
@@ -95,7 +95,12 @@ class IntegrationUtils {
             pa.commitActivationWithPassword(context, pin)
 
             // COMMIT ACTIVATION ON THE SERVER
-            makeCall<CommitObject>(body, "$cloudServerUrl/registration/commit")
+            val bodyCommit = """
+                {
+                  "externalUserId": "test"
+                }
+                """.trimIndent()
+            makeCall<CommitObject>(bodyCommit, "$cloudServerUrl/v2/registrations/${resp.registrationId}/commit")
 
             return Pair(pa, pa.createOperationsService(context, operationsUrl, SSLValidationStrategy.noValidation()))
         }
@@ -119,12 +124,12 @@ class IntegrationUtils {
                          "session.ip-address": "192.168.0.1"
                    }
                 }
-                """
+                """.trimIndent()
                 }
             }
 
             // create an operation on the nextstep server
-            return makeCall(opBody, "$cloudServerUrl/operations")
+            return makeCall(opBody, "$cloudServerUrl/v2/operations")
         }
 
         @Throws
@@ -148,7 +153,7 @@ class IntegrationUtils {
     }
 }
 
-data class RegistrationObject(val activationQrCodeData: String) {
+data class RegistrationObject(val activationQrCodeData: String, val registrationId: String) {
     fun activationCode(): String = ActivationCodeUtil.parseFromActivationCode(activationQrCodeData)!!.activationCode
 }
 
