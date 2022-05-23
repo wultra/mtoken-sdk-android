@@ -251,7 +251,7 @@ An offline operation needs to be __always__ approved with __2-factor scheme__ (p
 <!-- end -->
 
 <!-- begin box info -->
-Each offline operation created on the server has an __URI ID__ to define its purpose and configuration. The default value used here is `/operation/authorize/offline` and can be modified with the `uriId` parameter in the `authrorize` method.
+Each offline operation created on the server has an __URI ID__ to define its purpose and configuration. The default value used here is `/operation/authorize/offline` and can be modified with the `uriId` parameter in the `authorize` method.
 <!-- end -->
 
 #### With Password

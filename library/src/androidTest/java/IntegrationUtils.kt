@@ -73,7 +73,7 @@ class IntegrationUtils {
                 {
                   "userId": "$activationName"
                 }
-                """
+                """.trimIndent()
             val resp = makeCall<RegistrationObject>(body, "$cloudServerUrl/v2/registrations")
 
             // CREATE ACTIVATION LOCALLY
@@ -99,7 +99,7 @@ class IntegrationUtils {
                 {
                   "externalUserId": "test"
                 }
-                """
+                """.trimIndent()
             makeCall<CommitObject>(bodyCommit, "$cloudServerUrl/v2/registrations/${resp.registrationId}/commit")
 
             return Pair(pa, pa.createOperationsService(context, operationsUrl, SSLValidationStrategy.noValidation()))
@@ -124,7 +124,7 @@ class IntegrationUtils {
                          "session.ip-address": "192.168.0.1"
                    }
                 }
-                """
+                """.trimIndent()
                 }
             }
 
