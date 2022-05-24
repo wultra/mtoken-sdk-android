@@ -53,6 +53,7 @@ class IntegrationUtils {
         private val appSecret = getInstrumentationParameter("appSecret")
         private val masterPublicKey = getInstrumentationParameter("masterServerPublicKey")
         private val activationName = UUID.randomUUID().toString()
+        private var registrationId = "" // will be filled when activation is created
 
         @Throws
         fun prepareActivation(pin: String): Pair<PowerAuthSDK, IOperationsService> {
@@ -75,6 +76,8 @@ class IntegrationUtils {
                 }
                 """.trimIndent()
             val resp = makeCall<RegistrationObject>(body, "$cloudServerUrl/v2/registrations")
+
+            registrationId = resp.registrationId
 
             // CREATE ACTIVATION LOCALLY
 
@@ -133,14 +136,34 @@ class IntegrationUtils {
         }
 
         @Throws
-        private inline fun <reified T> makeCall(payload: String, url: String): T {
+        fun getQROperation(operation: OperationObject): QRData {
+            return makeCall(null, "$cloudServerUrl/v2/operations/${operation.operationId}/offline/qr?registrationId=$registrationId", "GET")
+        }
+
+        @Throws
+        fun verifyQROperation(operation: OperationObject, qrData: QRData, otp: String): QROperationVerify {
+            val body = """
+                {
+                  "otp": "$otp",
+                  "nonce": "${qrData.nonce}",
+                  "registrationId": "$registrationId"
+                }
+            """.trimIndent()
+            return makeCall(body, "$cloudServerUrl/v2/operations/${operation.operationId}/offline/otp")
+        }
+
+        @Throws
+        private inline fun <reified T> makeCall(payload: String?, url: String, method: String = "POST"): T {
             val creds = getEncoder().encodeToString("$cloudServerLogin:$cloudServerPassword".toByteArray())
-            val bodyBytes = payload.toByteArray()
-            val body = RequestBody.create(jsonMediaType, bodyBytes)
+            val body = if (payload != null) {
+                RequestBody.create(jsonMediaType, payload.toByteArray())
+            } else {
+                null
+            }
             val request = Request.Builder()
                     .header("authorization", "Basic $creds")
                     .url(url)
-                    .post(body)
+                    .method(method, body)
                     .build()
             val resp = client.newCall(request).execute()
             return gson.fromJson(resp.body()!!.string(), object: TypeToken<T>(){}.type)
@@ -168,3 +191,16 @@ data class OperationObject(val operationId: String,
                            val maxFailureCount: Int,
                            val timestampCreated: Double,
                            val timestampExpires: Double)
+
+data class QRData(val operationQrCodeData: String,
+                  val nonce: String)
+
+data class QROperationVerify(val otpValid: Boolean,
+                             val userId: String,
+                             val registrationId: String,
+                             val registrationStatus: String,
+                             val signatureType: String,
+                             val remainingAttempts: Int
+                            // val flags: []
+                            // val application)
+)
