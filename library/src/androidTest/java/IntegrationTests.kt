@@ -13,6 +13,7 @@ package com.wultra.android.mtokensdk.test
 
 import com.wultra.android.mtokensdk.api.operation.model.OperationHistoryEntry
 import com.wultra.android.mtokensdk.api.operation.model.OperationHistoryEntryStatus
+import com.wultra.android.mtokensdk.api.operation.model.QROperationParser
 import com.wultra.android.mtokensdk.api.operation.model.UserOperation
 import com.wultra.android.mtokensdk.operation.*
 import com.wultra.android.powerauth.networking.error.ApiError
@@ -264,5 +265,28 @@ class IntegrationTests {
         val opRecord = operations.firstOrNull { it.operation.id == op.operationId }
         Assert.assertNotNull(opRecord)
         Assert.assertTrue(opRecord?.status == OperationHistoryEntryStatus.PENDING)
+    }
+
+    @Test
+    fun testQROperation() {
+        // create regular operation
+        val op = IntegrationUtils.createOperation(IntegrationUtils.Companion.Factors.F_2FA)
+
+        // get QR data of the operation
+        val qrData = IntegrationUtils.getQROperation(op)
+
+        // parse the data
+        val qrOperation = QROperationParser.parse(qrData.operationQrCodeData)
+
+        // get the OTP with the "offline" signing
+        val auth = PowerAuthAuthentication()
+        auth.usePossession = true
+        auth.usePassword = pin
+        val otp = ops.authorizeOfflineOperation(qrOperation, auth)
+
+        // verify the operation on the backend with the OTP
+        val verifiedResult = IntegrationUtils.verifyQROperation(op, qrData, otp)
+
+        Assert.assertTrue(verifiedResult.otpValid)
     }
 }
