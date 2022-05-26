@@ -106,6 +106,10 @@ data class AllowedSignatureType(
         @SerializedName("2FA")
         MULTIFACTOR_2FA("2FA"),
 
+        // 3FA is not used in mtoken
+        // @SerializedName("3FA")
+        // MULTIFACTOR_3FA("3FA"),
+
         @SerializedName("ECDSA")
         ASYMMETRIC_ECDSA("ECDSA");
     }
@@ -119,7 +123,10 @@ data class AllowedSignatureType(
         POSSESSION_KNOWLEDGE("possession_knowledge"),
 
         @SerializedName("possession_biometry")
-        POSSESSION_BIOMETRY("possession_biometry")
+        POSSESSION_BIOMETRY("possession_biometry"),
+
+        @SerializedName("possession")
+        POSSESSION("possession")
     }
 }
 
