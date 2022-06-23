@@ -12,6 +12,7 @@
 package com.wultra.android.mtokensdk.test
 
 import android.content.Context
+import android.util.Log
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
 import com.google.gson.Gson
@@ -47,6 +48,7 @@ class IntegrationUtils {
         private val cloudServerUrl = getInstrumentationParameter("cloudServerUrl")
         private val cloudServerLogin = getInstrumentationParameter("cloudServerLogin")
         private val cloudServerPassword = getInstrumentationParameter("cloudServerPassword")
+        private val cloudApplicationId = getInstrumentationParameter("cloudApplicationId")
         private val enrollmentUrl = getInstrumentationParameter("enrollmentServerUrl")
         private val operationsUrl = getInstrumentationParameter("operationsServerUrl")
         private val appKey = getInstrumentationParameter("appKey")
@@ -72,7 +74,9 @@ class IntegrationUtils {
 
             val body = """
                 {
-                  "userId": "$activationName"
+                  "userId": "$activationName",
+                  "flags": [],
+                  "appId": "$cloudApplicationId"
                 }
                 """.trimIndent()
             val resp = makeCall<RegistrationObject>(body, "$cloudServerUrl/v2/registrations")
@@ -95,7 +99,8 @@ class IntegrationUtils {
 
             // COMMIT ACTIVATION LOCALLY
 
-            pa.commitActivationWithPassword(context, pin)
+            val result = pa.commitActivationWithPassword(context, pin)
+            Log.d("prepare activaiton", "commitActivationWithPassword result: $result")
 
             // COMMIT ACTIVATION ON THE SERVER
             val bodyCommit = """
@@ -105,7 +110,7 @@ class IntegrationUtils {
                 """.trimIndent()
             makeCall<CommitObject>(bodyCommit, "$cloudServerUrl/v2/registrations/${resp.registrationId}/commit")
 
-            return Pair(pa, pa.createOperationsService(context, operationsUrl, SSLValidationStrategy.noValidation()))
+            return Pair(pa, pa.createOperationsService(context, operationsUrl, SSLValidationStrategy.default()))
         }
 
         enum class Factors {
@@ -119,7 +124,7 @@ class IntegrationUtils {
                 Factors.F_2FA -> { """
                 {
                   "userId": "$activationName",
-                  "template": "login-tpp",
+                  "template": "login",
                    "parameters": {
                      "party.id": "666",
                      "party.name": "Datová schránka",
@@ -154,6 +159,8 @@ class IntegrationUtils {
 
         @Throws
         private inline fun <reified T> makeCall(payload: String?, url: String, method: String = "POST"): T {
+            Log.d("make call payload", payload ?: "")
+            Log.d("make call url", url)
             val creds = getEncoder().encodeToString("$cloudServerLogin:$cloudServerPassword".toByteArray())
             val body = if (payload != null) {
                 RequestBody.create(jsonMediaType, payload.toByteArray())
@@ -166,7 +173,9 @@ class IntegrationUtils {
                     .method(method, body)
                     .build()
             val resp = client.newCall(request).execute()
-            return gson.fromJson(resp.body()!!.string(), object: TypeToken<T>(){}.type)
+            val stringResp = resp.body()!!.string()
+            Log.d("make call response", stringResp)
+            return gson.fromJson(stringResp, object: TypeToken<T>(){}.type)
         }
 
         @Throws
