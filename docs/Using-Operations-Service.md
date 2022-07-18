@@ -116,11 +116,7 @@ To approve an operation use `IOperationsService.authorizeOperation`. You can sim
 // Approve operation with password
 fun approve(operation: IOperation, password: String) {
 
-    val auth = PowerAuthAuthentication()
-    auth.usePossession = true
-    auth.usePassword = password
-    auth.useBiometry = null // needed only when approving with biometry
-
+    val auth = PowerAuthAuthentication.possessionWithPassword(password)
     this.operationsService.authorizeOperation(operation, auth, object: IAcceptOperationListener {
         override fun onSuccess() {
             // show success UI
@@ -152,10 +148,7 @@ fun approveWithBiometry(operation: IOperation) {
         object : IBiometricAuthenticationCallback {
 
             override fun onBiometricDialogSuccess(biometricKeyData: BiometricKeyData) {
-                val auth = PowerAuthAuthentication()
-                auth.usePossession = true
-                auth.useBiometry = biometricKeyData.derivedData
-
+                val auth = PowerAuthAuthentication.possessionWithBiometry(biometricKeyData.derivedData)
                 this.operationsService.authorizeOperation(operation, auth, object: IAcceptOperationListener {
                     override fun onSuccess() {
                         // show success UI
@@ -206,9 +199,7 @@ You can retrieve an operation history via the `IOperationsService.getHistory` me
 // Retrieve operation history with password
 func history(password: String) {
 
-    val auth = PowerAuthAuthentication()
-    auth.usePossession = true
-    auth.usePassword = password
+    val auth = PowerAuthAuthentication.possessionWithPassword(password)
 
     this.operationService.getHistory(auth, object : IGetHistoryListener {
         override fun onSuccess(operations: List<OperationHistoryEntry>) {
@@ -259,9 +250,7 @@ Each offline operation created on the server has an __URI ID__ to define its pur
 ```kotlin
 // Approves QR operation with password
 fun approveQROperation(operation: QROperation, password: String) {
-    val auth = PowerAuthAuthentication()
-    auth.usePossession = true
-    auth.usePassword = password
+    val auth = PowerAuthAuthentication.possessionWithPassword(password)
     try {
         val offlineSignature = this.operationsService.authorizeOfflineOperation(operation, auth)
         // Display the signature to the user so it can be manually rewritten.
@@ -281,9 +270,7 @@ An offline operation can and will be signed even with an incorrect password. The
 ```kotlin
 // Approves QR operation with password
 fun approveQROperation(operation: QROperation, password: String) {
-    val auth = PowerAuthAuthentication()
-    auth.usePossession = true
-    auth.usePassword = password
+    val auth = PowerAuthAuthentication.possessionWithPassword(password)
     try {
         val offlineSignature = this.operationsService.authorizeOfflineOperation(operation, auth, "/confirm/offline/operation")
         // Display the signature to the user so it can be manually rewritten.
@@ -315,9 +302,7 @@ fun approveQROperationWithBiometry(operation: QROperation, appContext: Context, 
         object : IBiometricAuthenticationCallback {
 
             override fun onBiometricDialogSuccess(biometricKeyData: BiometricKeyData) {
-                val auth = PowerAuthAuthentication()
-                auth.usePossession = true
-                auth.useBiometry = biometricKeyData.derivedData
+                val auth = PowerAuthAuthentication.possessionWithBiometry(biometricKeyData.derivedData)
                 try {
                     val offlineSignature = operationsService.authorizeOfflineOperation(operation, auth)
                     // Display the signature to the user so it can be manually rewritten.

@@ -51,15 +51,13 @@ class IntegrationTests {
         @AfterClass
         @JvmStatic
         fun tearDown() {
-            val auth = PowerAuthAuthentication()
-            auth.usePassword = pin
-            auth.usePossession = true
+            val auth = PowerAuthAuthentication.possessionWithPassword(pin)
             val future = CompletableFuture<Any>()
             pa.removeActivationWithAuthentication(IntegrationUtils.context, auth, object : IActivationRemoveListener {
                 override fun onActivationRemoveSucceed() {
                     future.complete(null)
                 }
-                override fun onActivationRemoveFailed(t: Throwable?) {
+                override fun onActivationRemoveFailed(t: Throwable) {
                     future.completeExceptionally(t)
                 }
             })
@@ -153,9 +151,7 @@ class IntegrationTests {
         val operations = future.get(20, TimeUnit.SECONDS)
         Assert.assertTrue("Missing operation", operations.count() == 1)
 
-        val auth = PowerAuthAuthentication()
-        auth.usePossession = true
-        auth.usePassword = "xxxx" // wrong  password on purpose
+        var auth = PowerAuthAuthentication.possessionWithPassword("xxxx") // wrong password on purpose
         val opFuture = CompletableFuture<Any?>()
         ops.authorizeOperation(operations.first(), auth, object : IAcceptOperationListener {
             override fun onSuccess() {
@@ -167,7 +163,7 @@ class IntegrationTests {
         })
         Assert.assertNull(opFuture.get(20, TimeUnit.SECONDS))
 
-        auth.usePassword = pin
+        auth = PowerAuthAuthentication.possessionWithPassword(pin)
         val opFuture2 = CompletableFuture<Any?>()
         ops.authorizeOperation(operations.first(), auth, object : IAcceptOperationListener {
             override fun onSuccess() {
@@ -242,9 +238,7 @@ class IntegrationTests {
     fun testOperationHistory() {
         // lets create 1 operation and leave it in the state of "pending"
         val op = IntegrationUtils.createOperation(IntegrationUtils.Companion.Factors.F_2FA)
-        val auth = PowerAuthAuthentication()
-        auth.usePossession = true
-        auth.usePassword = pin
+        val auth = PowerAuthAuthentication.possessionWithPassword(pin)
         val future = CompletableFuture<List<OperationHistoryEntry>?>()
         ops.getHistory(auth, object : IGetHistoryListener {
             override fun onSuccess(operations: List<OperationHistoryEntry>) {
@@ -279,9 +273,7 @@ class IntegrationTests {
         val qrOperation = QROperationParser.parse(qrData.operationQrCodeData)
 
         // get the OTP with the "offline" signing
-        val auth = PowerAuthAuthentication()
-        auth.usePossession = true
-        auth.usePassword = pin
+        val auth = PowerAuthAuthentication.possessionWithPassword(pin)
         val otp = ops.authorizeOfflineOperation(qrOperation, auth)
 
         // verify the operation on the backend with the OTP
