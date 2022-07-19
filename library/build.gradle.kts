@@ -14,54 +14,53 @@
  * and limitations under the License.
  */
 
-import java.util.Properties
-import java.io.FileInputStream
-import com.android.build.gradle.internal.dsl.DefaultConfig
-
 plugins {
     id("com.android.library")
-    id("kotlin-android")
+    kotlin("android")
 }
 
 android {
-    compileSdkVersion(30)
+    compileSdk = Constants.Android.compileSdkVersion
+    buildToolsVersion = Constants.Android.buildToolsVersion
 
     defaultConfig {
-        minSdkVersion(19)
-        targetSdkVersion(30)
-        versionCode = 1
-        versionName = properties["VERSION_NAME"] as String
-        testInstrumentationRunner("androidx.test.runner.AndroidJUnitRunner")
+        minSdk = Constants.Android.minSdkVersion
+        targetSdk = Constants.Android.targetSdkVersion
+
+        // since Android Gradle Plugin 4.1.0
+        // VERSION_CODE and VERSION_NAME are not generated for libraries
+        configIntField("VERSION_CODE", 1)
+        configStringField("VERSION_NAME", properties["VERSION_NAME"] as String)
+
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         loadInstrumentationTestConfigProperties(project, this)
     }
 
     buildTypes {
-        getByName("debug") {
-
-        }
-        getByName("release") {
-            minifyEnabled(false)
+        release {
+            isMinifyEnabled = false
             consumerProguardFiles("consumer-proguard-rules.pro")
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-    }
-    kotlinOptions {
-        suppressWarnings = false
+        sourceCompatibility = Constants.Java.sourceCompatibility
+        targetCompatibility = Constants.Java.targetCompatibility
+        kotlinOptions {
+            jvmTarget = Constants.Java.kotlinJvmTarget
+            suppressWarnings = false
+        }
     }
 }
 
 dependencies {
     // Bundled
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:${Constants.kotlinVersion}")
-    implementation("androidx.annotation:annotation:1.3.0")
-    implementation("com.google.code.gson:gson:2.8.8")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:${Constants.BuildScript.kotlinVersion}")
+    implementation("androidx.annotation:annotation:1.4.0")
+    implementation("com.google.code.gson:gson:2.8.9")
     implementation("com.jakewharton.threetenabp:threetenabp:1.1.1")
     // DO NOT UPGRADE ABOVE 3.12.X! Version 3.12 is the last version supporting TLS 1 and 1.1
     // If upgraded, the app will crash on android 4.4
-    implementation("com.squareup.okhttp3:okhttp:3.12.12")
+    implementation("com.squareup.okhttp3:okhttp:3.12.13")
     implementation("com.wultra.android.powerauth:powerauth-networking:1.0.2")
 
     // Dependencies
@@ -69,44 +68,14 @@ dependencies {
     compileOnly("io.getlime.core:rest-model-base:1.2.0")
 
     // TestDependencies
-    testImplementation("junit:junit:4.13.1")
+    testImplementation("junit:junit:4.13.2")
 
     // Android tests
     androidTestImplementation("com.wultra.android.powerauth:powerauth-sdk:1.7.0")
     androidTestImplementation("com.wultra.android.powerauth:powerauth-networking:1.0.2")
     androidTestImplementation("androidx.test:runner:1.4.0")
-    androidTestImplementation("junit:junit:4.13.1")
+    androidTestImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test:core:1.4.0")
-}
-
-// Load properties for instrumentation tests.
-fun loadInstrumentationTestConfigProperties(project: Project, defaultConfig: DefaultConfig) {
-    val configsRoot = File("${project.rootProject.projectDir}/configs")
-    val configPropertiesFile = File(configsRoot, "integration-tests.properties")
-
-    val instrumentationArguments = arrayOf(
-            "tests.sdk.cloudServerUrl",
-            "tests.sdk.cloudServerLogin",
-            "tests.sdk.cloudServerPassword",
-            "tests.sdk.cloudApplicationId",
-            "tests.sdk.enrollmentServerUrl",
-            "tests.sdk.operationsServerUrl",
-            "tests.sdk.appKey",
-            "tests.sdk.appSecret",
-            "tests.sdk.masterServerPublicKey"
-    )
-
-    project.logger.info("LOADING_PROPERTIES Reading $configPropertiesFile")
-    if (configPropertiesFile.canRead()) {
-        val props = Properties()
-        props.load(FileInputStream(configPropertiesFile))
-
-        for (key in instrumentationArguments) {
-            defaultConfig.testInstrumentationRunnerArgument(key, "${props[key]}")
-        }
-    } else {
-        project.logger.warn("Loading properties error: Missing $configPropertiesFile")
-    }
 }
 
 apply("android-release-aar.gradle")
