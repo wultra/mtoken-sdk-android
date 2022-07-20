@@ -67,8 +67,7 @@ internal class OperationApi(okHttpClient: OkHttpClient,
 
     /** Reject an operation. */
     fun reject(rejectRequest: RejectRequest, listener: IApiCallResponseListener<StatusResponse>) {
-        val authentication = PowerAuthAuthentication()
-        authentication.usePossession = true
+        val authentication = PowerAuthAuthentication.possession()
         post(rejectRequest, rejectEndpoint, authentication, null, null, listener)
     }
 
