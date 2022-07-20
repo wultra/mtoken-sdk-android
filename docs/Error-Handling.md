@@ -1,6 +1,6 @@
 # Error Handling
 
-All methods that communicate with the server API return an [`ApiError`](https://github.com/wultra/mtoken-sdk-android/blob/develop/library/src/main/java/com/wultra/android/mtokensdk/api/general/ApiError.kt#docucheck-keep-link) instance in case of an error.  
+All methods that communicate with the server API return an [`ApiError`](https://github.com/wultra/networking-android/blob/develop/library/src/main/java/com/wultra/android/powerauth/networking/error/ApiError.kt#docucheck-keep-link) instance in case of an error.  
 Every `ApiError` consist of:  
 - property `e` with an original exception that was thrown  
 - convenience nullable error property `error` for known API error codes
