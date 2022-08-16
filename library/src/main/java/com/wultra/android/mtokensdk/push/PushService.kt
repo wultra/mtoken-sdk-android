@@ -17,6 +17,7 @@ import com.wultra.android.mtokensdk.api.push.PushRegistrationRequest
 import com.wultra.android.mtokensdk.api.push.model.PushRegistrationRequestObject
 import com.wultra.android.mtokensdk.common.Logger
 import com.wultra.android.powerauth.networking.IApiCallResponseListener
+import com.wultra.android.powerauth.networking.UserAgent
 import com.wultra.android.powerauth.networking.data.StatusResponse
 import com.wultra.android.powerauth.networking.error.ApiError
 import com.wultra.android.powerauth.networking.ssl.SSLValidationStrategy
@@ -32,8 +33,8 @@ import okhttp3.OkHttpClient
  * @param baseURL Base URL for push request
  * @param okHttpClient HTTP client instance for networking
  */
-fun PowerAuthSDK.createPushService(appContext: Context, baseURL: String, okHttpClient: OkHttpClient): IPushService {
-    return PushService(okHttpClient, baseURL, this, appContext)
+fun PowerAuthSDK.createPushService(appContext: Context, baseURL: String, okHttpClient: OkHttpClient, userAgent: UserAgent? = null): IPushService {
+    return PushService(okHttpClient, baseURL, this, appContext, null, userAgent)
 }
 
 /**
@@ -44,14 +45,14 @@ fun PowerAuthSDK.createPushService(appContext: Context, baseURL: String, okHttpC
  * @param baseURL Base URL for push request
  * @param strategy SSL validation strategy for networking
  */
-fun PowerAuthSDK.createPushService(appContext: Context, baseURL: String, strategy: SSLValidationStrategy): IPushService {
+fun PowerAuthSDK.createPushService(appContext: Context, baseURL: String, strategy: SSLValidationStrategy, userAgent: UserAgent? = null): IPushService {
     val builder = OkHttpClient.Builder()
     strategy.configure(builder)
     Logger.configure(builder)
-    return createPushService(appContext, baseURL, builder.build())
+    return createPushService(appContext, baseURL, builder.build(), userAgent)
 }
 
-class PushService(okHttpClient: OkHttpClient, baseURL: String, powerAuthSDK: PowerAuthSDK, appContext: Context, tokenProvider: IPowerAuthTokenProvider? = null): IPushService {
+class PushService(okHttpClient: OkHttpClient, baseURL: String, powerAuthSDK: PowerAuthSDK, appContext: Context, tokenProvider: IPowerAuthTokenProvider? = null, userAgent: UserAgent? = null): IPushService {
 
     override var acceptLanguage: String
         get() = pushApi.acceptLanguage
@@ -59,7 +60,7 @@ class PushService(okHttpClient: OkHttpClient, baseURL: String, powerAuthSDK: Pow
             pushApi.acceptLanguage = value
         }
 
-    private val pushApi = PushApi(okHttpClient, baseURL, powerAuthSDK, appContext, tokenProvider)
+    private val pushApi = PushApi(okHttpClient, baseURL, powerAuthSDK, appContext, tokenProvider, userAgent)
 
     override fun register(fcmToken: String, listener: IPushRegisterListener) {
         pushApi.registerToken(PushRegistrationRequest(PushRegistrationRequestObject(fcmToken)), object :

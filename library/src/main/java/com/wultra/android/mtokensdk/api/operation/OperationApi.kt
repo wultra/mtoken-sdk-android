@@ -14,13 +14,13 @@ package com.wultra.android.mtokensdk.api.operation
 import android.content.Context
 import com.google.gson.GsonBuilder
 import com.wultra.android.mtokensdk.api.operation.model.*
+import com.wultra.android.mtokensdk.operation.OperationsUtils
 import com.wultra.android.powerauth.networking.*
 import com.wultra.android.powerauth.networking.data.*
 import com.wultra.android.powerauth.networking.tokens.IPowerAuthTokenProvider
 import io.getlime.security.powerauth.sdk.PowerAuthAuthentication
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
 import okhttp3.OkHttpClient
-import org.threeten.bp.ZonedDateTime
 
 internal class OperationListResponse(responseObject: List<UserOperation>, status: Status): ObjectResponse<List<UserOperation>>(responseObject, status)
 internal class OperationHistoryResponse(responseObject: List<OperationHistoryEntry>, status: Status): ObjectResponse<List<OperationHistoryEntry>>(responseObject, status)
@@ -35,7 +35,9 @@ internal class OperationApi(okHttpClient: OkHttpClient,
                             baseUrl: String,
                             appContext: Context,
                             powerAuthSDK: PowerAuthSDK,
-                            tokenProvider: IPowerAuthTokenProvider?) : Api(baseUrl, okHttpClient, powerAuthSDK, getGson(), appContext, tokenProvider) {
+                            tokenProvider: IPowerAuthTokenProvider?,
+                            userAgent: UserAgent?,
+                            gsonBuilder: GsonBuilder?) : Api(baseUrl, okHttpClient, powerAuthSDK, gsonBuilder ?: OperationsUtils.defaultGsonBuilder(), appContext, tokenProvider, userAgent ?: UserAgent.libraryDefault(appContext)) {
 
     private object EmptyRequest: BaseRequest()
 
@@ -45,14 +47,6 @@ internal class OperationApi(okHttpClient: OkHttpClient,
         private val authorizeEndpoint = EndpointSigned<AuthorizeRequest, StatusResponse>("api/auth/token/app/operation/authorize", "/operation/authorize")
         private val rejectEndpoint = EndpointSigned<RejectRequest, StatusResponse>("api/auth/token/app/operation/cancel", "/operation/cancel")
         const val OFFLINE_AUTHORIZE_URI_ID = "/operation/authorize/offline"
-
-        private fun getGson(): GsonBuilder {
-            val builder = GsonBuilder()
-            builder.registerTypeHierarchyAdapter(Attribute::class.java, AttributeTypeAdapter())
-            builder.registerTypeAdapter(ZonedDateTime::class.java, ZonedDateTimeDeserializer())
-            builder.registerTypeAdapter(OperationHistoryEntry::class.java, OperationHistoryEntryDeserializer())
-            return builder
-        }
     }
 
     /** List pending operations. */

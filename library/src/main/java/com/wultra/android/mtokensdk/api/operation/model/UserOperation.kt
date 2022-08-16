@@ -21,7 +21,7 @@ import org.threeten.bp.ZonedDateTime
  * It is usually visually presented to the user as a non-editable form with information, about
  * the real-world operation (for example login or payment).
  */
-data class UserOperation(
+open class UserOperation(
         /**
          * Unique operation identifier
          */

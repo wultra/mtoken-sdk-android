@@ -61,18 +61,18 @@ dependencies {
     // DO NOT UPGRADE ABOVE 3.12.X! Version 3.12 is the last version supporting TLS 1 and 1.1
     // If upgraded, the app will crash on android 4.4
     implementation("com.squareup.okhttp3:okhttp:3.12.13")
-    implementation("com.wultra.android.powerauth:powerauth-networking:1.0.2")
+    implementation("com.wultra.android.powerauth:powerauth-networking:1.1.0-SNAPSHOT")
 
     // Dependencies
-    compileOnly("com.wultra.android.powerauth:powerauth-sdk:1.7.0")
+    compileOnly("com.wultra.android.powerauth:powerauth-sdk:1.7.1")
     compileOnly("io.getlime.core:rest-model-base:1.2.0")
 
     // TestDependencies
     testImplementation("junit:junit:4.13.2")
 
     // Android tests
-    androidTestImplementation("com.wultra.android.powerauth:powerauth-sdk:1.7.0")
-    androidTestImplementation("com.wultra.android.powerauth:powerauth-networking:1.0.2")
+    androidTestImplementation("com.wultra.android.powerauth:powerauth-sdk:1.7.1")
+    androidTestImplementation("com.wultra.android.powerauth:powerauth-networking:1.1.0-SNAPSHOT")
     androidTestImplementation("androidx.test:runner:1.4.0")
     androidTestImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test:core:1.4.0")
