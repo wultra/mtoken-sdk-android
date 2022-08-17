@@ -11,7 +11,6 @@
 
 package com.wultra.android.mtokensdk.api.operation.model
 
-import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
 import com.wultra.android.mtokensdk.operation.expiration.ExpirableOperation
 import org.threeten.bp.ZonedDateTime
@@ -21,7 +20,7 @@ import org.threeten.bp.ZonedDateTime
  * It is usually visually presented to the user as a non-editable form with information, about
  * the real-world operation (for example login or payment).
  */
-data class UserOperation(
+open class UserOperation(
         /**
          * Unique operation identifier
          */

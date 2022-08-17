@@ -15,6 +15,7 @@ import android.content.Context
 import com.wultra.android.mtokensdk.api.Api
 import com.wultra.android.mtokensdk.api.GsonRequestBodyBytes
 import com.wultra.android.mtokensdk.api.IApiCallResponseListener
+import com.wultra.android.mtokensdk.api.ResponseBodyConverter
 import com.wultra.android.mtokensdk.api.general.StatusResponse
 import com.wultra.android.mtokensdk.api.operation.model.AuthorizeRequest
 import com.wultra.android.mtokensdk.api.operation.model.OperationListResponse
@@ -51,7 +52,7 @@ internal class OperationApi constructor(okHttpClient: OkHttpClient,
     /**
      * List pending operations.
      */
-    fun list(listener: IApiCallResponseListener<OperationListResponse>) {
+    fun list(listener: IApiCallResponseListener<OperationListResponse>, customConverter: ResponseBodyConverter<OperationListResponse>?) {
         val json = "{}"
         val body = RequestBody.create(JSON_MEDIA_TYPE, json)
         tokenManager.getTokenAsync(object : IPowerAuthTokenListener {
@@ -63,7 +64,7 @@ internal class OperationApi constructor(okHttpClient: OkHttpClient,
                         .header("Accept-Language", acceptLanguage)
                         .header(tokenHeader.key, tokenHeader.value)
                         .build()
-                return makeCall(request, listener)
+                return makeCall(request, listener, customConverter)
             }
 
             override fun onFailed(e: Throwable) {

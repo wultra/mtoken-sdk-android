@@ -13,6 +13,7 @@ package com.wultra.android.mtokensdk.operation
 
 import android.content.Context
 import com.wultra.android.mtokensdk.api.IApiCallResponseListener
+import com.wultra.android.mtokensdk.api.ResponseBodyConverter
 import com.wultra.android.mtokensdk.api.general.ApiError
 import com.wultra.android.mtokensdk.api.general.StatusResponse
 import com.wultra.android.mtokensdk.api.operation.OperationApi
@@ -114,6 +115,14 @@ class OperationsService: IOperationsService {
     override fun getLastOperationsResult() = lastOperationsResult
 
     override fun getOperations(listener: IGetOperationListener?) {
+        getOperationsPrivate(null, listener)
+    }
+
+    override fun getOperations(customConverter: ResponseBodyConverter<OperationListResponse>, listener: IGetOperationListener?) {
+        getOperationsPrivate(customConverter, listener)
+    }
+
+    private fun getOperationsPrivate(customConverter: ResponseBodyConverter<OperationListResponse>?, listener: IGetOperationListener?) {
         synchronized(mutex) {
             listener?.let { tasks.add(listener) }
             if (operationsLoading) {
@@ -121,7 +130,7 @@ class OperationsService: IOperationsService {
                 return
             }
             operationsLoading = true
-            updateOperationsListAsync()
+            updateOperationsListAsync(customConverter)
         }
     }
 
@@ -187,7 +196,7 @@ class OperationsService: IOperationsService {
         Logger.d("Operation polling stopped")
     }
 
-    private fun updateOperationsListAsync() {
+    private fun updateOperationsListAsync(customConverter: ResponseBodyConverter<OperationListResponse>? = null) {
         operationApi.list(object : IApiCallResponseListener<OperationListResponse> {
             override fun onSuccess(result: OperationListResponse) {
                 lastOperationsResult = SuccessOperationsResult(result.responseObject)
@@ -204,7 +213,7 @@ class OperationsService: IOperationsService {
                     operationsLoading = false
                 }
             }
-        })
+        }, customConverter)
     }
 
 }

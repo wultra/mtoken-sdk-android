@@ -11,8 +11,10 @@
 
 package com.wultra.android.mtokensdk.operation
 
+import com.wultra.android.mtokensdk.api.ResponseBodyConverter
 import com.wultra.android.mtokensdk.api.general.ApiError
 import com.wultra.android.mtokensdk.api.operation.model.IOperation
+import com.wultra.android.mtokensdk.api.operation.model.OperationListResponse
 import com.wultra.android.mtokensdk.api.operation.model.UserOperation
 import com.wultra.android.mtokensdk.api.operation.model.QROperation
 import io.getlime.security.powerauth.sdk.PowerAuthAuthentication
@@ -55,6 +57,13 @@ interface IOperationsService {
      * @param listener Operation result listener
      */
     fun getOperations(listener: IGetOperationListener?)
+
+    /**
+     * Retrieves user operations and calls the listener when finished.
+     *
+     * @param listener Operation result listener
+     */
+    fun getOperations(customConverter: ResponseBodyConverter<OperationListResponse>, listener: IGetOperationListener?)
 
     /**
      * Returns if operation polling is running

@@ -19,15 +19,20 @@ import com.wultra.android.mtokensdk.common.Logger
 import okhttp3.ResponseBody
 import java.io.IOException
 
+interface ResponseBodyConverter<T> {
+    @Throws(IOException::class)
+    fun convert(value: ResponseBody, gson: Gson): T
+}
+
 /**
  * GSON converter for parsing responses.
  *
  * Inspired by Retrofit implementation.
  */
-internal class GsonResponseBodyConverter<T>(private val gson: Gson, private val adapter: TypeAdapter<T>) {
+internal class GsonResponseBodyConverter<T>(private val adapter: TypeAdapter<T>): ResponseBodyConverter<T> {
 
     @Throws(IOException::class)
-    fun convert(value: ResponseBody): T {
+    override fun convert(value: ResponseBody, gson: Gson): T {
         val jsonReader = gson.newJsonReader(value.charStream())
         try {
             value.use {

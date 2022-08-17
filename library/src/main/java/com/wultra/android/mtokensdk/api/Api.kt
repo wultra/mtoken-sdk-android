@@ -46,7 +46,7 @@ internal abstract class Api(protected val okHttpClient: OkHttpClient, private va
     /**
      * Make an API call.
      */
-    protected inline fun <reified T> makeCall(request: Request, listener: IApiCallResponseListener<T>) {
+    protected inline fun <reified T> makeCall(request: Request, listener: IApiCallResponseListener<T>, customConverter: ResponseBodyConverter<T>? = null) {
         if (!request.url().isHttps) {
             Logger.w("Using HTTP for communication may create a serious security issue! Use HTTPS in production.")
         }
@@ -60,14 +60,12 @@ internal abstract class Api(protected val okHttpClient: OkHttpClient, private va
                 try {
                     if (response.isSuccessful) {
                         val gson = getGson()
-                        val typeAdapter = getTypeAdapter<T>(gson)
-                        val converter = GsonResponseBodyConverter(gson, typeAdapter)
-                        listener.onSuccess(converter.convert(response.body()!!))
+                        val converter = customConverter ?: GsonResponseBodyConverter(getTypeAdapter(gson))
+                        listener.onSuccess(converter.convert(response.body()!!, gson))
                     } else {
                         val gson = getGson()
-                        val typeAdapter = getTypeAdapter<ErrorResponse>(gson)
-                        val converter = GsonResponseBodyConverter(gson, typeAdapter)
-                        val errorResponse = converter.convert(response.body()!!)
+                        val converter = GsonResponseBodyConverter<ErrorResponse>(getTypeAdapter(gson))
+                        val errorResponse = converter.convert(response.body()!!, gson)
                         listener.onFailure(MTokenHttpException(response, errorResponse))
                     }
                 } catch (e: Throwable) {
