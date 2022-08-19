@@ -59,9 +59,10 @@ interface IOperationsService {
     fun getOperations(listener: IGetOperationListener?)
 
     /**
-     * Retrieves user operations and calls the listener when finished.
+     * Retrieves user operations, uses custom converter to parse to payload and calls the listener when finished.
      *
      * @param listener Operation result listener
+     * @param customConverter Custom converter for payload parsing.
      */
     fun getOperations(customConverter: ResponseBodyConverter<OperationListResponse>, listener: IGetOperationListener?)
 
