@@ -170,10 +170,11 @@ if [ x$DO_SIGN == x1 ]; then
     
     # Load and validate API credentials
     LOAD_API_CREDENTIALS
+    echo "$NEXUS_USER"
     [[ x$NEXUS_USER == x ]] && FAILURE "Missing NEXUS_USER variable in API credentials."
     [[ x$NEXUS_PASSWORD == x ]] && FAILURE "Missing NEXUS_PASSWORD variable in API credentials."
     [[ x$SIGN_GPG_KEY_ID == x ]] && FAILURE "Missing SIGN_GPG_KEY_ID variable in API credentials."
-    [[ x$SIGN_GPG_KEY_PASS == x ]] && FAILURE "Missing SIGN_GPG_KEY_PASS variable in API credentials."
+    #[[ x$SIGN_GPG_KEY_PASS == x ]] && FAILURE "Missing SIGN_GPG_KEY_PASS variable in API credentials."
     [[ x$NEXUS_STAGING_PROFILE_ID == x ]] && FAILURE "Missing NEXUS_STAGING_PROFILE_ID variable in API credentials."
 
     # Configure gpg for gradle task
