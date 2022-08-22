@@ -168,13 +168,8 @@ def shouldSignArtifacts() {
     return keyId != null && keyPass != null
 }
 
-android {
-    publishing {
-        singleVariant('release') {
-        }
-    }
-}
-
 afterEvaluate {
-    assembleRelease.dependsOn bundleReleaseAar
+    signReleasePublication.dependsOn bundleReleaseAar
+    publishReleasePublicationToSonatypeRepository.dependsOn bundleReleaseAar
+    publishReleasePublicationToMavenLocal.dependsOn bundleReleaseAar
 }

@@ -72,7 +72,7 @@ dependencies {
 
     // Android tests
     androidTestImplementation("com.wultra.android.powerauth:powerauth-sdk:1.7.1")
-    androidTestImplementation("com.wultra.android.powerauth:powerauth-networking:1.1.0-SNAPSHOT")
+    androidTestImplementation("com.wultra.android.powerauth:powerauth-networking:1.1.0")
     androidTestImplementation("androidx.test:runner:1.4.0")
     androidTestImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test:core:1.4.0")
