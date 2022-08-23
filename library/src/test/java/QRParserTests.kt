@@ -34,7 +34,7 @@ class QRParserTests {
                 "Payment\n" +
                 "Please confirm this payment\n" +
                 "A1*A100CZK*ICZ2730300000001165254011*D20180425*Thello world\n" +
-                "B\n" +
+                "BCFX\n" +
                 "AD8bOO0Df73kNaIGb3Vmpg==\n" +
                 "0").toByteArray()
 
@@ -44,7 +44,10 @@ class QRParserTests {
             assertEquals("5ff1b1ed-a3cc-45a3-8ab0-ed60950312b6", operation.operationId)
             assertEquals("Payment", operation.title)
             assertEquals("Please confirm this payment", operation.message)
-            assert(operation.flags.biometryAllowed)
+            assert(operation.flags.biometryAllowed) { "biometry allowed flag missing" }
+            assert(operation.flags.blockWhenOnCall) { "block when on call flag missing" }
+            assert(operation.flags.flipButtons) { "flip buttons flag missing" }
+            assert(operation.flags.fraudWarning) { "fraud warning flag missing" }
             assertEquals("AD8bOO0Df73kNaIGb3Vmpg==", operation.nonce)
             assertEquals("MEYCIQDby1Uq+MaxiAAGzKmE/McHzNOUrvAP2qqGBvSgcdtyjgIhAMo1sgqNa1pPZTFBhhKvCKFLGDuHuTTYexdmHFjUUIJW", operation.signature.signatureString)
             assertEquals(QROperationSignature.SigningKey.MASTER, operation.signature.signingKey)
@@ -94,7 +97,7 @@ class QRParserTests {
 
     @Test
     fun `test forward compatibility`() {
-        val qrcode = makeCode(operationData = "B2*Xtest", otherAttrs = listOf("Some Additional Information"))
+        val qrcode = makeCode(operationData = "B2*Xtest", otherAttrs = listOf("Some Additional Information"), flags = "B")
         val expectedSignedData =
         ("5ff1b1ed-a3cc-45a3-8ab0-ed60950312b6\n" +
                 "Payment\n" +
@@ -168,6 +171,9 @@ class QRParserTests {
         try {
             val operation= QROperationParser.parse(makeCode(flags = ""))
             assertFalse(operation.flags.biometryAllowed)
+            assertFalse(operation.flags.blockWhenOnCall)
+            assertFalse(operation.flags.flipButtons)
+            assertFalse(operation.flags.fraudWarning)
         } catch (e: Exception) {
             fail("This should be parsed")
         }
@@ -375,7 +381,7 @@ class QRParserTests {
             title: String                = "Payment",
             message: String              = "Please confirm this payment",
             operationData: String        = "A1*A100CZK*ICZ2730300000001165254011*D20180425*Thello world",
-            flags: String                = "B",
+            flags: String                = "BCFX",
             otherAttrs: List<String>?   = null,
             nonce: String                = "AD8bOO0Df73kNaIGb3Vmpg==",
             signingKey: String           = "0",
