@@ -12,6 +12,7 @@
 package com.wultra.android.mtokensdk.operation
 
 import android.content.Context
+import com.google.gson.GsonBuilder
 import com.wultra.android.mtokensdk.api.operation.*
 import com.wultra.android.mtokensdk.api.operation.AuthorizeRequest
 import com.wultra.android.mtokensdk.api.operation.OperationApi
@@ -19,6 +20,7 @@ import com.wultra.android.mtokensdk.api.operation.RejectRequest
 import com.wultra.android.mtokensdk.api.operation.model.*
 import com.wultra.android.mtokensdk.common.Logger
 import com.wultra.android.powerauth.networking.IApiCallResponseListener
+import com.wultra.android.powerauth.networking.UserAgent
 import com.wultra.android.powerauth.networking.data.StatusResponse
 import com.wultra.android.powerauth.networking.error.ApiError
 import com.wultra.android.powerauth.networking.ssl.SSLValidationStrategy
@@ -32,27 +34,33 @@ import java.util.*
  * Convenience factory method to create an IOperationsService instance
  * from given PowerAuthSDK instance.
  *
- * @param appContext Application Context object
+ * @param appContext Application Context object.
  * @param baseURL Base URL where the operations endpoint rests.
- * @param httpClient OkHttpClient for API communication
+ * @param httpClient OkHttpClient for API communication.
+ * @param userAgent Default user agent for each request.
+ * @param gsonBuilder Custom GSON builder for deserialization of request. If you want to provide or own
+ * deserialization logic, we recommend adding to the instance obtained from the OperationsUtils.defaultGsonBuilder().
  */
-fun PowerAuthSDK.createOperationsService(appContext: Context, baseURL: String, httpClient: OkHttpClient): IOperationsService {
-    return OperationsService(this, appContext, httpClient, baseURL)
+fun PowerAuthSDK.createOperationsService(appContext: Context, baseURL: String, httpClient: OkHttpClient, userAgent: UserAgent? = null, gsonBuilder: GsonBuilder? = null): IOperationsService {
+    return OperationsService(this, appContext, httpClient, baseURL, null, userAgent, gsonBuilder)
 }
 
 /**
  * Convenience factory method to create an IOperationsService instance
  * from given PowerAuthSDK instance.
  *
- * @param appContext Application Context object
+ * @param appContext Application Context object.
  * @param baseURL Base URL where the operations endpoint rests.
- * @param strategy SSL validation strategy for networking
+ * @param strategy SSL validation strategy for networking.
+ * @param userAgent Default user agent for each request.
+ * @param gsonBuilder Custom GSON builder for deserialization of request. If you want to provide or own
+ * deserialization logic, we recommend adding to the instance obtained from the OperationsUtils.defaultGsonBuilder().
  */
-fun PowerAuthSDK.createOperationsService(appContext: Context, baseURL: String, strategy: SSLValidationStrategy): IOperationsService {
+fun PowerAuthSDK.createOperationsService(appContext: Context, baseURL: String, strategy: SSLValidationStrategy, userAgent: UserAgent? = null, gsonBuilder: GsonBuilder? = null): IOperationsService {
     val builder = OkHttpClient.Builder()
     strategy.configure(builder)
     Logger.configure(builder)
-    return createOperationsService(appContext, baseURL, builder.build())
+    return createOperationsService(appContext, baseURL, builder.build(), userAgent, gsonBuilder)
 }
 
 @Suppress("EXPERIMENTAL_API_USAGE", "ConvertSecondaryConstructorToPrimary")
@@ -104,10 +112,10 @@ class OperationsService: IOperationsService {
      * @param tokenProvider PowerAuthToken provider. If null is provided, default internal implementation is provided.
      *
      */
-    constructor(powerAuthSDK: PowerAuthSDK, appContext: Context, httpClient: OkHttpClient, baseURL: String, tokenProvider: IPowerAuthTokenProvider? = null) {
+    constructor(powerAuthSDK: PowerAuthSDK, appContext: Context, httpClient: OkHttpClient, baseURL: String, tokenProvider: IPowerAuthTokenProvider? = null, userAgent: UserAgent? = null, gsonBuilder: GsonBuilder? = null) {
         this.powerAuthSDK = powerAuthSDK
         this.appContext = appContext
-        this.operationApi = OperationApi(httpClient, baseURL, appContext, powerAuthSDK, tokenProvider)
+        this.operationApi = OperationApi(httpClient, baseURL, appContext, powerAuthSDK, tokenProvider, userAgent, gsonBuilder)
     }
 
     override fun isLoadingOperations() = operationsLoading
@@ -165,8 +173,8 @@ class OperationsService: IOperationsService {
     }
 
     @Throws
-    override fun authorizeOfflineOperation(operation: QROperation, authentication: PowerAuthAuthentication): String {
-        return powerAuthSDK.offlineSignatureWithAuthentication(appContext, authentication, OperationApi.OFFLINE_AUTHORIZE_URI_ID, operation.dataForOfflineSigning(), operation.nonce)
+    override fun authorizeOfflineOperation(operation: QROperation, authentication: PowerAuthAuthentication, uriId: String): String {
+        return powerAuthSDK.offlineSignatureWithAuthentication(appContext, authentication, uriId, operation.dataForOfflineSigning(), operation.nonce)
                 ?: throw Exception("Cannot sign this operation")
     }
 

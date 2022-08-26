@@ -17,6 +17,12 @@ jobs:
     steps:
       - name: Checkout the repo
         uses: actions/checkout@v2
+      - name: Setup Java 11
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+          cache: 'gradle'
       - name: Test the app (unit test)
         run: ./gradlew clean test
       - name: Prepare configuration for integration tests
@@ -24,12 +30,13 @@ jobs:
           CL_URL: ${{ secrets.TESTS_CL_URL }}
           CL_LGN: ${{ secrets.TESTS_CL_LGN }}
           CL_PWD: ${{ secrets.TESTS_CL_PWD }}
+          CL_AID: ${{ secrets.TESTS_CL_AID }}
           APP_KEY: ${{ secrets.TESTS_APP_KEY }}
           APP_SECRET: ${{ secrets.TESTS_APP_SECRET }}
           MASTER_SERVER_PUBLIC_KEY: ${{ secrets.TESTS_MASTER_SERVER_PUBLIC_KEY }}
           ER_URL: ${{ secrets.TESTS_ER_URL }}
           OP_URL: ${{ secrets.TESTS_OP_URL }}
-        run: echo -e tests.sdk.cloudServerUrl="$CL_URL"\\ntests.sdk.cloudServerLogin="$CL_LGN"\\ntests.sdk.cloudServerPassword="$CL_PWD"\\ntests.sdk.enrollmentServerUrl="$ER_URL"\\ntests.sdk.operationsServerUrl="$OP_URL"\\ntests.sdk.appKey="$APP_KEY"\\ntests.sdk.appSecret="$APP_SECRET"\\ntests.sdk.masterServerPublicKey="$MASTER_SERVER_PUBLIC_KEY" > configs/integration-tests.properties
+        run: echo -e tests.sdk.cloudServerUrl="$CL_URL"\\ntests.sdk.cloudServerLogin="$CL_LGN"\\ntests.sdk.cloudServerPassword="$CL_PWD"\\ntests.sdk.cloudApplicationId="$CL_AID"\\ntests.sdk.enrollmentServerUrl="$ER_URL"\\ntests.sdk.operationsServerUrl="$OP_URL"\\ntests.sdk.appKey="$APP_KEY"\\ntests.sdk.appSecret="$APP_SECRET"\\ntests.sdk.masterServerPublicKey="$MASTER_SERVER_PUBLIC_KEY" > configs/integration-tests.properties
       - name: Test the app (integration tests)
         uses: reactivecircus/android-emulator-runner@v2
         with:

@@ -12,6 +12,7 @@
 package com.wultra.android.mtokensdk.test
 
 import android.content.Context
+import android.util.Log
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
 import com.google.gson.Gson
@@ -47,12 +48,14 @@ class IntegrationUtils {
         private val cloudServerUrl = getInstrumentationParameter("cloudServerUrl")
         private val cloudServerLogin = getInstrumentationParameter("cloudServerLogin")
         private val cloudServerPassword = getInstrumentationParameter("cloudServerPassword")
+        private val cloudApplicationId = getInstrumentationParameter("cloudApplicationId")
         private val enrollmentUrl = getInstrumentationParameter("enrollmentServerUrl")
         private val operationsUrl = getInstrumentationParameter("operationsServerUrl")
         private val appKey = getInstrumentationParameter("appKey")
         private val appSecret = getInstrumentationParameter("appSecret")
         private val masterPublicKey = getInstrumentationParameter("masterServerPublicKey")
         private val activationName = UUID.randomUUID().toString()
+        private var registrationId = "" // will be filled when activation is created
 
         @Throws
         fun prepareActivation(pin: String): Pair<PowerAuthSDK, IOperationsService> {
@@ -71,10 +74,14 @@ class IntegrationUtils {
 
             val body = """
                 {
-                  "userId": "$activationName"
+                  "userId": "$activationName",
+                  "flags": [],
+                  "appId": "$cloudApplicationId"
                 }
-                """
-            val resp = makeCall<RegistrationObject>(body, "$cloudServerUrl/registration")
+                """.trimIndent()
+            val resp = makeCall<RegistrationObject>(body, "$cloudServerUrl/v2/registrations")
+
+            registrationId = resp.registrationId
 
             // CREATE ACTIVATION LOCALLY
 
@@ -92,12 +99,18 @@ class IntegrationUtils {
 
             // COMMIT ACTIVATION LOCALLY
 
-            pa.commitActivationWithPassword(context, pin)
+            val result = pa.commitActivationWithPassword(context, pin)
+            Log.d("prepare activaiton", "commitActivationWithPassword result: $result")
 
             // COMMIT ACTIVATION ON THE SERVER
-            makeCall<CommitObject>(body, "$cloudServerUrl/registration/commit")
+            val bodyCommit = """
+                {
+                  "externalUserId": "test"
+                }
+                """.trimIndent()
+            makeCall<CommitObject>(bodyCommit, "$cloudServerUrl/v2/registrations/${resp.registrationId}/commit")
 
-            return Pair(pa, pa.createOperationsService(context, operationsUrl, SSLValidationStrategy.noValidation()))
+            return Pair(pa, pa.createOperationsService(context, operationsUrl, SSLValidationStrategy.default()))
         }
 
         enum class Factors {
@@ -111,7 +124,7 @@ class IntegrationUtils {
                 Factors.F_2FA -> { """
                 {
                   "userId": "$activationName",
-                  "template": "login-tpp",
+                  "template": "login",
                    "parameters": {
                      "party.id": "666",
                      "party.name": "Datová schránka",
@@ -119,26 +132,50 @@ class IntegrationUtils {
                          "session.ip-address": "192.168.0.1"
                    }
                 }
-                """
+                """.trimIndent()
                 }
             }
 
             // create an operation on the nextstep server
-            return makeCall(opBody, "$cloudServerUrl/operations")
+            return makeCall(opBody, "$cloudServerUrl/v2/operations")
         }
 
         @Throws
-        private inline fun <reified T> makeCall(payload: String, url: String): T {
+        fun getQROperation(operation: OperationObject): QRData {
+            return makeCall(null, "$cloudServerUrl/v2/operations/${operation.operationId}/offline/qr?registrationId=$registrationId", "GET")
+        }
+
+        @Throws
+        fun verifyQROperation(operation: OperationObject, qrData: QRData, otp: String): QROperationVerify {
+            val body = """
+                {
+                  "otp": "$otp",
+                  "nonce": "${qrData.nonce}",
+                  "registrationId": "$registrationId"
+                }
+            """.trimIndent()
+            return makeCall(body, "$cloudServerUrl/v2/operations/${operation.operationId}/offline/otp")
+        }
+
+        @Throws
+        private inline fun <reified T> makeCall(payload: String?, url: String, method: String = "POST"): T {
+            Log.d("make call payload", payload ?: "")
+            Log.d("make call url", url)
             val creds = getEncoder().encodeToString("$cloudServerLogin:$cloudServerPassword".toByteArray())
-            val bodyBytes = payload.toByteArray()
-            val body = RequestBody.create(jsonMediaType, bodyBytes)
+            val body = if (payload != null) {
+                RequestBody.create(jsonMediaType, payload.toByteArray())
+            } else {
+                null
+            }
             val request = Request.Builder()
                     .header("authorization", "Basic $creds")
                     .url(url)
-                    .post(body)
+                    .method(method, body)
                     .build()
             val resp = client.newCall(request).execute()
-            return gson.fromJson(resp.body()!!.string(), object: TypeToken<T>(){}.type)
+            val stringResp = resp.body()!!.string()
+            Log.d("make call response", stringResp)
+            return gson.fromJson(stringResp, object: TypeToken<T>(){}.type)
         }
 
         @Throws
@@ -148,7 +185,7 @@ class IntegrationUtils {
     }
 }
 
-data class RegistrationObject(val activationQrCodeData: String) {
+data class RegistrationObject(val activationQrCodeData: String, val registrationId: String) {
     fun activationCode(): String = ActivationCodeUtil.parseFromActivationCode(activationQrCodeData)!!.activationCode
 }
 
@@ -163,3 +200,16 @@ data class OperationObject(val operationId: String,
                            val maxFailureCount: Int,
                            val timestampCreated: Double,
                            val timestampExpires: Double)
+
+data class QRData(val operationQrCodeData: String,
+                  val nonce: String)
+
+data class QROperationVerify(val otpValid: Boolean,
+                             val userId: String,
+                             val registrationId: String,
+                             val registrationStatus: String,
+                             val signatureType: String,
+                             val remainingAttempts: Int
+                            // val flags: []
+                            // val application)
+)
