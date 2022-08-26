@@ -42,6 +42,11 @@ fun PowerAuthSDK.createOperationsService(appContext: Context, baseURL: String, s
     - `SSLValidationStrategy.noValidation`
     - `SSLValidationStrategy.sslPinning`
 
+__Optional parameters:__
+
+- `userAgent` - Optional default user agent used for each request
+- `gsonBuilder` - Optional GSON builder for custom deserialization 
+
 ### Factory Extension With OkHttpClient
 
 Convenience factory method that will return a new instance with provided [`OkHttpClient`](https://square.github.io/okhttp/) that you can configure on your own.
@@ -53,6 +58,11 @@ fun PowerAuthSDK.createOperationsService(appContext: Context, baseURL: String, h
 - `appContext` - application context
 - `baseURL`-  address, where your operations server can be reached
 - `httpClient` - [`OkHttpClient`](https://square.github.io/okhttp/) instance used for API requests
+
+__Optional parameters:__
+
+- `userAgent` - Optional default user agent used for each request
+- `gsonBuilder` - Optional GSON builder for custom deserialization
 
 ## Retrieve Pending Operations
 
@@ -197,7 +207,7 @@ You can retrieve an operation history via the `IOperationsService.getHistory` me
 
 ```kotlin
 // Retrieve operation history with password
-func history(password: String) {
+fun history(password: String) {
 
     val auth = PowerAuthAuthentication.possessionWithPassword(password)
 

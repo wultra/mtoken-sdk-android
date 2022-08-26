@@ -35,6 +35,10 @@ fun PowerAuthSDK.createPushService(appContext: Context, baseURL: String, strateg
     - `SSLValidationStrategy.noValidation`
     - `SSLValidationStrategy.sslPinning`
 
+__Optional parameters:__
+
+- `userAgent` - Optional default user agent used for each request
+
 ### Extension Factory With OkHttpClient
 
 ```kotlin
@@ -43,6 +47,10 @@ fun PowerAuthSDK.createPushService(appContext: Context, baseURL: String, httpCli
 - `appContext` - application context
 - `baseURL` - address, where your operations server can be reached
 - `httpClient` - [`OkHttpClient`](https://square.github.io/okhttp/) instance used for API requests
+
+__Optional parameters:__
+
+- `userAgent` - Optional default user agent used for each request
 
 ## Push Service API Reference
 

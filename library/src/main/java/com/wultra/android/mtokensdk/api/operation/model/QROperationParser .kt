@@ -281,7 +281,7 @@ class QROperationParser {
         }
 
         private fun parseOperationFlags(string: String): QROperationFlags {
-            return QROperationFlags(string.contains("B"))
+            return QROperationFlags(string.contains("B"), string.contains("X"), string.contains("F"), string.contains("C"))
         }
     }
 }

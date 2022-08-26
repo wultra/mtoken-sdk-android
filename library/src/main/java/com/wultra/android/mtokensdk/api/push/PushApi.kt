@@ -17,6 +17,7 @@ import com.wultra.android.mtokensdk.api.push.model.PushRegistrationRequestObject
 import com.wultra.android.powerauth.networking.Api
 import com.wultra.android.powerauth.networking.EndpointSignedWithToken
 import com.wultra.android.powerauth.networking.IApiCallResponseListener
+import com.wultra.android.powerauth.networking.UserAgent
 import com.wultra.android.powerauth.networking.data.ObjectRequest
 import com.wultra.android.powerauth.networking.data.StatusResponse
 import com.wultra.android.powerauth.networking.tokens.IPowerAuthTokenProvider
@@ -32,7 +33,8 @@ internal class PushApi constructor(okHttpClient: OkHttpClient,
                                    baseURL: String,
                                    powerAuthSDK: PowerAuthSDK,
                                    appContext: Context,
-                                   tokenProvider: IPowerAuthTokenProvider?) : Api(baseURL, okHttpClient, powerAuthSDK, GsonBuilder(), appContext, tokenProvider) {
+                                   tokenProvider: IPowerAuthTokenProvider?,
+                                   userAgent: UserAgent?) : Api(baseURL, okHttpClient, powerAuthSDK, GsonBuilder(), appContext, tokenProvider, userAgent ?: UserAgent.libraryDefault(appContext)) {
 
     companion object {
         private val endpoint = EndpointSignedWithToken<PushRegistrationRequest, StatusResponse>("api/push/device/register/token", "possession_universal")
