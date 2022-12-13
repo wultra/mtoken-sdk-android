@@ -84,7 +84,7 @@ The Inbox Service provide a paged list of messages:
 // First page is 0, next 1, etc...
 inboxService.getMessageList(pageNumber = 0, pageSize = 50, onlyUnread = false) {
     it.onSuccess { messages ->
-        if (messages.count) < 50 {
+        if (messages.count < 50) {
             // This is the last page
         }
         // Process messages    
