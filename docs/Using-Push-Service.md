@@ -6,9 +6,8 @@
 - [Push Service API Reference](#push-service-api-reference)
 - [Registering to WMT Push Notifications](#registering-to-push-notifications)
 - [Receiving WMT Push Notifications](#receiving-wmt-push-notifications)
-<!-- end -->
-
 ## Introduction
+<!-- end -->
 
 Push Service is responsible for registering the device for the push notifications about the Operations that are tied to the current PowerAuth activation.
 

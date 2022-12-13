@@ -11,9 +11,8 @@
 - [Operations API Reference](#operations-api-reference)
 - [UserOperation](#useroperation)
 - [Creating a Custom Operation](#creating-a-custom-operation)
-<!-- end -->
-
 ## Introduction
+<!-- end -->
 
 Operations Service is responsible for fetching the operation list and for approving or rejecting operations.
 
