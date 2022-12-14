@@ -70,8 +70,8 @@ inboxService.getUnreadCount {
         } else {
             print("Your inbox is empty")
         }
-    it.onFailure {
-        print("Error \(error)")
+    }.onFailure {
+        // Process error
     }
 }
 ```
@@ -88,8 +88,7 @@ inboxService.getMessageList(pageNumber = 0, pageSize = 50, onlyUnread = false) {
             // This is the last page
         }
         // Process messages    
-    }
-    it.onFailure {
+    }.onFailure {
         // Process error
     }
 }
@@ -105,8 +104,7 @@ inboxService.getAllMessages {
             print(" - ${msg.subject}")
             print("   * ID = ${msg.id}")
         }
-    }
-    it.onFailure {
+    }.onFailure {
         // Process error
     }
 }
@@ -123,8 +121,7 @@ inboxService.getMessageDetail(messageId) {
         print("Received message:")
         print("${it.subject}")
         print("${it.body}")
-    }
-    it.onFailure {
+    }.onFailure {
         // Process error
     }
 }
@@ -139,8 +136,7 @@ let messageId = messagesList.first!.id
 inboxService.markRead(messageId: messageId) {
     it.onSuccess {
         // OK
-    }
-    it.onFailure {
+    }.onFailure {
         // Process error
     }
 }
@@ -152,8 +148,7 @@ Alternatively, you can mark all messages as read:
 inboxService.markAllRead {
     it.onSuccess {
         // OK
-    }
-    it.onFailure {
+    }.onFailure {
         // Process error
     }
 }
@@ -161,4 +156,4 @@ inboxService.markAllRead {
 
 ## Error handling
 
-Every error produced by the Push Service is of a `WMTError` type. For more information see detailed [error handling documentation](Error-Handling.md).
+Every error produced by the Inbox Service is of a `WMTError` type. For more information see detailed [error handling documentation](Error-Handling.md).
