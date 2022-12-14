@@ -13,14 +13,11 @@ package com.wultra.android.mtokensdk.operation
 
 import com.wultra.android.mtokensdk.api.operation.OperationApi
 import com.wultra.android.mtokensdk.api.operation.model.IOperation
+import com.wultra.android.mtokensdk.api.operation.model.OperationHistoryEntry
 import com.wultra.android.mtokensdk.api.operation.model.UserOperation
 import com.wultra.android.mtokensdk.api.operation.model.QROperation
 import com.wultra.android.powerauth.networking.error.ApiError
 import io.getlime.security.powerauth.sdk.PowerAuthAuthentication
-
-abstract class OperationsResult
-data class SuccessOperationsResult(val operations: List<UserOperation>): OperationsResult()
-data class ErrorOperationsResult(val error: ApiError): OperationsResult()
 
 /**
  * Service for operations handling.
@@ -38,12 +35,7 @@ interface IOperationsService {
      */
     var acceptLanguage: String
 
-    /**
-     * Last cached operation result for easy access.
-     *
-     * @return Last getOperations result. Null if not performed yet
-     */
-    fun getLastOperationsResult(): OperationsResult?
+    val lastOperationsResult: Result<List<UserOperation>>?
 
     /**
      * If operations are loading.
@@ -51,19 +43,19 @@ interface IOperationsService {
     fun isLoadingOperations(): Boolean
 
     /**
-     * Retrieves user operations and calls the listener when finished.
+     * Retrieves user operations.
      *
-     * @param listener Operation result listener
+     * @param callback Callback with result
      */
-    fun getOperations(listener: IGetOperationListener?)
+    fun getOperations(callback: (result: Result<List<UserOperation>>) -> Unit)
 
     /**
      * Retrieves the history of user operations with its current status.
      *
      * @param authentication PowerAuth authentication object
-     * @param listener Result listener
+     * @param callback Callback with result.
      */
-    fun getHistory(authentication: PowerAuthAuthentication, listener: IGetHistoryListener)
+    fun getHistory(authentication: PowerAuthAuthentication, callback: (result: Result<List<OperationHistoryEntry>>) -> Unit)
 
     /**
      * Returns if operation polling is running
@@ -91,18 +83,18 @@ interface IOperationsService {
      *
      * @param operation Operation for approval
      * @param authentication PowerAuth authentication object
-     * @param listener Result listener
+     * @param callback Callback with result.
      */
-    fun authorizeOperation(operation: IOperation, authentication: PowerAuthAuthentication, listener: IAcceptOperationListener)
+    fun authorizeOperation(operation: IOperation, authentication: PowerAuthAuthentication, callback: (result: Result<Unit>) -> Unit)
 
     /**
      * Rejects operation with provided reason
      *
      * @param operation Operation to reject
      * @param reason Rejection reason
-     * @param listener Result listener
+     * @param callback Callback with result.
      */
-    fun rejectOperation(operation: IOperation, reason: RejectionReason, listener: IRejectOperationListener)
+    fun rejectOperation(operation: IOperation, reason: RejectionReason, callback: (result: Result<Unit>) -> Unit)
 
     /**
      * Sign offline QR operation with provided authentication.
@@ -119,3 +111,9 @@ interface IOperationsService {
     @Throws
     fun authorizeOfflineOperation(operation: QROperation, authentication: PowerAuthAuthentication, uriId: String = OperationApi.OFFLINE_AUTHORIZE_URI_ID): String
 }
+
+/**
+ * Fetch operations from the server and report result to service's [listener]. The function is effective
+ * only if service's listener is set.
+ */
+fun IOperationsService.fetchOperations() = getOperations {}
