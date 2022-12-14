@@ -73,7 +73,7 @@ operationsService.getOperations {
     it.onSuccess {
         // render operations
     }.onFailure {
-      // render error state
+        // render error state
     }
 }
 ```
