@@ -59,11 +59,14 @@ class IntegrationUtils {
         private val appKey = getInstrumentationParameter("appKey")
         private val appSecret = getInstrumentationParameter("appSecret")
         private val masterPublicKey = getInstrumentationParameter("masterServerPublicKey")
-        private val activationName = UUID.randomUUID().toString()
+        private var activationName = "" // will be filled when activation is created
         private var registrationId = "" // will be filled when activation is created
 
         @Throws
         fun prepareActivation(pin: String): Pair<PowerAuthSDK, IOperationsService> {
+
+            // Be sure that each activation has its own user
+            activationName = UUID.randomUUID().toString()
 
             // CREATE PA INSTANCE
 
