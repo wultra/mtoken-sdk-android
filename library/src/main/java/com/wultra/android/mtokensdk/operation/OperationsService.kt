@@ -18,6 +18,7 @@ package com.wultra.android.mtokensdk.operation
 
 import android.content.Context
 import com.google.gson.GsonBuilder
+import com.wultra.android.mtokensdk.api.apiErrorForListener
 import com.wultra.android.mtokensdk.api.operation.*
 import com.wultra.android.mtokensdk.api.operation.AuthorizeRequest
 import com.wultra.android.mtokensdk.api.operation.OperationApi
@@ -28,6 +29,7 @@ import com.wultra.android.powerauth.networking.IApiCallResponseListener
 import com.wultra.android.powerauth.networking.UserAgent
 import com.wultra.android.powerauth.networking.data.StatusResponse
 import com.wultra.android.powerauth.networking.error.ApiError
+import com.wultra.android.powerauth.networking.error.ApiErrorException
 import com.wultra.android.powerauth.networking.ssl.SSLValidationStrategy
 import com.wultra.android.powerauth.networking.tokens.IPowerAuthTokenProvider
 import io.getlime.security.powerauth.sdk.PowerAuthAuthentication
@@ -68,6 +70,8 @@ fun PowerAuthSDK.createOperationsService(appContext: Context, baseURL: String, s
     return createOperationsService(appContext, baseURL, builder.build(), userAgent, gsonBuilder)
 }
 
+private typealias GetOperationsCallback = (result: Result<List<UserOperation>>) -> Unit
+
 @Suppress("EXPERIMENTAL_API_USAGE", "ConvertSecondaryConstructorToPrimary")
 class OperationsService: IOperationsService {
 
@@ -83,28 +87,20 @@ class OperationsService: IOperationsService {
     private val appContext: Context
     private var timer: Timer? = null
 
-    private var operationsLoading = false
-        set(value) {
-            field = value
-            listener?.operationsLoading(value)
-        }
+    override val lastOperationsResult: Result<List<UserOperation>>?
+        get() = synchronized(mutex) { lastGetOperationsResult }
 
-    private var lastOperationsResult: OperationsResult? = null
-        set(value) {
-            field = value
-            when (value) {
-                is SuccessOperationsResult -> listener?.operationsLoaded(value.operations)
-                is ErrorOperationsResult -> listener?.operationsFailed(value.error)
-            }
-        }
+    // Contains last fetched result with operations. Must be accessed from the mutex.
+    private var lastGetOperationsResult: Result<List<UserOperation>>? = null
 
     // API class for communication.
     private val operationApi: OperationApi
 
-    // List of tasks waiting for ongoing operation fetch to finish
-    private val tasks = mutableListOf<IGetOperationListener>()
+    // List of tasks waiting for ongoing operation fetch to finish. If list is not empty, then
+    // this indicate that operations loading is in progress.
+    private val tasks = mutableListOf<GetOperationsCallback>()
 
-    // IsLoading mutex
+    // Mutex
     private val mutex = Object()
 
     /**
@@ -123,56 +119,84 @@ class OperationsService: IOperationsService {
         this.operationApi = OperationApi(httpClient, baseURL, appContext, powerAuthSDK, tokenProvider, userAgent, gsonBuilder)
     }
 
-    override fun isLoadingOperations() = operationsLoading
+    override fun isLoadingOperations() = synchronized(mutex) { tasks.isNotEmpty() }
 
-    override fun getLastOperationsResult() = lastOperationsResult
-
-    override fun getOperations(listener: IGetOperationListener?) {
+    override fun getOperations(callback: GetOperationsCallback) {
         synchronized(mutex) {
-            listener?.let { tasks.add(listener) }
-            if (operationsLoading) {
+            val startLoading = tasks.isEmpty()
+            tasks.add(callback)
+            if (startLoading) {
+                // Notify start loading
+                listener?.operationsLoading(true)
+                operationApi.list(object : IApiCallResponseListener<OperationListResponse> {
+                    override fun onSuccess(result: OperationListResponse) {
+                        processOperationsListResult(Result.success(result.responseObject))
+                    }
+                    override fun onFailure(error: ApiError) {
+                        processOperationsListResult(Result.failure(ApiErrorException(error)))
+                    }
+                })
+            } else {
                 Logger.d("getOperation requested, but another request already running")
-                return
             }
-            operationsLoading = true
-            updateOperationsListAsync()
         }
     }
 
-    override fun getHistory(authentication: PowerAuthAuthentication, listener: IGetHistoryListener) {
+    private fun processOperationsListResult(result: Result<List<UserOperation>>) {
+        synchronized(mutex) {
+            // At first, capture result to "lastOperationsResult"
+            lastGetOperationsResult = result
+            // Then, report result back to the listener, if it's set.
+            listener?.let { listener ->
+                result.onSuccess { listener.operationsLoaded(it) }
+                    .onFailure { listener.operationsFailed(it.apiErrorForListener()) }
+            }
+            // Now notify all tasks. We should iterate over copy of the list, to prevent
+            // tasks modification in case that application start yet another update right from
+            // the callback.
+            val tasksCopy = tasks.toList()
+            tasks.clear()
+            // At this point, the loading is marked as finished.
+            tasksCopy.forEach { it(result) }
+            // And finally, report finish loading to the listener.
+            listener?.operationsLoading(false)
+        }
+    }
+
+    override fun getHistory(authentication: PowerAuthAuthentication, callback: (result: Result<List<OperationHistoryEntry>>) -> Unit) {
         operationApi.history(authentication, object : IApiCallResponseListener<OperationHistoryResponse> {
             override fun onSuccess(result: OperationHistoryResponse) {
-                listener.onSuccess(result.responseObject)
+                callback(Result.success(result.responseObject))
             }
 
             override fun onFailure(error: ApiError) {
-                listener.onError(error)
+                callback(Result.failure(ApiErrorException(error)))
             }
         })
     }
 
-    override fun authorizeOperation(operation: IOperation, authentication: PowerAuthAuthentication, listener: IAcceptOperationListener) {
+    override fun authorizeOperation(operation: IOperation, authentication: PowerAuthAuthentication, callback: (result: Result<Unit>) -> Unit) {
         val authorizeRequest = AuthorizeRequest(AuthorizeRequestObject(operation.id, operation.data))
         operationApi.authorize(authorizeRequest, authentication, object : IApiCallResponseListener<StatusResponse> {
             override fun onSuccess(result: StatusResponse) {
-                listener.onSuccess()
+                callback(Result.success(Unit))
             }
 
             override fun onFailure(error: ApiError) {
-                listener.onError(error)
+                callback(Result.failure(ApiErrorException(error)))
             }
         })
     }
 
-    override fun rejectOperation(operation: IOperation, reason: RejectionReason, listener: IRejectOperationListener) {
+    override fun rejectOperation(operation: IOperation, reason: RejectionReason, callback: (result: Result<Unit>) -> Unit) {
         val rejectRequest = RejectRequest(RejectRequestObject(operation.id, reason.reason))
         operationApi.reject(rejectRequest, object : IApiCallResponseListener<StatusResponse> {
             override fun onSuccess(result: StatusResponse) {
-                listener.onSuccess()
+                callback(Result.success(Unit))
             }
 
             override fun onFailure(error: ApiError) {
-                listener.onError(error)
+                callback(Result.failure(ApiErrorException(error)))
             }
         })
     }
@@ -200,7 +224,7 @@ class OperationsService: IOperationsService {
         val t = Timer("OperationsServiceTimer")
         t.scheduleAtFixedRate(object : TimerTask() {
             override fun run() {
-                getOperations(null)
+                fetchOperations()
             }
         }, delay, pollingInterval)
         timer = t
@@ -212,24 +236,4 @@ class OperationsService: IOperationsService {
         timer = null
         Logger.d("Operation polling stopped")
     }
-
-    private fun updateOperationsListAsync() {
-        operationApi.list(object : IApiCallResponseListener<OperationListResponse> {
-            override fun onSuccess(result: OperationListResponse) {
-                lastOperationsResult = SuccessOperationsResult(result.responseObject)
-                synchronized(mutex) {
-                    tasks.forEach { it.onSuccess(result.responseObject) }.also { tasks.clear() }
-                    operationsLoading = false
-                }
-            }
-            override fun onFailure(error: ApiError) {
-                lastOperationsResult = ErrorOperationsResult(error)
-                synchronized(mutex) {
-                    tasks.forEach { it.onError(error) }.also { tasks.clear() }
-                    operationsLoading = false
-                }
-            }
-        })
-    }
-
 }

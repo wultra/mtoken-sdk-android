@@ -69,15 +69,13 @@ To register an app to push notifications, you can simply call the `register` met
 FirebaseInstanceId.getInstance().instanceId.addOnCompleteListener { task ->
     if (task.isSuccessful) {
         task.result?.token?.let { token ->
-            pushService.register(token, object: IPushRegisterListener {
-                override fun onSuccess() {
+            pushService.register(token) {
+                it.onSuccess {
                     // push notification registered
+                }.onFailure {
+                    // push notification registration failed  
                 }
-
-                override fun onFailure(e: ApiError) {
-                    // push notification registration failed
-                }
-            })
+            }
         }       
     } else {
         // on error
@@ -107,7 +105,7 @@ The `PushMessage` is an abstract class that is implemented by following classes 
 Example push notification processing:
 
 ```kotlin
-// Overriden method of FirebaseMessagingService
+// Overridden method of FirebaseMessagingService
 override fun onMessageReceived(remoteMessage: RemoteMessage) {
     super.onMessageReceived(remoteMessage)
     val push = PushParser.parseNotification(remoteMessage.data)

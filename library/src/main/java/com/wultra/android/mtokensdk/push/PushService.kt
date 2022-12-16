@@ -25,6 +25,7 @@ import com.wultra.android.powerauth.networking.IApiCallResponseListener
 import com.wultra.android.powerauth.networking.UserAgent
 import com.wultra.android.powerauth.networking.data.StatusResponse
 import com.wultra.android.powerauth.networking.error.ApiError
+import com.wultra.android.powerauth.networking.error.ApiErrorException
 import com.wultra.android.powerauth.networking.ssl.SSLValidationStrategy
 import com.wultra.android.powerauth.networking.tokens.IPowerAuthTokenProvider
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
@@ -67,16 +68,16 @@ class PushService(okHttpClient: OkHttpClient, baseURL: String, powerAuthSDK: Pow
 
     private val pushApi = PushApi(okHttpClient, baseURL, powerAuthSDK, appContext, tokenProvider, userAgent)
 
-    override fun register(fcmToken: String, listener: IPushRegisterListener) {
+    override fun register(fcmToken: String, callback: (Result<Unit>) -> Unit) {
         pushApi.registerToken(PushRegistrationRequest(PushRegistrationRequestObject(fcmToken)), object :
             IApiCallResponseListener<StatusResponse> {
             override fun onSuccess(result: StatusResponse) {
-                listener.onSuccess()
+                callback(Result.success(Unit))
             }
 
             override fun onFailure(error: ApiError) {
                 Logger.e("Failed to register fcm token for WMT push notifications.")
-                listener.onFailure(error)
+                callback(Result.failure(ApiErrorException(error)))
             }
         })
     }

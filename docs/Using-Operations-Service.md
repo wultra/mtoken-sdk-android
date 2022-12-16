@@ -68,14 +68,13 @@ __Optional parameters:__
 To fetch the list with pending operations, implement the `IOperationsService` API, you can call:
 
 ```kotlin
-operationsService.getOperations(object: IGetOperationListener {
-    override fun onSuccess(operations: List<UserOperation>) {
+operationsService.getOperations {
+    it.onSuccess {
         // render operations
-    }
-    override fun onError(error: ApiError) {
+    }.onFailure {
         // render error state
     }
-})
+}
 ```
 
 After you retrieve the pending operations, you can render them in the UI, for example, as a list of items with a detail of operation shown after a tap.
@@ -126,15 +125,13 @@ To approve an operation use `IOperationsService.authorizeOperation`. You can sim
 fun approve(operation: IOperation, password: String) {
 
     val auth = PowerAuthAuthentication.possessionWithPassword(password)
-    this.operationsService.authorizeOperation(operation, auth, object: IAcceptOperationListener {
-        override fun onSuccess() {
+    this.operationsService.authorizeOperation(operation, auth) {
+        it.onSuccess {
             // show success UI
-        }
-
-        override fun onError(error: ApiError) {
+        }.onFailure {
             // show error UI
         }
-    })
+    }
 }
 ```
 
@@ -158,15 +155,13 @@ fun approveWithBiometry(operation: IOperation) {
 
             override fun onBiometricDialogSuccess(biometricKeyData: BiometricKeyData) {
                 val auth = PowerAuthAuthentication.possessionWithBiometry(biometricKeyData.derivedData)
-                this.operationsService.authorizeOperation(operation, auth, object: IAcceptOperationListener {
-                    override fun onSuccess() {
+                this.operationsService.authorizeOperation(operation, auth) {
+                    it.onSuccess {
                         // show success UI
-                    }
-
-                    override fun onError(error: ApiError) {
+                    }.onFailure {
                         // show error UI
                     }
-                })
+                }
             }
 
             override fun onBiometricDialogCancelled(userCancel: Boolean) {
@@ -188,15 +183,13 @@ To reject an operation use `IOperationsService.rejectOperation`. Operation rejec
 ```kotlin
 // Reject operation with some reason
 fun reject(operation: IOperation, reason: RejectionReason) {
-    this.operationsService.rejectOperation(operation, reason, object: IRejectOperationListener {
-        override fun onSuccess() {
+    this.operationsService.rejectOperation(operation, reason) {
+        it.onSuccess {
             // show success UI
-        }
-
-        override fun onError(error: ApiError) {
+        }.onFailure {
             // show error UI
         }
-    })
+    }
 }
 ```
 
@@ -210,15 +203,13 @@ fun history(password: String) {
 
     val auth = PowerAuthAuthentication.possessionWithPassword(password)
 
-    this.operationService.getHistory(auth, object : IGetHistoryListener {
-        override fun onSuccess(operations: List<OperationHistoryEntry>) {
+    this.operationService.getHistory(auth) {
+        it.onSuccess {
             // process operation history
-        }
-
-        override fun onError(error: ApiError) {
+        }.onFailure {
             // process error
         }
-    })
+    }
 }
 ```
 
@@ -338,33 +329,34 @@ All available methods and attributes of `IOperationsService` API are:
 
 - `listener` - Listener object that receives info about operation loading.
 - `acceptLanguage` - Language settings, that will be sent along with each request. The server will return properly localized content based on this value. Value follows standard RFC [Accept-Language](https://tools.ietf.org/html/rfc7231#section-5.3.5)
-- `getLastOperationsResult()` - Cached last operations result.
+- `lastOperationsResult` - Cached last operations result.
 - `isLoadingOperations()` - Indicates if the service is loading operations.
-- `getOperations(listener: IGetOperationListener?)` - Retrieves pending operations from the server.
-    - `listener` - Called when operation finishes.
+- `getOperations(callback: (result: Result<List<UserOperations>>) -> Unit)` - Retrieves pending operations from the server.
+  - `callback` - Called when getting list request finishes.
+- `fetchOperations()` - Retrieves pending operations from the server. This method is useful only if you set the listener to the service.
 - `isPollingOperations()` - If the app is periodically polling for the operations from the server.
 - `startPollingOperations(pollingInterval: Long, delayStart: Boolean)` - Starts periodic operation polling.
-    - `pollingInterval` - How often should operations be refreshed.
-    - `delayStart` - When true, polling starts after the first `pollingInterval` time passes.
+  - `pollingInterval` - How often should operations be refreshed.
+  - `delayStart` - When true, polling starts after the first `pollingInterval` time passes.
 - `stopPollingOperations()` - Stops periodic operation polling.
-- `getHistory(authentication: PowerAuthAuthentication, listener: IGetHistoryListener)` - Retrieves operation history
+- `getHistory(authentication: PowerAuthAuthentication, callback: (result: Result<List<OperationHistoryEntry>>) -> Unit)` - Retrieves operation history
   - `authentication` - PowerAuth authentication object for signing.
-  - `listener` - Called when rejection request finishes.
-- `authorizeOperation(operation: IOperation, authentication: PowerAuthAuthentication, listener: IAcceptOperationListener)` - Authorize provided operation.
-    - `operation` - An operation to approve, retrieved from `getOperations` call or [created locally](#creating-a-custom-operation).
-    - `authentication` - PowerAuth authentication object for operation signing.
-    - `listener` - Called when authorization request finishes.
-- `rejectOperation(operation: IOperation, reason: RejectionReason, listener: IRejectOperationListener)` - Reject provided operation.
-    - `operation` - An operation to reject, retrieved from `getOperations` call or [created locally](#creating-a-custom-operation).
-    - `reason` - Rejection reason.
-    - `listener` - Called when rejection request finishes.
+  - `callback` - Called when getting history request finishes.
+- `authorizeOperation(operation: IOperation, authentication: PowerAuthAuthentication, callback: (result: Result<Unit>) -> Unit)` - Authorize provided operation.
+  - `operation` - An operation to approve, retrieved from `getOperations` call or [created locally](#creating-a-custom-operation).
+  - `authentication` - PowerAuth authentication object for operation signing.
+  - `callback` - Called when authorization request finishes.
+- `rejectOperation(operation: IOperation, reason: RejectionReason, callback: (result: Result<Unit>) -> Unit)` - Reject provided operation.
+  - `operation` - An operation to reject, retrieved from `getOperations` call or [created locally](#creating-a-custom-operation).
+  - `reason` - Rejection reason.
+  - `callback` - Called when rejection request finishes.
 - `fun authorizeOfflineOperation(operation: QROperation, authentication: PowerAuthAuthentication, uriId: String)` - Sign offline (QR) operation
-    - `operation` - Offline operation retrieved via `QROperationParser.parse` method.
-    - `authentication` - PowerAuth authentication object for operation signing.
-    - `uriId` - Custom signature URI ID of the operation. Use URI ID under which the operation was created on the server. Default value is `/operation/authorize/offline`.
+  - `operation` - Offline operation retrieved via `QROperationParser.parse` method.
+  - `authentication` - PowerAuth authentication object for operation signing.
+  - `uriId` - Custom signature URI ID of the operation. Use URI ID under which the operation was created on the server. Default value is `/operation/authorize/offline`.
 - `signOfflineOperationWithBiometry(biometry: ByteArray, offlineOperation: QROperation)` - Sign offline (QR) operation with biometry data.
-    - `biometry` - Biometry data retrieved from `powerAuthSDK.authenticateUsingBiometry` call.
-    - `offlineOperation` - Offline operation retrieved via `processOfflineQrPayload` method.
+  - `biometry` - Biometry data retrieved from `powerAuthSDK.authenticateUsingBiometry` call.
+  - `offlineOperation` - Offline operation retrieved via `processOfflineQrPayload` method.
 
 ## UserOperation
 

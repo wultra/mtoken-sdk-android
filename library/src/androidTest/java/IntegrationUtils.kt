@@ -94,6 +94,9 @@ class IntegrationUtils {
             // Be sure that each activation has its own user
             activationName = userId ?: UUID.randomUUID().toString()
 
+            // Be sure that each activation has its own user
+            activationName = UUID.randomUUID().toString()
+
             // CREATE PA INSTANCE
 
             val cfg = PowerAuthConfiguration.Builder("tests", enrollmentUrl, appKey, appSecret, masterPublicKey).build()

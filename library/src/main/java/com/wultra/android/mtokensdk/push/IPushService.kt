@@ -16,6 +16,7 @@
 
 package com.wultra.android.mtokensdk.push
 
+import com.wultra.android.mtokensdk.api.apiErrorForListener
 import com.wultra.android.powerauth.networking.error.ApiError
 
 /**
@@ -34,20 +35,5 @@ interface IPushService {
      * @param fcmToken Firebase Cloud Messaging Token
      * @param listener Result listener
      */
-    fun register(fcmToken: String, listener: IPushRegisterListener)
-}
-
-/**
- * Listener for [IPushService.register] method.
- */
-interface IPushRegisterListener {
-    /**
-     * Called when FCM token was registered on backend.
-     */
-    fun onSuccess()
-
-    /**
-     * Called when FCM token fails to register on backend.
-     */
-    fun onFailure(e: ApiError)
+    fun register(fcmToken: String, callback: (result: Result<Unit>) -> Unit)
 }
