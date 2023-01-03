@@ -56,17 +56,8 @@ class IntegrationTests {
         @AfterClass
         @JvmStatic
         fun tearDown() {
-            val auth = PowerAuthAuthentication.possessionWithPassword(pin)
-            val future = CompletableFuture<Any>()
-            pa.removeActivationWithAuthentication(IntegrationUtils.context, auth, object : IActivationRemoveListener {
-                override fun onActivationRemoveSucceed() {
-                    future.complete(null)
-                }
-                override fun onActivationRemoveFailed(t: Throwable) {
-                    future.completeExceptionally(t)
-                }
-            })
-            future.get(20, TimeUnit.SECONDS)
+            IntegrationUtils.removeRegistration(pa.activationIdentifier)
+            pa.removeActivationLocal(IntegrationUtils.context)
         }
     }
 

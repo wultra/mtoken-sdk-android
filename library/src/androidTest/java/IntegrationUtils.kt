@@ -20,8 +20,15 @@ import android.content.Context
 import android.util.Log
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
-import com.google.gson.Gson
+import com.google.gson.*
+import com.google.gson.annotations.JsonAdapter
 import com.google.gson.reflect.TypeToken
+import com.google.gson.stream.JsonReader
+import com.google.gson.stream.JsonToken
+import com.google.gson.stream.JsonWriter
+import com.wultra.android.mtokensdk.inbox.IInboxService
+import com.wultra.android.mtokensdk.inbox.InboxMessageDetail
+import com.wultra.android.mtokensdk.inbox.createInboxService
 import com.wultra.android.mtokensdk.operation.IOperationsService
 import com.wultra.android.mtokensdk.operation.createOperationsService
 import com.wultra.android.powerauth.networking.ssl.SSLValidationStrategy
@@ -35,11 +42,29 @@ import okhttp3.MediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
-import java.lang.Exception
+import java.sql.Time
+import java.util.*
 import java.util.Base64.getEncoder
-import java.util.UUID
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
+
+class TimestampAdapter: TypeAdapter<Date>() {
+    override fun write(writer: JsonWriter, value: Date?) {
+        if (value == null) {
+            writer.nullValue()
+        } else {
+            writer.value(value.time)
+        }
+    }
+
+    override fun read(reader: JsonReader): Date? {
+        if (reader.peek() == JsonToken.NULL) {
+            reader.nextNull()
+            return null
+        }
+        return Date(reader.nextLong())
+    }
+}
 
 
 class IntegrationUtils {
@@ -56,6 +81,7 @@ class IntegrationUtils {
         private val cloudApplicationId = getInstrumentationParameter("cloudApplicationId")
         private val enrollmentUrl = getInstrumentationParameter("enrollmentServerUrl")
         private val operationsUrl = getInstrumentationParameter("operationsServerUrl")
+        private val inboxUrl = getInstrumentationParameter("inboxServerUrl")
         private val appKey = getInstrumentationParameter("appKey")
         private val appSecret = getInstrumentationParameter("appSecret")
         private val masterPublicKey = getInstrumentationParameter("masterServerPublicKey")
@@ -63,7 +89,10 @@ class IntegrationUtils {
         private var registrationId = "" // will be filled when activation is created
 
         @Throws
-        fun prepareActivation(pin: String): Pair<PowerAuthSDK, IOperationsService> {
+        fun prepareActivation(pin: String, userId: String? = null): Triple<PowerAuthSDK, IOperationsService, IInboxService> {
+
+            // Be sure that each activation has its own user
+            activationName = userId ?: UUID.randomUUID().toString()
 
             // Be sure that each activation has its own user
             activationName = UUID.randomUUID().toString()
@@ -108,7 +137,7 @@ class IntegrationUtils {
             // COMMIT ACTIVATION LOCALLY
 
             val result = pa.commitActivationWithPassword(context, pin)
-            Log.d("prepare activaiton", "commitActivationWithPassword result: $result")
+            Log.d("prepare activation", "commitActivationWithPassword result: $result")
 
             // COMMIT ACTIVATION ON THE SERVER
             val bodyCommit = """
@@ -118,7 +147,19 @@ class IntegrationUtils {
                 """.trimIndent()
             makeCall<CommitObject>(bodyCommit, "$cloudServerUrl/v2/registrations/${resp.registrationId}/commit")
 
-            return Pair(pa, pa.createOperationsService(context, operationsUrl, SSLValidationStrategy.default()))
+            return Triple(
+                pa,
+                pa.createOperationsService(context, operationsUrl, SSLValidationStrategy.default()),
+                pa.createInboxService(context, inboxUrl, SSLValidationStrategy.default())
+            )
+        }
+
+        @Throws
+        fun removeRegistration(activationId: String? = null) {
+            val id = activationId ?: registrationId
+            if (id.isNotEmpty()) {
+                makeCall<StatusResponse>(null, "$cloudServerUrl/v2/registrations/$id", "DELETE")
+            }
         }
 
         enum class Factors {
@@ -163,6 +204,22 @@ class IntegrationUtils {
                 }
             """.trimIndent()
             return makeCall(body, "$cloudServerUrl/v2/operations/${operation.operationId}/offline/otp")
+        }
+
+        @Throws
+        fun createInboxMessages(count: Int): List<NewInboxMessage> {
+            val result = mutableListOf<NewInboxMessage>()
+            for (i in 1..count) {
+                val body = """
+                    {
+                        "subject":"Message #$i",
+                        "body":"This is body for message $i"
+                    }
+                """.trimIndent()
+                val newMessage = makeCall<NewInboxMessage>(body, "$cloudServerUrl/v2/inbox/$activationName?appId=$cloudApplicationId")
+                result.add(newMessage)
+            }
+            return result
         }
 
         @Throws
@@ -221,3 +278,14 @@ data class QROperationVerify(val otpValid: Boolean,
                             // val flags: []
                             // val application)
 )
+
+data class NewInboxMessage(
+    val id: String,
+    val subject: String,
+    val body: String,
+    val read: Boolean,
+    @JsonAdapter(TimestampAdapter::class)
+    val timestamp: Date
+)
+
+data class StatusResponse(val status: String)

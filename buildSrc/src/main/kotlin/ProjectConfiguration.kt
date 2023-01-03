@@ -45,6 +45,7 @@ fun loadInstrumentationTestConfigProperties(project: Project, defaultConfig: Def
         "tests.sdk.cloudApplicationId",
         "tests.sdk.enrollmentServerUrl",
         "tests.sdk.operationsServerUrl",
+        "tests.sdk.inboxServerUrl",
         "tests.sdk.appKey",
         "tests.sdk.appSecret",
         "tests.sdk.masterServerPublicKey"
