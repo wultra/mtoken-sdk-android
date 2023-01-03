@@ -212,11 +212,13 @@ class IntegrationUtils {
             for (i in 1..count) {
                 val body = """
                     {
+                        "userId":"$activationName",
                         "subject":"Message #$i",
-                        "body":"This is body for message $i"
+                        "body":"This is body for message $i",
+                        "silent":true
                     }
                 """.trimIndent()
-                val newMessage = makeCall<NewInboxMessage>(body, "$cloudServerUrl/v2/inbox/$activationName?appId=$cloudApplicationId")
+                val newMessage = makeCall<NewInboxMessage>(body, "$cloudServerUrl/v2/inbox/messages")
                 result.add(newMessage)
             }
             return result
