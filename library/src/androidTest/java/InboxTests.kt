@@ -170,9 +170,9 @@ class InboxTests {
     }
 }
 
-fun InboxMessageContentType.rawValue(): String {
+fun InboxContentType.rawValue(): String {
     return when(this) {
-        InboxMessageContentType.TEXT -> "text"
-        InboxMessageContentType.HTML -> "html"
+        InboxContentType.TEXT -> "text"
+        InboxContentType.HTML -> "html"
     }
 }

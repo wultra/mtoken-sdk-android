@@ -38,7 +38,7 @@ data class InboxMessage(
     /**
      * Message body's content type.
      */
-    val type: InboxMessageContentType,
+    val type: InboxContentType,
     /**
      * If `true`, then user already read the message.
      */

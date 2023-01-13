@@ -21,7 +21,7 @@ import com.google.gson.annotations.SerializedName
 /**
  * Defines how message's body is formatted.
  */
-enum class InboxMessageContentType {
+enum class InboxContentType {
     /**
      * Message's body contains simple plain text.
      */
