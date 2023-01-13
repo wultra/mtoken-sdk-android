@@ -63,15 +63,17 @@ class InboxTests {
 
         assertEquals(firstMessage.id, detail!!.id)
         assertEquals(firstMessage.subject, detail.subject)
+        assertEquals(firstMessage.summary, detail.summary)
         assertEquals(firstMessage.body, detail.body)
         assertEquals(firstMessage.read, detail.read)
+        assertEquals(firstMessage.type, detail.type.rawValue())
         assertEquals(firstMessage.timestamp.time / 1000, detail.timestampCreated.time / 1000)
     }
 
     @Test
     fun testGetAllInboxMessages() {
         val count = 11
-        val messages = IntegrationUtils.createInboxMessages(count)
+        val messages = IntegrationUtils.createInboxMessages(count, "html")
         val futureList = CompletableFuture<List<InboxMessage>?>()
         inbox.getAllMessages {
             it.onSuccess { futureList.complete(it) }
@@ -80,8 +82,6 @@ class InboxTests {
         val messagesList = futureList.get(20, TimeUnit.SECONDS)
         assertNotNull(messagesList)
         compareMessages(messages, messagesList!!)
-
-
     }
 
     @Test
@@ -163,7 +163,16 @@ class InboxTests {
             val message = received.firstOrNull { it.id == detail.id } ?: throw Exception("Message with ID ${detail.id} not found")
             assertEquals(detail.subject, message.subject)
             assertEquals(detail.read, message.read)
+            assertEquals(detail.summary, message.summary)
+            assertEquals(detail.type, message.type.rawValue())
             assertEquals(detail.timestamp.time / 1000, message.timestampCreated.time / 1000)
         }
+    }
+}
+
+fun InboxMessageContentType.rawValue(): String {
+    return when(this) {
+        InboxMessageContentType.TEXT -> "text"
+        InboxMessageContentType.HTML -> "html"
     }
 }

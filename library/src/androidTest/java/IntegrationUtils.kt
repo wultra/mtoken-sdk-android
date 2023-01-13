@@ -207,14 +207,16 @@ class IntegrationUtils {
         }
 
         @Throws
-        fun createInboxMessages(count: Int): List<NewInboxMessage> {
+        fun createInboxMessages(count: Int, type: String = "text"): List<NewInboxMessage> {
             val result = mutableListOf<NewInboxMessage>()
             for (i in 1..count) {
                 val body = """
                     {
                         "userId":"$activationName",
                         "subject":"Message #$i",
+                        "summary":"This is body for message $i",
                         "body":"This is body for message $i",
+                        "type":"$type",
                         "silent":true
                     }
                 """.trimIndent()
@@ -284,8 +286,10 @@ data class QROperationVerify(val otpValid: Boolean,
 data class NewInboxMessage(
     val id: String,
     val subject: String,
+    val summary: String,
     val body: String,
     val read: Boolean,
+    val type: String,
     @JsonAdapter(TimestampAdapter::class)
     val timestamp: Date
 )

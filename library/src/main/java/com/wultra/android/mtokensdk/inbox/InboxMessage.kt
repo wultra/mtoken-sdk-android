@@ -31,6 +31,15 @@ data class InboxMessage(
      */
     val subject: String,
     /**
+     * Message's summary. It typically contains a reduced information from message's body,
+     * with no additional formatting.
+     */
+    val summary: String,
+    /**
+     * Message body's content type.
+     */
+    val type: InboxMessageContentType,
+    /**
      * If `true`, then user already read the message.
      */
     val read: Boolean,

@@ -31,9 +31,18 @@ data class InboxMessageDetail(
      */
     val subject: String,
     /**
+     * Message's summary. It typically contains a reduced information from message's body,
+     * with no additional formatting.
+     */
+    val summary: String,
+    /**
      * Message's body.
      */
     val body: String,
+    /**
+     * Message body's content type.
+     */
+    val type: InboxMessageContentType,
     /**
      * If `true`, then user already read the message.
      */
@@ -43,3 +52,5 @@ data class InboxMessageDetail(
      */
     val timestampCreated: Date
 )
+
+
