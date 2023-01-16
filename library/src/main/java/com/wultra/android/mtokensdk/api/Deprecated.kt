@@ -21,7 +21,7 @@ package com.wultra.android.mtokensdk.api
 import com.wultra.android.powerauth.networking.error.ApiErrorCode
 import com.wultra.android.powerauth.networking.error.ApiHttpException
 
-// Type aliases to for easier migration
+// Type aliases to for easier migration, Deprecated in 1.4.0
 
 @Deprecated(
     "This enum was moved and renamed.",

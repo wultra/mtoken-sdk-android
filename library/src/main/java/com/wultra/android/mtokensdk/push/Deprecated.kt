@@ -26,7 +26,7 @@ import com.wultra.android.powerauth.networking.error.ApiError
 /**
  * Listener for [IPushService.register] method.
  */
-@Deprecated("Use function with Result<Unit> callback as a replacement")
+@Deprecated("Use function with Result<Unit> callback as a replacement") // 1.5.0
 interface IPushRegisterListener {
     /**
      * Called when FCM token was registered on backend.
@@ -44,7 +44,7 @@ interface IPushRegisterListener {
  * @param fcmToken Firebase Cloud Messaging Token
  * @param listener Result listener
  */
-@Deprecated("Use function with Result<Unit> callback as a replacement")
+@Deprecated("Use function with Result<Unit> callback as a replacement") // 1.5.0
 fun IPushService.register(fcmToken: String, listener: IPushRegisterListener) {
     register(fcmToken) { result ->
         result.onSuccess {
