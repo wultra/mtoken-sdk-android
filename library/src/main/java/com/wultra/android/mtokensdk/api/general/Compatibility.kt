@@ -18,7 +18,7 @@ package com.wultra.android.mtokensdk.api.general
 
 import com.wultra.android.powerauth.networking.error.ApiError
 
-// Type aliases to for easier migration
+// Type aliases to for easier migration, deprecated in 1.4.0
 
 @Deprecated(
     "This class was moved to different package (com.wultra.android.powerauth.networking.error).",

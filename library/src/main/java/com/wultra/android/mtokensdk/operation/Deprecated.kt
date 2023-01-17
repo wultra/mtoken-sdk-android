@@ -25,25 +25,25 @@ import com.wultra.android.mtokensdk.api.operation.model.UserOperation
 import com.wultra.android.powerauth.networking.error.ApiError
 import io.getlime.security.powerauth.sdk.PowerAuthAuthentication
 
-@Deprecated("Use API function with Result<Unit> callback.")
+@Deprecated("Use API function with Result<Unit> callback.") // 1.5.0
 interface IAcceptOperationListener {
     fun onSuccess()
     fun onError(error: ApiError)
 }
 
-@Deprecated("Use API function with Result<Unit> callback.")
+@Deprecated("Use API function with Result<Unit> callback.") // 1.5.0
 interface IRejectOperationListener {
     fun onSuccess()
     fun onError(error: ApiError)
 }
 
-@Deprecated("Use API function with Result<List<UserOperation>> callback.")
+@Deprecated("Use API function with Result<List<UserOperation>> callback.") // 1.5.0
 interface IGetOperationListener {
     fun onSuccess(operations: List<UserOperation>)
     fun onError(error: ApiError)
 }
 
-@Deprecated("Use API function with Result<List<OperationHistoryEntry>> callback.")
+@Deprecated("Use API function with Result<List<OperationHistoryEntry>> callback.") // 1.5.0
 interface IGetHistoryListener {
     fun onSuccess(operations: List<OperationHistoryEntry>)
     fun onError(error: ApiError)
@@ -51,11 +51,11 @@ interface IGetHistoryListener {
 
 // Deprecated interfaces and functions
 
-@Deprecated("Use Result<List<UserOperation>> based API")
+@Deprecated("Use Result<List<UserOperation>> based API") // 1.5.0
 abstract class OperationsResult
-@Deprecated("Use Result<List<UserOperation>> based API")
+@Deprecated("Use Result<List<UserOperation>> based API") // 1.5.0
 data class SuccessOperationsResult(val operations: List<UserOperation>): OperationsResult()
-@Deprecated("Use Result<List<UserOperation>> based API")
+@Deprecated("Use Result<List<UserOperation>> based API") // 1.5.0
 data class ErrorOperationsResult(val error: ApiError): OperationsResult()
 
 /**
@@ -63,7 +63,7 @@ data class ErrorOperationsResult(val error: ApiError): OperationsResult()
  *
  * @return Last getOperations result. Null if not performed yet.
  */
-@Deprecated("Use lastOperationsResult property", ReplaceWith("lastOperationsResult"))
+@Deprecated("Use lastOperationsResult property", ReplaceWith("lastOperationsResult")) // 1.5.0
 fun IOperationsService.getLastOperationsResult(): OperationsResult? {
     return lastOperationsResult?.let { result ->
         result.fold(
@@ -77,7 +77,7 @@ fun IOperationsService.getLastOperationsResult(): OperationsResult? {
  * Retrieves user operations and calls the listener when finished.
  * @param listener Operation result listener
  */
-@Deprecated("Use function with Result<List<UserOperation>> callback as a replacement")
+@Deprecated("Use function with Result<List<UserOperation>> callback as a replacement") // 1.5.0
 fun IOperationsService.getOperations(listener: IGetOperationListener?) {
     getOperations { result ->
         result.onSuccess {
@@ -94,7 +94,7 @@ fun IOperationsService.getOperations(listener: IGetOperationListener?) {
  * @param authentication PowerAuth authentication object
  * @param listener Result listener
  */
-@Deprecated("Use function with Result<List<OperationHistoryEntry>> callback as a replacement")
+@Deprecated("Use function with Result<List<OperationHistoryEntry>> callback as a replacement") // 1.5.0
 fun IOperationsService.getHistory(authentication: PowerAuthAuthentication, listener: IGetHistoryListener) {
     getHistory(authentication) { result ->
         result.onSuccess {
@@ -112,7 +112,7 @@ fun IOperationsService.getHistory(authentication: PowerAuthAuthentication, liste
  * @param authentication PowerAuth authentication object
  * @param listener Result listener
  */
-@Deprecated("Use function with Result<Unit> callback as a replacement")
+@Deprecated("Use function with Result<Unit> callback as a replacement") // 1.5.0
 fun IOperationsService.authorizeOperation(operation: IOperation, authentication: PowerAuthAuthentication, listener: IAcceptOperationListener) {
     authorizeOperation(operation, authentication) { result ->
         result.onSuccess {
@@ -130,7 +130,7 @@ fun IOperationsService.authorizeOperation(operation: IOperation, authentication:
  * @param reason Rejection reason
  * @param listener Result listener
  */
-@Deprecated("Use function with Result<Unit> callback as a replacement")
+@Deprecated("Use function with Result<Unit> callback as a replacement") // 1.5.0
 fun IOperationsService.rejectOperation(operation: IOperation, reason: RejectionReason, listener: IRejectOperationListener) {
     rejectOperation(operation, reason) { result ->
         result.onSuccess {
