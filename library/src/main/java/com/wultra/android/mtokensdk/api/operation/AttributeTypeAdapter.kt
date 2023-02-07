@@ -36,7 +36,7 @@ internal class AttributeTypeAdapter : TypeAdapter<Attribute>() {
         }
         reader.beginObject()
 
-        val attrMap = mutableMapOf<String, String>()
+        val attrMap = mutableMapOf<String, Any?>()
         var inPartyInfo = false
         val partyInfoMap = mutableMapOf<String, String>()
 
@@ -64,17 +64,28 @@ internal class AttributeTypeAdapter : TypeAdapter<Attribute>() {
             if (token == JsonToken.NAME) {
                 val name = reader.nextName()
                 if (inPartyInfo) {
-                    partyInfoMap.put(name, reader.nextString())
+                    partyInfoMap[name] = reader.nextString()
                 } else {
                     if (name != "partyInfo") {
-                        attrMap.put(name, reader.nextString())
+                        attrMap[name] = when (reader.peek()) {
+                            JsonToken.STRING -> reader.nextString()
+                            JsonToken.NUMBER -> BigDecimal(reader.nextDouble())
+                            JsonToken.BOOLEAN -> reader.nextBoolean()
+                            JsonToken.NULL -> null
+                            else -> null
+                        }
                     }
                 }
             }
         } while (true)
-        val type = attrMap["type"]
-        val id = attrMap["id"]
-        val label = attrMap["label"]
+
+        fun <T>attr(key: String): T? {
+            return attrMap[key] as? T
+        }
+
+        val type = try { Attribute.Type.valueOf(attr("type") ?: "UNKNOWN") } catch (e: Throwable) { Attribute.Type.UNKNOWN }
+        val id: String? = attr("id")
+        val label: String? = attr("label")
 
         val labelObject = if(id != null && label != null) {
             Attribute.Label(id, label)
@@ -82,14 +93,20 @@ internal class AttributeTypeAdapter : TypeAdapter<Attribute>() {
             null
         }
 
-        when (type) {
-            "AMOUNT" -> return AmountAttribute(BigDecimal(attrMap["amount"]), attrMap["currency"], attrMap["amountFormatted"], attrMap["currencyFormatted"], labelObject)
-            "KEY_VALUE" -> return KeyValueAttribute(attrMap["value"], labelObject)
-            "NOTE" -> return NoteAttribute(attrMap["note"], labelObject)
-            "HEADING" -> return HeadingAttribute(labelObject)
-            "PARTY_INFO" -> return PartyInfoAttribute(PartyInfoAttribute.PartyInfo(partyInfoMap), labelObject)
+        return when (type) {
+            Attribute.Type.AMOUNT -> AmountAttribute(attr("amount"), attr("currency"), attr("amountFormatted"), attr("currencyFormatted"), labelObject)
+            Attribute.Type.KEY_VALUE -> KeyValueAttribute(attr("value"), labelObject)
+            Attribute.Type.NOTE -> NoteAttribute(attr("note"), labelObject)
+            Attribute.Type.HEADING -> HeadingAttribute(labelObject)
+            Attribute.Type.PARTY_INFO -> PartyInfoAttribute(PartyInfoAttribute.PartyInfo(partyInfoMap), labelObject)
+            Attribute.Type.AMOUNT_CONVERSION -> ConversionAttribute(
+                attr("dynamic") ?: false,
+                ConversionAttribute.Money(attr("sourceAmount"), attr("sourceCurrency"), attr("sourceAmountFormatted"), attr("sourceCurrencyFormatted")),
+                ConversionAttribute.Money(attr("targetAmount"), attr("targetCurrency"), attr("targetAmountFormatted"), attr("targetCurrencyFormatted")),
+                labelObject
+            )
+            Attribute.Type.UNKNOWN -> Attribute(Attribute.Type.UNKNOWN, labelObject)
         }
-        return null
     }
 
     override fun write(writer: JsonWriter, value: Attribute?) {
