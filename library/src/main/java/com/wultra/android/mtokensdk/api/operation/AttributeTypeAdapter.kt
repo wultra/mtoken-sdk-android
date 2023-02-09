@@ -79,34 +79,40 @@ internal class AttributeTypeAdapter : TypeAdapter<Attribute>() {
             }
         } while (true)
 
+        @Suppress("UNCHECKED_CAST")
         fun <T>attr(key: String): T? {
             return attrMap[key] as? T
         }
 
         val type = try { Attribute.Type.valueOf(attr("type") ?: "UNKNOWN") } catch (e: Throwable) { Attribute.Type.UNKNOWN }
-        val id: String? = attr("id")
-        val label: String? = attr("label")
+        val id: String = attr("id") ?: return null
+        val label: String = attr("label") ?: return null
 
-        val labelObject = if(id != null && label != null) {
-            Attribute.Label(id, label)
-        } else {
-            null
+        val labelObject = Attribute.Label(id, label)
+
+        fun getAttribute(): Attribute? {
+            return when (type) {
+                Attribute.Type.AMOUNT -> {
+                    val amount: BigDecimal = attr("amount") ?: return null
+                    val currency: String = attr("currency") ?: return null
+                    AmountAttribute(amount, currency, attr("amountFormatted"), attr("currencyFormatted"), labelObject)
+                }
+                Attribute.Type.KEY_VALUE -> KeyValueAttribute(attr("value") ?: return null, labelObject)
+                Attribute.Type.NOTE -> NoteAttribute(attr("note") ?: return null, labelObject)
+                Attribute.Type.HEADING -> HeadingAttribute(labelObject)
+                Attribute.Type.PARTY_INFO -> PartyInfoAttribute(PartyInfoAttribute.PartyInfo(partyInfoMap), labelObject)
+                Attribute.Type.AMOUNT_CONVERSION -> ConversionAttribute(
+                    attr("dynamic") ?: return null,
+                    ConversionAttribute.Money(attr("sourceAmount") ?: return null, attr("sourceCurrency") ?: return null, attr("sourceAmountFormatted"), attr("sourceCurrencyFormatted")),
+                    ConversionAttribute.Money(attr("targetAmount") ?: return null, attr("targetCurrency") ?: return null, attr("targetAmountFormatted"), attr("targetCurrencyFormatted")),
+                    labelObject
+                )
+                Attribute.Type.IMAGE -> ImageAttribute(attr("thumbnailUrl") ?: return null, attr("originalUrl"), labelObject)
+                Attribute.Type.UNKNOWN -> Attribute(Attribute.Type.UNKNOWN, labelObject)
+            }
         }
 
-        return when (type) {
-            Attribute.Type.AMOUNT -> AmountAttribute(attr("amount"), attr("currency"), attr("amountFormatted"), attr("currencyFormatted"), labelObject)
-            Attribute.Type.KEY_VALUE -> KeyValueAttribute(attr("value"), labelObject)
-            Attribute.Type.NOTE -> NoteAttribute(attr("note"), labelObject)
-            Attribute.Type.HEADING -> HeadingAttribute(labelObject)
-            Attribute.Type.PARTY_INFO -> PartyInfoAttribute(PartyInfoAttribute.PartyInfo(partyInfoMap), labelObject)
-            Attribute.Type.AMOUNT_CONVERSION -> ConversionAttribute(
-                attr("dynamic") ?: false,
-                ConversionAttribute.Money(attr("sourceAmount"), attr("sourceCurrency"), attr("sourceAmountFormatted"), attr("sourceCurrencyFormatted")),
-                ConversionAttribute.Money(attr("targetAmount"), attr("targetCurrency"), attr("targetAmountFormatted"), attr("targetCurrencyFormatted")),
-                labelObject
-            )
-            Attribute.Type.UNKNOWN -> Attribute(Attribute.Type.UNKNOWN, labelObject)
-        }
+        return getAttribute() ?: Attribute(Attribute.Type.UNKNOWN, labelObject)
     }
 
     override fun write(writer: JsonWriter, value: Attribute?) {

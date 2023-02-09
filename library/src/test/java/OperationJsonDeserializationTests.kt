@@ -170,43 +170,43 @@ class OperationJsonDeserializationTests {
     @Test
     fun `test real data 2`() {
         val json = """
-            {"status":"OK","responseObject":[{"id":"930febe7-f350-419a-8bc0-c8883e7f71e3","name":"authorize_payment","data":"A1*A100CZK*Q238400856/0300**D20170629*NUtility Bill Payment - 05/2017","operationCreated":"2018-08-08T12:30:42+0000","operationExpires":"2018-08-08T12:35:43+0000","allowedSignatureType":{"type":"2FA","variants":["possession_knowledge", "possession_biometry"]},"formData":{"title":"Potvrzení platby","message":"Dobrý den,prosíme o potvrzení následující platby:","attributes":[{"type":"AMOUNT","id":"operation.amount","label":"Částka","amount":965165234082.23,"currency":"CZK"},{"type":"KEY_VALUE","id":"operation.account","label":"Na účet","value":"238400856/0300"},{"type":"KEY_VALUE","id":"operation.dueDate","label":"Datum splatnosti","value":"29.6.2017"},{"type":"NOTE","id":"operation.note","label":"Poznámka","note":"Utility Bill Payment - 05/2017"},{"type":"PARTY_INFO","id":"operation.partyInfo","label":"Application","partyInfo":{"logoUrl":"http://whywander.com/wp-content/uploads/2017/05/prague_hero-100x100.jpg","name":"Tesco","description":"Objevte více příběhů psaných s chutí","websiteUrl":"https://itesco.cz/hello/vse-o-jidle/pribehy-psane-s-chuti/clanek/tomovy-burgery-pro-zapalene-fanousky/15012"}},{ "type": "AMOUNT_CONVERSION", "id": "operation.conversion", "label": "Conversion", "dynamic": true, "sourceAmount": 1.26, "sourceCurrency": "ETC", "sourceAmountFormatted": "1.26", "sourceCurrencyFormatted": "ETC", "targetAmount": 1710.98, "targetCurrency": "USD", "targetAmountFormatted": "1,710.98", "targetCurrencyFormatted": "USD"}]}},{"id":"930febe7-f350-419a-8bc0-c8883e7f71e3","name":"authorize_payment","data":"A1*A100CZK*Q238400856/0300**D20170629*NUtility Bill Payment - 05/2017","operationCreated":"2018-08-08T12:30:42+0000","operationExpires":"2018-08-08T12:35:43+0000","allowedSignatureType":{"type":"1FA","variants":["possession_knowledge"]},"formData":{"title":"Potvrzení platby","message":"Dobrý den,prosíme o potvrzení následující platby:","attributes":[{"type":"AMOUNT","id":"operation.amount","label":"Částka","amount":100,"currency":"CZK"},{"type":"KEY_VALUE","id":"operation.account","label":"Na účet","value":"238400856/0300"},{"type":"KEY_VALUE","id":"operation.dueDate","label":"Datum splatnosti","value":"29.6.2017"},{"type":"NOTE","id":"operation.note","label":"Poznámka","note":"Utility Bill Payment - 05/2017"}]}}]}
+            {"status":"OK","responseObject":[{"id":"930febe7-f350-419a-8bc0-c8883e7f71e3","name":"authorize_payment","data":"A1*A100CZK*Q238400856/0300**D20170629*NUtility Bill Payment - 05/2017","operationCreated":"2018-08-08T12:30:42+0000","operationExpires":"2018-08-08T12:35:43+0000","allowedSignatureType":{"type":"2FA","variants":["possession_knowledge", "possession_biometry"]},"formData":{"title":"Potvrzení platby","message":"Dobrý den,prosíme o potvrzení následující platby:","attributes":[{"type":"AMOUNT","id":"operation.amount","label":"Částka","amount":965165234082.23,"currency":"CZK"},{"type":"KEY_VALUE","id":"operation.account","label":"Na účet","value":"238400856/0300"},{"type":"KEY_VALUE","id":"operation.dueDate","label":"Datum splatnosti","value":"29.6.2017"},{"type":"NOTE","id":"operation.note","label":"Poznámka","note":"Utility Bill Payment - 05/2017"},{"type":"PARTY_INFO","id":"operation.partyInfo","label":"Application","partyInfo":{"logoUrl":"http://whywander.com/wp-content/uploads/2017/05/prague_hero-100x100.jpg","name":"Tesco","description":"Objevte více příběhů psaných s chutí","websiteUrl":"https://itesco.cz/hello/vse-o-jidle/pribehy-psane-s-chuti/clanek/tomovy-burgery-pro-zapalene-fanousky/15012"}},{ "type": "AMOUNT_CONVERSION", "id": "operation.conversion", "label": "Conversion", "dynamic": true, "sourceAmount": 1.26, "sourceCurrency": "ETC", "sourceAmountFormatted": "1.26", "sourceCurrencyFormatted": "ETC", "targetAmount": 1710.98, "targetCurrency": "USD", "targetAmountFormatted": "1,710.98", "targetCurrencyFormatted": "USD"},{ "type": "IMAGE", "id": "operation.image", "label": "Image", "thumbnailUrl": "https://example.com/123_thumb.jpeg", "originalUrl": "https://example.com/123.jpeg" },{ "type": "IMAGE", "id": "operation.image", "label": "Image", "thumbnailUrl": "https://example.com/123_thumb.jpeg" }]}},{"id":"930febe7-f350-419a-8bc0-c8883e7f71e3","name":"authorize_payment","data":"A1*A100CZK*Q238400856/0300**D20170629*NUtility Bill Payment - 05/2017","operationCreated":"2018-08-08T12:30:42+0000","operationExpires":"2018-08-08T12:35:43+0000","allowedSignatureType":{"type":"1FA","variants":["possession_knowledge"]},"formData":{"title":"Potvrzení platby","message":"Dobrý den,prosíme o potvrzení následující platby:","attributes":[{"type":"AMOUNT","id":"operation.amount","label":"Částka","amount":100,"currency":"CZK"},{"type":"KEY_VALUE","id":"operation.account","label":"Na účet","value":"238400856/0300"},{"type":"KEY_VALUE","id":"operation.dueDate","label":"Datum splatnosti","value":"29.6.2017"},{"type":"NOTE","id":"operation.note","label":"Poznámka","note":"Utility Bill Payment - 05/2017"}]}}]}
         """.trimIndent()
         val response = typeAdapter.fromJson(json)
         Assert.assertNotNull(response)
         Assert.assertEquals(2, response.responseObject.size)
         val operation = response.responseObject[0]
-        Assert.assertEquals(6, operation.formData.attributes.size)
+        Assert.assertEquals(8, operation.formData.attributes.size)
 
         val amountAttr = operation.formData.attributes[0] as AmountAttribute
         Assert.assertEquals(Attribute.Type.AMOUNT, amountAttr.type)
-        Assert.assertEquals("operation.amount", amountAttr.label?.id)
-        Assert.assertEquals("Částka", amountAttr.label?.value)
+        Assert.assertEquals("operation.amount", amountAttr.label.id)
+        Assert.assertEquals("Částka", amountAttr.label.value)
         Assert.assertEquals(BigDecimal(965165234082.23), amountAttr.amount)
         Assert.assertEquals("CZK", amountAttr.currency)
 
         val kva = operation.formData.attributes[1] as KeyValueAttribute
         Assert.assertEquals(Attribute.Type.KEY_VALUE, kva.type)
-        Assert.assertEquals("operation.account", kva.label?.id)
-        Assert.assertEquals("Na účet", kva.label?.value)
+        Assert.assertEquals("operation.account", kva.label.id)
+        Assert.assertEquals("Na účet", kva.label.value)
         Assert.assertEquals("238400856/0300", kva.value)
 
         val na = operation.formData.attributes[3] as NoteAttribute
         Assert.assertEquals(Attribute.Type.NOTE, na.type)
-        Assert.assertEquals("operation.note", na.label?.id)
-        Assert.assertEquals("Poznámka", na.label?.value)
+        Assert.assertEquals("operation.note", na.label.id)
+        Assert.assertEquals("Poznámka", na.label.value)
         Assert.assertEquals("Utility Bill Payment - 05/2017", na.note)
 
         val pia = operation.formData.attributes[4] as PartyInfoAttribute
         Assert.assertEquals(Attribute.Type.PARTY_INFO, pia.type)
-        Assert.assertEquals("operation.partyInfo", pia.label?.id)
-        Assert.assertEquals("Application", pia.label?.value)
+        Assert.assertEquals("operation.partyInfo", pia.label.id)
+        Assert.assertEquals("Application", pia.label.value)
         Assert.assertNotNull(pia.partyInfo.websiteUrl)
 
         val ca = operation.formData.attributes[5] as ConversionAttribute
         Assert.assertEquals(Attribute.Type.AMOUNT_CONVERSION, ca.type)
-        Assert.assertEquals("operation.conversion", ca.label?.id)
-        Assert.assertEquals("Conversion", ca.label?.value)
+        Assert.assertEquals("operation.conversion", ca.label.id)
+        Assert.assertEquals("Conversion", ca.label.value)
         Assert.assertTrue(ca.dynamic)
         Assert.assertEquals(ca.source.amount, BigDecimal(1.26))
         Assert.assertEquals(ca.source.currency, "ETC")
@@ -216,6 +216,20 @@ class OperationJsonDeserializationTests {
         Assert.assertEquals(ca.target.currency, "USD")
         Assert.assertEquals(ca.target.amountFormatted, "1,710.98")
         Assert.assertEquals(ca.target.currencyFormatted, "USD")
+
+        val ia = operation.formData.attributes[6] as ImageAttribute
+        Assert.assertEquals(Attribute.Type.IMAGE, ia.type)
+        Assert.assertEquals("operation.image", ia.label.id)
+        Assert.assertEquals("Image", ia.label.value)
+        Assert.assertEquals("https://example.com/123_thumb.jpeg", ia.thumbnailUrl)
+        Assert.assertEquals("https://example.com/123.jpeg", ia.originalUrl)
+
+        val ia2 = operation.formData.attributes[7] as ImageAttribute
+        Assert.assertEquals(Attribute.Type.IMAGE, ia2.type)
+        Assert.assertEquals("operation.image", ia2.label.id)
+        Assert.assertEquals("Image", ia2.label.value)
+        Assert.assertEquals("https://example.com/123_thumb.jpeg", ia2.thumbnailUrl)
+        Assert.assertEquals(null, ia2.originalUrl)
     }
 
     @Test
