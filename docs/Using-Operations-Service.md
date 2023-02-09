@@ -427,7 +427,9 @@ Attributes types:
 - `KEY_VALUE` any key value pair  
 - `NOTE` just like `KEY_VALUE`, emphasizing that the value is a note or message  
 - `HEADING` single highlighted text, written in a larger font, used as a section heading  
-- `PARTY_INFO` providing structured information about third-party data (for example known e-shop)
+- `PARTY_INFO` providing structured information about third-party data (for example known e-shop)  
+- `AMOUNT_CONVERSION` providing data about Money conversion  
+- `UNKNOWN` fallback option when unknown attribute type is passed. Such attribute only contains the label.  
 
 ## Creating a Custom Operation
 

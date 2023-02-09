@@ -23,7 +23,7 @@ import java.math.BigDecimal
  * Operation Attribute can be visualized as "1 row in operation screen"
  * Every type of the attribute has it's own strongly typed implementation based on its [type]
  */
-sealed class Attribute(
+open class Attribute(
 
         /**
          * Type of the operation
@@ -40,7 +40,9 @@ sealed class Attribute(
         KEY_VALUE,
         NOTE,
         HEADING,
-        PARTY_INFO
+        PARTY_INFO,
+        AMOUNT_CONVERSION,
+        UNKNOWN
     }
 
     /**
@@ -75,6 +77,7 @@ class AmountAttribute(
 
         /**
          * Formatted amount for presentation.
+         *
          * This property will be properly formatted based on the response language.
          * For example when amount is 100 and the acceptLanguage is "cs" for czech,
          * he amountFormatted will be "100,00".
@@ -82,7 +85,8 @@ class AmountAttribute(
         val amountFormatted: String?,
 
         /**
-         * Formatted currency to the locale based on acceptLanguage
+         * Formatted currency to the locale based on acceptLanguage.
+         *
          * For example when the currency is CZK, this property will be "Kč"
          */
         val currencyFormatted: String?,
@@ -156,4 +160,46 @@ class PartyInfoAttribute(
          */
         val websiteUrl: String by map
     }
+}
+
+/**
+ * Conversion attribute is 1 row in operation, that represents "Money Conversion"
+ */
+class ConversionAttribute(
+    val dynamic: Boolean,
+    /** Source amount */
+    val source: Money,
+    /** Target amount */
+    val target: Money,
+    label: Label?) : Attribute(Type.AMOUNT_CONVERSION, label) {
+
+    data class Money(
+
+        /**
+         * Payment amount
+         *
+         * Amount might not be precise (due to floating point conversion during deserialization from json)
+         * use amountFormatted property instead when available
+         */
+        val amount: BigDecimal?,
+
+        /** Currency */
+        val currency: String?,
+
+        /**
+         * Formatted amount for presentation.
+         *
+         * This property will be properly formatted based on the response language.
+         * For example when amount is 100 and the acceptLanguage is "cs" for czech,
+         * the amountFormatted will be "100,00".
+         */
+        val amountFormatted: String?,
+
+        /**
+         * Formatted currency to the locale based on acceptLanguage
+         *
+         * For example when the currency is CZK, this property will be "Kč"
+         */
+        val currencyFormatted: String?
+    )
 }
