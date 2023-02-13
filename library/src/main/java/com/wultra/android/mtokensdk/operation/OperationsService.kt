@@ -35,7 +35,11 @@ import com.wultra.android.powerauth.networking.tokens.IPowerAuthTokenProvider
 import io.getlime.security.powerauth.sdk.PowerAuthAuthentication
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
 import okhttp3.OkHttpClient
+import org.threeten.bp.ZonedDateTime
+import org.threeten.bp.temporal.TemporalAmount
+import java.sql.Timestamp
 import java.util.*
+import kotlin.math.abs
 
 /**
  * Convenience factory method to create an IOperationsService instance
@@ -103,6 +107,9 @@ class OperationsService: IOperationsService {
     // Mutex
     private val mutex = Object()
 
+    // Difference in nanoseconds between server and phone time
+    private var serverDateShiftInNanoSeconds: Long? = null
+
     /**
      * Constructs OperationService
      *
@@ -118,6 +125,8 @@ class OperationsService: IOperationsService {
         this.appContext = appContext
         this.operationApi = OperationApi(httpClient, baseURL, appContext, powerAuthSDK, tokenProvider, userAgent, gsonBuilder)
     }
+
+    override fun currentServerDate() = serverDateShiftInNanoSeconds?.let { ZonedDateTime.now().plusNanos(it) }
 
     override fun isLoadingOperations() = synchronized(mutex) { tasks.isNotEmpty() }
 
@@ -161,6 +170,34 @@ class OperationsService: IOperationsService {
             // And finally, report finish loading to the listener.
             listener?.operationsLoading(false)
         }
+    }
+
+    private fun processServerTime(response: OperationListResponse, requestStarted: ZonedDateTime) {
+
+        val now = ZonedDateTime.now()
+        val requestDelayMilliseconds = now.toInstant().toEpochMilli() - requestStarted.toInstant().toEpochMilli()
+
+        // server does not support this feature
+        if (response.currentTimestamp == null) {
+            return
+        }
+
+        // Reject the value if the request took too long and we already have a server date.
+        // This is to avoid volatility of the value
+        if (serverDateShiftInNanoSeconds != null && requestDelayMilliseconds > 1) {
+            return
+        }
+
+        // We're adding half of the time that the request took to compensate for the network delay
+        val serverTime = response.currentTimestamp.plusNanos((requestDelayMilliseconds/2) * 1_000_000)
+
+        // If the difference is under 0.3 seconds, we ignore the new value to avoid unnecessary changes that might be due to network delay.
+        val currentServerDate = currentServerDate()
+        if (currentServerDate != null && abs((currentServerDate.toInstant().toEpochMilli() - serverTime.toInstant().toEpochMilli()).toDouble() / 1000) > 0.3) {
+            return
+        }
+
+        serverDateShiftInNanoSeconds = (serverTime.toInstant().toEpochMilli() - now.toInstant().toEpochMilli()) * 1_000_000
     }
 
     override fun getHistory(authentication: PowerAuthAuthentication, callback: (result: Result<List<OperationHistoryEntry>>) -> Unit) {
