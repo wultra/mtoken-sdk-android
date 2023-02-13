@@ -33,7 +33,7 @@ open class Attribute(
         /**
          * Label for the value
          */
-        val label: Label?) {
+        val label: Label) {
 
     enum class Type {
         AMOUNT,
@@ -42,6 +42,7 @@ open class Attribute(
         HEADING,
         PARTY_INFO,
         AMOUNT_CONVERSION,
+        IMAGE,
         UNKNOWN
     }
 
@@ -68,12 +69,12 @@ class AmountAttribute(
         /**
          * Payment amount
          */
-        val amount: BigDecimal?,
+        val amount: BigDecimal,
 
         /**
          * Currency
          */
-        val currency: String?,
+        val currency: String,
 
         /**
          * Formatted amount for presentation.
@@ -91,7 +92,7 @@ class AmountAttribute(
          */
         val currencyFormatted: String?,
 
-        label: Label?) : Attribute(Type.AMOUNT, label)
+        label: Label) : Attribute(Type.AMOUNT, label)
 
 /**
  * Attribute that describes generic key-value row to display
@@ -101,9 +102,9 @@ class KeyValueAttribute(
         /**
          * Value of the attribute
          */
-        val value: String?,
+        val value: String,
 
-        label: Label?) : Attribute(Type.KEY_VALUE, label)
+        label: Label) : Attribute(Type.KEY_VALUE, label)
 
 /**
  * Attribute that describes note, that should be handled as "long text message"
@@ -113,14 +114,14 @@ class NoteAttribute(
         /**
          * Note value
          */
-        val note: String?,
+        val note: String,
 
-        label: Label?) : Attribute(Type.NOTE, label)
+        label: Label) : Attribute(Type.NOTE, label)
 
 /**
  * Heading. This attribute has no value. It only acts as a "section separator"
  */
-class HeadingAttribute(label: Label?) : Attribute(Type.HEADING, label)
+class HeadingAttribute(label: Label) : Attribute(Type.HEADING, label)
 
 /**
  * Third party info is for providing structured information about third party data.
@@ -134,7 +135,7 @@ class PartyInfoAttribute(
          */
         val partyInfo: PartyInfo,
 
-        label: Label?) : Attribute(Type.PARTY_INFO, label) {
+        label: Label) : Attribute(Type.PARTY_INFO, label) {
 
     /**
      * 3rd party retailer information
@@ -166,12 +167,18 @@ class PartyInfoAttribute(
  * Conversion attribute is 1 row in operation, that represents "Money Conversion"
  */
 class ConversionAttribute(
+    /**
+     * If the conversion is dynamic and the application should refresh it periodically.
+     *
+     * This is just a hint for the application UI. This SDK does not offer feature to periodically
+     * refresh conversion rate.
+     */
     val dynamic: Boolean,
     /** Source amount */
     val source: Money,
     /** Target amount */
     val target: Money,
-    label: Label?) : Attribute(Type.AMOUNT_CONVERSION, label) {
+    label: Label) : Attribute(Type.AMOUNT_CONVERSION, label) {
 
     data class Money(
 
@@ -181,10 +188,10 @@ class ConversionAttribute(
          * Amount might not be precise (due to floating point conversion during deserialization from json)
          * use amountFormatted property instead when available
          */
-        val amount: BigDecimal?,
+        val amount: BigDecimal,
 
         /** Currency */
-        val currency: String?,
+        val currency: String,
 
         /**
          * Formatted amount for presentation.
@@ -203,3 +210,15 @@ class ConversionAttribute(
         val currencyFormatted: String?
     )
 }
+
+/**
+ * Image row in the operation. If the originalUrl is present, it should be "clickable".
+ */
+class ImageAttribute(
+    /** Image thumbnail url to the public internet */
+    val thumbnailUrl: String,
+
+    /** Full-size image that should be displayed on thumbnail click (when not null). Url to the public internet */
+    val originalUrl: String?,
+
+    label: Label): Attribute(Type.IMAGE, label)

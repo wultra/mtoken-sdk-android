@@ -429,6 +429,7 @@ Attributes types:
 - `HEADING` single highlighted text, written in a larger font, used as a section heading  
 - `PARTY_INFO` providing structured information about third-party data (for example known e-shop)  
 - `AMOUNT_CONVERSION` providing data about Money conversion  
+- `IMAGE` image row  
 - `UNKNOWN` fallback option when unknown attribute type is passed. Such attribute only contains the label.  
 
 ## Creating a Custom Operation
