@@ -22,10 +22,10 @@ import com.wultra.android.mtokensdk.api.operation.model.QROperationParser
 import com.wultra.android.mtokensdk.api.operation.model.UserOperation
 import com.wultra.android.mtokensdk.operation.*
 import com.wultra.android.powerauth.networking.error.ApiError
-import io.getlime.security.powerauth.networking.response.IActivationRemoveListener
 import io.getlime.security.powerauth.sdk.PowerAuthAuthentication
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
 import org.junit.*
+import org.threeten.bp.ZonedDateTime
 import java.lang.Exception
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
@@ -35,44 +35,61 @@ import java.util.concurrent.TimeUnit
  */
 class IntegrationTests {
 
-    companion object {
+    private lateinit var ops: IOperationsService
+    private lateinit var pa: PowerAuthSDK
+    private val pin = "1234"
 
-        lateinit var ops: IOperationsService
-        private lateinit var pa: PowerAuthSDK
-        const val pin = "1234"
-
-        @BeforeClass
-        @JvmStatic
-        fun setup() {
-            try {
-                val result = IntegrationUtils.prepareActivation(pin)
-                pa = result.first
-                ops = result.second
-            } catch (e: Throwable) {
-                Assert.fail("Activation preparation failed: $e")
-            }
+    @Before
+    fun setup() {
+        try {
+            val result = IntegrationUtils.prepareActivation(pin)
+            pa = result.first
+            ops = result.second
+        } catch (e: Throwable) {
+            Assert.fail("Activation preparation failed: $e")
         }
+    }
 
-        @AfterClass
-        @JvmStatic
-        fun tearDown() {
-            IntegrationUtils.removeRegistration(pa.activationIdentifier)
-            pa.removeActivationLocal(IntegrationUtils.context)
-        }
+    @After
+    fun tearDown() {
+        IntegrationUtils.removeRegistration(pa.activationIdentifier)
+        pa.removeActivationLocal(IntegrationUtils.context)
+    }
+
+    init {
+        initThreeTen()
     }
 
     @Test
     fun testList() {
         val future = CompletableFuture<List<UserOperation>>()
         ops.getOperations { result ->
-            result.onSuccess { future.complete(it) }
+            result
+                .onSuccess { future.complete(it) }
                 .onFailure { future.completeExceptionally(it) }
         }
         val oplist = future.get(20, TimeUnit.SECONDS)
         Assert.assertNotNull(oplist)
     }
 
-    // 1FA test are temporalily disabled
+    @Test
+    fun testServerTime() {
+        val future = CompletableFuture<ZonedDateTime>()
+        Assert.assertNull(ops.currentServerDate())
+        ops.getOperations { result ->
+            result
+                .onSuccess {
+                    future.complete(ops.currentServerDate())
+                }
+                .onFailure {
+                    future.completeExceptionally(it)
+                }
+        }
+        val date = future.get(20, TimeUnit.SECONDS)
+        Assert.assertNotNull(date)
+    }
+
+    // 1FA test are temporally disabled
 
 //    @Test
 //    fun testApproveLogin() {

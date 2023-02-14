@@ -20,9 +20,6 @@ import android.content.Context
 import com.google.gson.GsonBuilder
 import com.wultra.android.mtokensdk.api.apiErrorForListener
 import com.wultra.android.mtokensdk.api.operation.*
-import com.wultra.android.mtokensdk.api.operation.AuthorizeRequest
-import com.wultra.android.mtokensdk.api.operation.OperationApi
-import com.wultra.android.mtokensdk.api.operation.RejectRequest
 import com.wultra.android.mtokensdk.api.operation.model.*
 import com.wultra.android.mtokensdk.common.Logger
 import com.wultra.android.powerauth.networking.IApiCallResponseListener
@@ -36,8 +33,6 @@ import io.getlime.security.powerauth.sdk.PowerAuthAuthentication
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
 import okhttp3.OkHttpClient
 import org.threeten.bp.ZonedDateTime
-import org.threeten.bp.temporal.TemporalAmount
-import java.sql.Timestamp
 import java.util.*
 import kotlin.math.abs
 
@@ -137,8 +132,10 @@ class OperationsService: IOperationsService {
             if (startLoading) {
                 // Notify start loading
                 listener?.operationsLoading(true)
+                val dateStarted = ZonedDateTime.now()
                 operationApi.list(object : IApiCallResponseListener<OperationListResponse> {
                     override fun onSuccess(result: OperationListResponse) {
+                        processServerTime(result, dateStarted)
                         processOperationsListResult(Result.success(result.responseObject))
                     }
                     override fun onFailure(error: ApiError) {
@@ -184,7 +181,7 @@ class OperationsService: IOperationsService {
 
         // Reject the value if the request took too long and we already have a server date.
         // This is to avoid volatility of the value
-        if (serverDateShiftInNanoSeconds != null && requestDelayMilliseconds > 1) {
+        if (serverDateShiftInNanoSeconds != null && requestDelayMilliseconds > 1_000) {
             return
         }
 
