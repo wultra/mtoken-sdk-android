@@ -80,11 +80,15 @@ class OperationsService: IOperationsService {
          * Maximal duration in milliseconds of the request that can affect server time.
          * If request takes longer than this value, the value won't update server time
          */
-        private const val SERVER_TIME_THRESHOLD_MS = 1_000
+        private const val SERVER_TIME_DELAY_THRESHOLD_MS = 1_000
         /**
          * Minimal delta change in server time to accept it as a change.
          */
         private const val MIN_SERVER_TIME_CHANGE_MS = 300
+        /**
+         * Delta change which is forced to be accepted even when the network conditions are not ideal
+         */
+        private const val FORCED_SERVER_TIME_CHANGE_MS = 20_000
     }
 
     override var listener: IOperationsServiceListener? = null
@@ -192,19 +196,28 @@ class OperationsService: IOperationsService {
             return
         }
 
-        // Reject the value if the request took too long and we already have a server date.
-        // This is to avoid volatility of the value
-        if (serverDateShiftInMilliSeconds != null && requestDelayMilliseconds > SERVER_TIME_THRESHOLD_MS) {
-            return
-        }
-
         // We're adding half of the time that the request took to compensate for the network delay
         val serverTime = response.currentTimestamp.plus((requestDelayMilliseconds/2), ChronoUnit.MILLIS)
 
-        // If the difference is under 0.3 seconds, we ignore the new value to avoid unnecessary changes that might be due to network delay.
+        // Already calculated server time
         val currentServerDate = currentServerDate()
-        if (currentServerDate != null && abs((currentServerDate.toInstant().toEpochMilli() - serverTime.toInstant().toEpochMilli())) > MIN_SERVER_TIME_CHANGE_MS) {
-            return
+
+        // If this is not a first calculation, do some adjustments
+        if (currentServerDate != null) {
+
+            // Difference between already calculated server time and the new server time
+            val timeChangeMilliseconds = abs((currentServerDate.toInstant().toEpochMilli() - serverTime.toInstant().toEpochMilli()))
+
+            // If the change is under the limit, we ignore the new value to avoid unnecessary changes that might be due to network delay.
+            if (timeChangeMilliseconds < MIN_SERVER_TIME_CHANGE_MS) {
+                return
+            }
+
+            // Reject small change if the network connection took long time
+            // This is to avoid volatility of the value
+            if (requestDelayMilliseconds > SERVER_TIME_DELAY_THRESHOLD_MS && timeChangeMilliseconds < FORCED_SERVER_TIME_CHANGE_MS) {
+                return
+            }
         }
 
         serverDateShiftInMilliSeconds = serverTime.toInstant().toEpochMilli() - now.toInstant().toEpochMilli()
