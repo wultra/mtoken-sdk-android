@@ -75,6 +75,18 @@ private typealias GetOperationsCallback = (result: Result<List<UserOperation>>) 
 @Suppress("EXPERIMENTAL_API_USAGE", "ConvertSecondaryConstructorToPrimary")
 class OperationsService: IOperationsService {
 
+    companion object {
+        /**
+         * Maximal duration in milliseconds of the request that can affect server time.
+         * If request takes longer than this value, the value won't update server time
+         */
+        private const val SERVER_TIME_THRESHOLD_MS = 1_000
+        /**
+         * Minimal delta change in server time to accept it as a change.
+         */
+        private const val MIN_SERVER_TIME_CHANGE_MS = 300
+    }
+
     override var listener: IOperationsServiceListener? = null
 
     override var acceptLanguage: String
@@ -182,7 +194,7 @@ class OperationsService: IOperationsService {
 
         // Reject the value if the request took too long and we already have a server date.
         // This is to avoid volatility of the value
-        if (serverDateShiftInMilliSeconds != null && requestDelayMilliseconds > 1_000) {
+        if (serverDateShiftInMilliSeconds != null && requestDelayMilliseconds > SERVER_TIME_THRESHOLD_MS) {
             return
         }
 
@@ -191,7 +203,7 @@ class OperationsService: IOperationsService {
 
         // If the difference is under 0.3 seconds, we ignore the new value to avoid unnecessary changes that might be due to network delay.
         val currentServerDate = currentServerDate()
-        if (currentServerDate != null && abs((currentServerDate.toInstant().toEpochMilli() - serverTime.toInstant().toEpochMilli())) > 300) {
+        if (currentServerDate != null && abs((currentServerDate.toInstant().toEpochMilli() - serverTime.toInstant().toEpochMilli())) > MIN_SERVER_TIME_CHANGE_MS) {
             return
         }
 
