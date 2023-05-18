@@ -18,6 +18,7 @@ package com.wultra.android.mtokensdk.api.operation
 
 import android.content.Context
 import com.google.gson.GsonBuilder
+import com.google.gson.annotations.SerializedName
 import com.wultra.android.mtokensdk.api.operation.model.*
 import com.wultra.android.mtokensdk.operation.OperationsUtils
 import com.wultra.android.powerauth.networking.*
@@ -26,8 +27,14 @@ import com.wultra.android.powerauth.networking.tokens.IPowerAuthTokenProvider
 import io.getlime.security.powerauth.sdk.PowerAuthAuthentication
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
 import okhttp3.OkHttpClient
+import org.threeten.bp.ZonedDateTime
 
-internal class OperationListResponse(responseObject: List<UserOperation>, status: Status): ObjectResponse<List<UserOperation>>(responseObject, status)
+internal class OperationListResponse(
+    @SerializedName("currentTimestamp")
+    val currentTimestamp: ZonedDateTime?,
+    responseObject: List<UserOperation>,
+    status: Status
+): ObjectResponse<List<UserOperation>>(responseObject, status)
 internal class OperationHistoryResponse(responseObject: List<OperationHistoryEntry>, status: Status): ObjectResponse<List<OperationHistoryEntry>>(responseObject, status)
 internal class AuthorizeRequest(requestObject: AuthorizeRequestObject): ObjectRequest<AuthorizeRequestObject>(requestObject)
 internal class RejectRequest(requestObject: RejectRequestObject): ObjectRequest<RejectRequestObject>(requestObject)

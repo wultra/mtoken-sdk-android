@@ -71,6 +71,7 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
 
     // Android tests
+    androidTestImplementation("com.jakewharton.threetenabp:threetenabp:1.1.1")
     androidTestImplementation("com.wultra.android.powerauth:powerauth-sdk:1.7.6")
     androidTestImplementation("com.wultra.android.powerauth:powerauth-networking:1.1.3")
     androidTestImplementation("androidx.test:runner:1.5.1")
