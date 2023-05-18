@@ -23,6 +23,7 @@ import com.wultra.android.mtokensdk.api.operation.model.UserOperation
 import com.wultra.android.mtokensdk.api.operation.model.QROperation
 import com.wultra.android.powerauth.networking.error.ApiError
 import io.getlime.security.powerauth.sdk.PowerAuthAuthentication
+import org.threeten.bp.ZonedDateTime
 
 /**
  * Service for operations handling.
@@ -41,6 +42,20 @@ interface IOperationsService {
     var acceptLanguage: String
 
     val lastOperationsResult: Result<List<UserOperation>>?
+
+    /**
+     * Current server date
+     *
+     * This is calculated property based on the difference between phone date
+     * and date on the server.
+     *
+     * This property is available after the first successful operation list request.
+     * It might be nil if the server doesn't provide such a feature.
+     *
+     * Note that this value might be incorrect when the user decide to
+     * change the system time during the runtime of the application.
+     */
+    fun currentServerDate(): ZonedDateTime?
 
     /**
      * If operations are loading.

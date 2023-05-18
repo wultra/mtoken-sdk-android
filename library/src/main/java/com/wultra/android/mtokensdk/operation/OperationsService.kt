@@ -20,9 +20,6 @@ import android.content.Context
 import com.google.gson.GsonBuilder
 import com.wultra.android.mtokensdk.api.apiErrorForListener
 import com.wultra.android.mtokensdk.api.operation.*
-import com.wultra.android.mtokensdk.api.operation.AuthorizeRequest
-import com.wultra.android.mtokensdk.api.operation.OperationApi
-import com.wultra.android.mtokensdk.api.operation.RejectRequest
 import com.wultra.android.mtokensdk.api.operation.model.*
 import com.wultra.android.mtokensdk.common.Logger
 import com.wultra.android.powerauth.networking.IApiCallResponseListener
@@ -35,7 +32,10 @@ import com.wultra.android.powerauth.networking.tokens.IPowerAuthTokenProvider
 import io.getlime.security.powerauth.sdk.PowerAuthAuthentication
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
 import okhttp3.OkHttpClient
+import org.threeten.bp.ZonedDateTime
+import org.threeten.bp.temporal.ChronoUnit
 import java.util.*
+import kotlin.math.abs
 
 /**
  * Convenience factory method to create an IOperationsService instance
@@ -75,6 +75,22 @@ private typealias GetOperationsCallback = (result: Result<List<UserOperation>>) 
 @Suppress("EXPERIMENTAL_API_USAGE", "ConvertSecondaryConstructorToPrimary")
 class OperationsService: IOperationsService {
 
+    companion object {
+        /**
+         * Maximal duration in milliseconds of the request that can affect server time.
+         * If request takes longer than this value, the value won't update server time
+         */
+        private const val SERVER_TIME_DELAY_THRESHOLD_MS = 1_000
+        /**
+         * Minimal delta change in server time to accept it as a change.
+         */
+        private const val MIN_SERVER_TIME_CHANGE_MS = 300
+        /**
+         * Delta change which is forced to be accepted even when the network conditions are not ideal
+         */
+        private const val FORCED_SERVER_TIME_CHANGE_MS = 20_000
+    }
+
     override var listener: IOperationsServiceListener? = null
 
     override var acceptLanguage: String
@@ -103,6 +119,9 @@ class OperationsService: IOperationsService {
     // Mutex
     private val mutex = Object()
 
+    // Difference in milliseconds between server and phone time
+    private var serverDateShiftInMilliSeconds: Long? = null
+
     /**
      * Constructs OperationService
      *
@@ -119,6 +138,8 @@ class OperationsService: IOperationsService {
         this.operationApi = OperationApi(httpClient, baseURL, appContext, powerAuthSDK, tokenProvider, userAgent, gsonBuilder)
     }
 
+    override fun currentServerDate() = serverDateShiftInMilliSeconds?.let { ZonedDateTime.now().plus(it, ChronoUnit.MILLIS) }
+
     override fun isLoadingOperations() = synchronized(mutex) { tasks.isNotEmpty() }
 
     override fun getOperations(callback: GetOperationsCallback) {
@@ -128,8 +149,10 @@ class OperationsService: IOperationsService {
             if (startLoading) {
                 // Notify start loading
                 listener?.operationsLoading(true)
+                val dateStarted = ZonedDateTime.now()
                 operationApi.list(object : IApiCallResponseListener<OperationListResponse> {
                     override fun onSuccess(result: OperationListResponse) {
+                        processServerTime(result, dateStarted)
                         processOperationsListResult(Result.success(result.responseObject))
                     }
                     override fun onFailure(error: ApiError) {
@@ -161,6 +184,43 @@ class OperationsService: IOperationsService {
             // And finally, report finish loading to the listener.
             listener?.operationsLoading(false)
         }
+    }
+
+    private fun processServerTime(response: OperationListResponse, requestStarted: ZonedDateTime) {
+
+        // server does not support this feature
+        if (response.currentTimestamp == null) {
+            return
+        }
+        
+        val now = ZonedDateTime.now()
+        val requestDelayMilliseconds = now.toInstant().toEpochMilli() - requestStarted.toInstant().toEpochMilli()
+
+        // We're adding half of the time that the request took to compensate for the network delay
+        val serverTime = response.currentTimestamp.plus((requestDelayMilliseconds/2), ChronoUnit.MILLIS)
+
+        // Already calculated server time
+        val currentServerDate = currentServerDate()
+
+        // If this is not a first calculation, do some adjustments
+        if (currentServerDate != null) {
+
+            // Difference between already calculated server time and the new server time
+            val timeChangeMilliseconds = abs((currentServerDate.toInstant().toEpochMilli() - serverTime.toInstant().toEpochMilli()))
+
+            // If the change is under the limit, we ignore the new value to avoid unnecessary changes that might be due to network delay.
+            if (timeChangeMilliseconds < MIN_SERVER_TIME_CHANGE_MS) {
+                return
+            }
+
+            // Reject small change if the network connection took long time
+            // This is to avoid volatility of the value
+            if (requestDelayMilliseconds > SERVER_TIME_DELAY_THRESHOLD_MS && timeChangeMilliseconds < FORCED_SERVER_TIME_CHANGE_MS) {
+                return
+            }
+        }
+
+        serverDateShiftInMilliSeconds = serverTime.toInstant().toEpochMilli() - now.toInstant().toEpochMilli()
     }
 
     override fun getHistory(authentication: PowerAuthAuthentication, callback: (result: Result<List<OperationHistoryEntry>>) -> Unit) {
