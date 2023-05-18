@@ -188,13 +188,13 @@ class OperationsService: IOperationsService {
 
     private fun processServerTime(response: OperationListResponse, requestStarted: ZonedDateTime) {
 
-        val now = ZonedDateTime.now()
-        val requestDelayMilliseconds = now.toInstant().toEpochMilli() - requestStarted.toInstant().toEpochMilli()
-
         // server does not support this feature
         if (response.currentTimestamp == null) {
             return
         }
+        
+        val now = ZonedDateTime.now()
+        val requestDelayMilliseconds = now.toInstant().toEpochMilli() - requestStarted.toInstant().toEpochMilli()
 
         // We're adding half of the time that the request took to compensate for the network delay
         val serverTime = response.currentTimestamp.plus((requestDelayMilliseconds/2), ChronoUnit.MILLIS)
