@@ -330,6 +330,7 @@ All available methods and attributes of `IOperationsService` API are:
 - `listener` - Listener object that receives info about operation loading.
 - `acceptLanguage` - Language settings, that will be sent along with each request. The server will return properly localized content based on this value. Value follows standard RFC [Accept-Language](https://tools.ietf.org/html/rfc7231#section-5.3.5)
 - `lastOperationsResult` - Cached last operations result.
+- `currentServerDate()` - Current server date. This is a calculated property based on the difference between the phone date and the date on the server. Value is available after the first successful operation list request. It might be nil if the server doesn't provide such a feature.
 - `isLoadingOperations()` - Indicates if the service is loading operations.
 - `getOperations(callback: (result: Result<List<UserOperations>>) -> Unit)` - Retrieves pending operations from the server.
   - `callback` - Called when getting list request finishes.

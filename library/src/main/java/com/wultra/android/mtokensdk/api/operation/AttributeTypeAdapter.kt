@@ -96,7 +96,7 @@ internal class AttributeTypeAdapter : TypeAdapter<Attribute>() {
                 Attribute.Type.AMOUNT -> {
                     val amount: BigDecimal = attr("amount") ?: return null
                     val currency: String = attr("currency") ?: return null
-                    AmountAttribute(amount, currency, attr("amountFormatted"), attr("currencyFormatted"), label)
+                    AmountAttribute(amount, currency, attr("amountFormatted"), attr("currencyFormatted"), attr("valueFormatted"), label)
                 }
                 Attribute.Type.KEY_VALUE -> KeyValueAttribute(attr("value") ?: return null, label)
                 Attribute.Type.NOTE -> NoteAttribute(attr("note") ?: return null, label)
@@ -104,8 +104,8 @@ internal class AttributeTypeAdapter : TypeAdapter<Attribute>() {
                 Attribute.Type.PARTY_INFO -> PartyInfoAttribute(PartyInfoAttribute.PartyInfo(partyInfoMap), label)
                 Attribute.Type.AMOUNT_CONVERSION -> ConversionAttribute(
                     attr("dynamic") ?: return null,
-                    ConversionAttribute.Money(attr("sourceAmount") ?: return null, attr("sourceCurrency") ?: return null, attr("sourceAmountFormatted"), attr("sourceCurrencyFormatted")),
-                    ConversionAttribute.Money(attr("targetAmount") ?: return null, attr("targetCurrency") ?: return null, attr("targetAmountFormatted"), attr("targetCurrencyFormatted")),
+                    ConversionAttribute.Money(attr("sourceAmount") ?: return null, attr("sourceCurrency") ?: return null, attr("sourceAmountFormatted"), attr("sourceCurrencyFormatted"), attr("sourceValueFormatted")),
+                    ConversionAttribute.Money(attr("targetAmount") ?: return null, attr("targetCurrency") ?: return null, attr("targetAmountFormatted"), attr("targetCurrencyFormatted"), attr("targetValueFormatted")),
                     label
                 )
                 Attribute.Type.IMAGE -> ImageAttribute(attr("thumbnailUrl") ?: return null, attr("originalUrl"), label)

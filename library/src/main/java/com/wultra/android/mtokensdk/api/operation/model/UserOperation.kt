@@ -16,7 +16,6 @@
 
 package com.wultra.android.mtokensdk.api.operation.model
 
-import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
 import com.wultra.android.mtokensdk.operation.expiration.ExpirableOperation
 import org.threeten.bp.ZonedDateTime
