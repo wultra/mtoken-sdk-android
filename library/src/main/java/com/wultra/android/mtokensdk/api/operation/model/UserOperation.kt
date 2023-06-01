@@ -197,5 +197,5 @@ data class OperationUIData(
          *
          * Note that attributes can be presented with different classes (Starting with Attribute*) based on the attribute type.
          */
-        @SerializedName("preApprovalScreen")
+        @SerializedName("postApprovalScreen")
         val postApprovalScreen: PostApprovalScreen?)
