@@ -27,16 +27,7 @@ sealed class JSONValue {
     data class JSONBool(val value: Boolean) : JSONValue()
     data class JSONObject(val value: Map<String, JSONValue>) : JSONValue()
     data class JSONArray(val value: List<JSONValue>) : JSONValue()
-    data class JSONNumber(val value: Number) : JSONValue() {
-        override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            if (other !is JSONNumber) return false
-            return this.value == other.value
-        }
-        override fun hashCode(): Int {
-            return value.hashCode()
-        }
-    }
+    data class JSONNumber(val value: Number) : JSONValue() 
     object JSONNull : JSONValue()
 
     operator fun get(key: String): JSONValue? {
