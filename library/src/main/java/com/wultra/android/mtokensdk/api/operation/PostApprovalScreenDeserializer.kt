@@ -26,40 +26,40 @@ import java.lang.reflect.Type
 /**
  * Gson deserializer [PostApprovalScreen]
  *
- * Based on "type" it returns [PostApprovalScreenReview], [PostApprovalScreenRedirect],
- * [PostApprovalScreenGeneric] or [PostApprovalScreenUnknown]
+ * Based on "type" it returns [PostApprovalScreenReview], [PostApprovalScreenRedirect]
+ * or [PostApprovalScreenGeneric]
  */
 class PostApprovalScreenDeserializer : JsonDeserializer<PostApprovalScreen> {
     override fun deserialize(
         json: JsonElement,
         typeOfT: Type?,
-        context: JsonDeserializationContext?
+        context: JsonDeserializationContext
     ): PostApprovalScreen {
         val jsonObject = json.asJsonObject
         val type = jsonObject.get("type").asString
-        val heading = jsonObject.get("heading")?.asString
-        val message = jsonObject.get("message")?.asString
+        val heading = jsonObject.get("heading").asString
+        val message = jsonObject.get("message").asString
 
         return when (type) {
             "REVIEW" -> {
                 val attributes: List<Attribute> = jsonObject.get("payload")
                     .asJsonObject.getAsJsonArray("attributes")
                     .map {
-                        context!!.deserialize(it, Attribute::class.java)
+                        context.deserialize(it, Attribute::class.java)
                     }
                 val payload = ReviewPostApprovalScreenPayload(attributes)
-                PostApprovalScreenReview(heading!!, message!!, payload)
+                PostApprovalScreenReview(heading, message, payload)
             }
             "MERCHANT_REDIRECT" -> {
                 val redirectText = jsonObject.get("payload").asJsonObject.get("redirectText").asString
                 val redirectUrl = jsonObject.get("payload").asJsonObject.get("redirectUrl").asString
                 val countdown = jsonObject.get("payload").asJsonObject.get("countdown").asInt
                 val payload = RedirectPostApprovalScreenPayload(redirectText, redirectUrl, countdown)
-                PostApprovalScreenRedirect(heading!!, message!!, payload)
+                PostApprovalScreenRedirect(heading, message, payload)
             }
             else -> { // "GENERIC"
                 val payload = JSONValue.parse(jsonObject.get("payload"))
-                PostApprovalScreenGeneric(heading!!, message!!, payload)
+                PostApprovalScreenGeneric(heading, message, payload)
             }
         }
     }

@@ -98,5 +98,3 @@ class RedirectPostApprovalScreenPayload(
 class ReviewPostApprovalScreenPayload(
     val attributes: List<Attribute>
 ) : PostApprovalScreenPayload()
-
-

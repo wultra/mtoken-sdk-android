@@ -116,12 +116,15 @@ class OperationUIDataTests {
             )
         )
 
+        val resultPostApproval = result.ui?.postApprovalScreen as? PostApprovalScreenReview
+        val uiPostApproval = ui.postApprovalScreen as? PostApprovalScreenReview
+
         assertEquals(result.ui?.flipButtons, ui.flipButtons)
         assertEquals(result.ui?.blockApprovalOnCall, ui.blockApprovalOnCall)
         assertEquals(result.ui?.preApprovalScreen?.type, ui.flipButtons)
-        assertEquals((result.ui?.postApprovalScreen as? PostApprovalScreenReview)?.heading, (ui.postApprovalScreen as? PostApprovalScreenReview)?.heading)
-        assertEquals((result.ui?.postApprovalScreen as? PostApprovalScreenReview)?.message, (ui.postApprovalScreen as? PostApprovalScreenReview)?.message)
-        assertEquals((result.ui?.postApprovalScreen as? PostApprovalScreenReview)?.payload?.attributes, (ui.postApprovalScreen as? PostApprovalScreenReview)?.payload?.attributes)
+        assertEquals(resultPostApproval?.heading, uiPostApproval?.heading)
+        assertEquals(resultPostApproval?.message, uiPostApproval?.message)
+        assertEquals(resultPostApproval?.payload?.attributes, uiPostApproval?.payload?.attributes)
     }
 
     @Test
@@ -140,7 +143,7 @@ class OperationUIDataTests {
                 heading = "Successful",
                 message = "The operation was approved.",
                 payload = ReviewPostApprovalScreenPayload(
-                    listOf<Attribute>(
+                    attributes = listOf<Attribute>(
                         NoteAttribute(
                             note = "myNote",
                             label = Attribute.Label(
@@ -153,15 +156,18 @@ class OperationUIDataTests {
             )
         )
 
+        val resultPostApproval = result.ui?.postApprovalScreen as? PostApprovalScreenReview
+        val uiPostApproval = ui.postApprovalScreen as? PostApprovalScreenReview
+
         assertEquals(result.ui?.flipButtons, ui.flipButtons)
         assertEquals(result.ui?.blockApprovalOnCall, ui.blockApprovalOnCall)
         assertEquals(result.ui?.preApprovalScreen?.type, ui.flipButtons)
-        assertEquals((result.ui?.postApprovalScreen as? PostApprovalScreenReview)?.heading, (ui.postApprovalScreen as? PostApprovalScreenReview)?.heading)
-        assertEquals((result.ui?.postApprovalScreen as? PostApprovalScreenReview)?.message, (ui.postApprovalScreen as? PostApprovalScreenReview)?.message)
-        assertEquals((result.ui?.postApprovalScreen as? PostApprovalScreenReview)?.payload?.attributes?.get(0)?.type, (ui.postApprovalScreen as? PostApprovalScreenReview)?.payload?.attributes?.get(0)?.type)
-        assertEquals((result.ui?.postApprovalScreen as? PostApprovalScreenReview)?.payload?.attributes?.get(0)?.label?.id, (ui.postApprovalScreen as? PostApprovalScreenReview)?.payload?.attributes?.get(0)?.label?.id)
-        assertEquals((result.ui?.postApprovalScreen as? PostApprovalScreenReview)?.payload?.attributes?.get(0)?.label?.value, (ui.postApprovalScreen as? PostApprovalScreenReview)?.payload?.attributes?.get(0)?.label?.value)
-        assertEquals(((result.ui?.postApprovalScreen as? PostApprovalScreenReview)?.payload?.attributes?.get(0) as? NoteAttribute)?.note, ((ui.postApprovalScreen as? PostApprovalScreenReview)?.payload?.attributes?.get(0) as? NoteAttribute)?.note)
+        assertEquals(resultPostApproval?.heading, uiPostApproval?.heading)
+        assertEquals(resultPostApproval?.message, uiPostApproval?.message)
+        assertEquals(resultPostApproval?.payload?.attributes?.get(0)?.type, uiPostApproval?.payload?.attributes?.get(0)?.type)
+        assertEquals(resultPostApproval?.payload?.attributes?.get(0)?.label?.id, uiPostApproval?.payload?.attributes?.get(0)?.label?.id)
+        assertEquals(resultPostApproval?.payload?.attributes?.get(0)?.label?.value, uiPostApproval?.payload?.attributes?.get(0)?.label?.value)
+        assertEquals((resultPostApproval?.payload?.attributes?.get(0) as? NoteAttribute)?.note, (uiPostApproval?.payload?.attributes?.get(0) as? NoteAttribute)?.note)
     }
 
 

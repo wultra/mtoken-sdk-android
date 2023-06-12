@@ -23,30 +23,31 @@ package com.wultra.android.mtokensdk.api.operation.model
  *  and shall be displayed before operation is confirmed
  */
 open class PreApprovalScreen(
-        /**
-         * Type of PreApprovalScreen (`WARNING`, `INFO`, `QR_SCAN` or `UNKNOWN` for future compatibility)
-         */
-        val type: Type,
+    /**
+     * Type of PreApprovalScreen (`WARNING`, `INFO`, `QR_SCAN` or `UNKNOWN` for future compatibility)
+     */
+    val type: Type,
 
-        /**
-         * Heading of the pre-approval screen
-         */
-        val heading: String,
+    /**
+     * Heading of the pre-approval screen
+     */
+    val heading: String,
 
-        /**
-         * Message to the user
-         */
-        val message: String,
+    /**
+     * Message to the user
+     */
+    val message: String,
 
-        /**
-         * Array of items to be displayed as list of choices
-         */
-        val items: List<String>?,
+    /**
+     * Array of items to be displayed as list of choices
+     */
+    val items: List<String>?,
 
-        /**
-         * Type of the approval button
-         */
-        val approvalType: PreApprovalScreenConfirmAction?) {
+    /**
+     * Type of the approval button
+     */
+    val approvalType: PreApprovalScreenConfirmAction?
+) {
     enum class Type(val value: String) {
         INFO("INFO"),
         WARNING("WARNING"),

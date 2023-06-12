@@ -406,7 +406,7 @@ class UserOperation: IOperation {
     //
     // Accompanying information about the operation additional UI which should be presented such as
     // Pre-Approval Screen or Post-Approval Screen
-    val ui: OperationUIData
+    val ui: OperationUIData?
 }
 ```
 

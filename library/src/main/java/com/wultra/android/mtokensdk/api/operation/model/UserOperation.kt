@@ -172,29 +172,27 @@ data class FormData(
 
 data class OperationUIData(
         /**
-         * Order of the buttons
+         * Confirm and Reject buttons should be flipped both in position and style
          */
         @SerializedName("flipButtons")
         val flipButtons: Boolean?,
 
         /**
-         * Block approval during incoming phone call
+         * Block approval when on call (for example when on phone or skype call)
          */
         @SerializedName("blockApprovalOnCall")
         val blockApprovalOnCall: Boolean?,
 
         /**
-         * Other attributes.
-         *
-         * Note that attributes can be presented with different classes (Starting with Attribute*) based on the attribute type.
+         * UI for pre-approval operation screen
          */
         @SerializedName("preApprovalScreen")
         val preApprovalScreen: PreApprovalScreen?,
 
         /**
-         * Other attributes.
+         * UI for post-approval operation screen
          *
-         * Note that attributes can be presented with different classes (Starting with Attribute*) based on the attribute type.
+         * Type of PostApprovalScreen is presented with different classes (Starting with `PostApprovalScreen*`)
          */
         @SerializedName("postApprovalScreen")
         val postApprovalScreen: PostApprovalScreen?)
