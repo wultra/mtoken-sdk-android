@@ -22,13 +22,9 @@ package com.wultra.android.mtokensdk.api.operation.model
  */
 interface IOperation {
 
-    /**
-     * Operation identifier
-     */
+    /** Operation identifier */
     val id: String
 
-    /**
-     * Data for signing
-     */
+    /** Data for signing */
     val data: String
 }

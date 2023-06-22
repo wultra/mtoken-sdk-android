@@ -107,16 +107,16 @@ class OperationExpirationTests {
         val future = CompletableFuture<Any?>()
         val op = Operation()
         watcher.listener = WatcherListener { ops ->
-                if (ops.count() != 1 || !ops.first().equals(op)) {
-                    future.completeExceptionally(Throwable())
-                    return@WatcherListener
-                }
-                val curOps = watcher.getWatchedOperations()
-                if (curOps.isNotEmpty()) {
-                    future.completeExceptionally(Throwable())
-                    return@WatcherListener
-                }
-                future.complete(null)
+            if (ops.count() != 1 || !ops.first().equals(op)) {
+                future.completeExceptionally(Throwable())
+                return@WatcherListener
+            }
+            val curOps = watcher.getWatchedOperations()
+            if (curOps.isNotEmpty()) {
+                future.completeExceptionally(Throwable())
+                return@WatcherListener
+            }
+            future.complete(null)
         }
         watcher.add(op)
         // we need to wait longer, because minimum report time is 5 seconds
@@ -144,17 +144,14 @@ class OperationExpirationTests {
     }
 }
 
-private class WatcherListener(
-        private val callback: (List<ExpirableOperation>) -> Unit): OperationExpirationWatcherListener {
+private class WatcherListener(private val callback: (List<ExpirableOperation>) -> Unit): OperationExpirationWatcherListener {
 
     override fun operationsExpired(expiredOperations: List<ExpirableOperation>) {
         callback(expiredOperations)
     }
 }
 
-private class Operation(
-        override val expires: ZonedDateTime = ZonedDateTime.now()
-): ExpirableOperation
+private class Operation(override val expires: ZonedDateTime = ZonedDateTime.now()): ExpirableOperation
 
 fun Any.initThreeTen() {
     if (ZoneRulesProvider.getAvailableZoneIds().isEmpty()) {

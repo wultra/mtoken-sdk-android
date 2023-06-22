@@ -94,7 +94,7 @@ class QROperationParser {
 
                 return QROperation(operationId, title, message, formData, nonce, flags, signedData, signature, isNewerFormat)
             } catch (e: IllegalArgumentException) {
-                Logger.e(e.message ?:  "Payload is not a valid QR operation")
+                Logger.e(e.message ?: "Payload is not a valid QR operation")
                 throw e
             }
         }
@@ -158,7 +158,7 @@ class QROperationParser {
          */
         private fun splitOperationData(string: String): ArrayList<String> {
             // Split string by '*'
-            val components = string.split( "*")
+            val components = string.split("*")
             val fields = arrayListOf<String>()
             // Handle escaped asterisk \* in array. This situation is easily detectable
             // by backslash at the end of the string.
@@ -275,12 +275,12 @@ class QROperationParser {
         private fun parseDate(string: String): QROperationData.DateField {
             val dateString = string.substring(1)
             if (dateString.length != 8) {
-               throw IllegalArgumentException("Date needs to be 8 characters long")
+                throw IllegalArgumentException("Date needs to be 8 characters long")
             }
             try {
                 val date = dateFormatter.parse(dateString) ?: throw IllegalArgumentException("Date cannot been processed")
                 return QROperationData.DateField(date)
-            } catch(t: Throwable) {
+            } catch (t: Throwable) {
                 throw IllegalArgumentException("Unparseable date")
             }
         }

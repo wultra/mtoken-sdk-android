@@ -42,14 +42,15 @@ internal class RejectRequest(requestObject: RejectRequestObject): ObjectRequest<
 /**
  * API for operations requests.
  */
-@Suppress("PrivatePropertyName")
-internal class OperationApi(okHttpClient: OkHttpClient,
-                            baseUrl: String,
-                            appContext: Context,
-                            powerAuthSDK: PowerAuthSDK,
-                            tokenProvider: IPowerAuthTokenProvider?,
-                            userAgent: UserAgent?,
-                            gsonBuilder: GsonBuilder?) : Api(baseUrl, okHttpClient, powerAuthSDK, gsonBuilder ?: OperationsUtils.defaultGsonBuilder(), appContext, tokenProvider, userAgent ?: UserAgent.libraryDefault(appContext)) {
+internal class OperationApi(
+    okHttpClient: OkHttpClient,
+    baseUrl: String,
+    appContext: Context,
+    powerAuthSDK: PowerAuthSDK,
+    tokenProvider: IPowerAuthTokenProvider?,
+    userAgent: UserAgent?,
+    gsonBuilder: GsonBuilder?
+) : Api(baseUrl, okHttpClient, powerAuthSDK, gsonBuilder ?: OperationsUtils.defaultGsonBuilder(), appContext, tokenProvider, userAgent ?: UserAgent.libraryDefault(appContext)) {
 
     private object EmptyRequest: BaseRequest()
 

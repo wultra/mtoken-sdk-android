@@ -55,14 +55,18 @@ class IntegrationTestsDeprecated {
         fun tearDown() {
             val auth = PowerAuthAuthentication.possessionWithPassword(pin)
             val future = CompletableFuture<Any>()
-            pa.removeActivationWithAuthentication(IntegrationUtils.context, auth, object : IActivationRemoveListener {
-                override fun onActivationRemoveSucceed() {
-                    future.complete(null)
+            pa.removeActivationWithAuthentication(
+                IntegrationUtils.context,
+                auth,
+                object : IActivationRemoveListener {
+                    override fun onActivationRemoveSucceed() {
+                        future.complete(null)
+                    }
+                    override fun onActivationRemoveFailed(t: Throwable) {
+                        future.completeExceptionally(t)
+                    }
                 }
-                override fun onActivationRemoveFailed(t: Throwable) {
-                    future.completeExceptionally(t)
-                }
-            })
+            )
             future.get(20, TimeUnit.SECONDS)
         }
     }
@@ -155,26 +159,34 @@ class IntegrationTestsDeprecated {
 
         var auth = PowerAuthAuthentication.possessionWithPassword("xxxx") // wrong password on purpose
         val opFuture = CompletableFuture<Any?>()
-        ops.authorizeOperation(operations.first(), auth, object : IAcceptOperationListener {
-            override fun onSuccess() {
-                opFuture.completeExceptionally(Exception("Operation should not be authorized"))
+        ops.authorizeOperation(
+            operations.first(),
+            auth,
+            object : IAcceptOperationListener {
+                override fun onSuccess() {
+                    opFuture.completeExceptionally(Exception("Operation should not be authorized"))
+                }
+                override fun onError(error: ApiError) {
+                    opFuture.complete(null)
+                }
             }
-            override fun onError(error: ApiError) {
-                opFuture.complete(null)
-            }
-        })
+        )
         Assert.assertNull(opFuture.get(20, TimeUnit.SECONDS))
 
         auth = PowerAuthAuthentication.possessionWithPassword(pin)
         val opFuture2 = CompletableFuture<Any?>()
-        ops.authorizeOperation(operations.first(), auth, object : IAcceptOperationListener {
-            override fun onSuccess() {
-                opFuture2.complete(null)
+        ops.authorizeOperation(
+            operations.first(),
+            auth,
+            object : IAcceptOperationListener {
+                override fun onSuccess() {
+                    opFuture2.complete(null)
+                }
+                override fun onError(error: ApiError) {
+                    opFuture2.completeExceptionally(error.e)
+                }
             }
-            override fun onError(error: ApiError) {
-                opFuture2.completeExceptionally(error.e)
-            }
-        })
+        )
         Assert.assertNull(opFuture2.get(20, TimeUnit.SECONDS))
     }
 
@@ -197,21 +209,25 @@ class IntegrationTestsDeprecated {
             return
         }
         val opFuture = CompletableFuture<Any?>()
-        ops.rejectOperation(opFromList, RejectionReason.UNEXPECTED_OPERATION, object : IRejectOperationListener {
-            override fun onSuccess() {
-                opFuture.complete(null)
+        ops.rejectOperation(
+            opFromList,
+            RejectionReason.UNEXPECTED_OPERATION,
+            object : IRejectOperationListener {
+                override fun onSuccess() {
+                    opFuture.complete(null)
+                }
+                override fun onError(error: ApiError) {
+                    opFuture.completeExceptionally(error.e)
+                }
             }
-            override fun onError(error: ApiError) {
-                opFuture.completeExceptionally(error.e)
-            }
-        })
+        )
         Assert.assertNull(opFuture.get(20, TimeUnit.SECONDS))
     }
 
     @Test
     fun testOperationPolling() {
         Assert.assertFalse(ops.isPollingOperations())
-        var loadingCount  = 0
+        var loadingCount = 0
         val future = CompletableFuture<Any?>()
         ops.listener = object : IOperationsServiceListener {
             override fun operationsLoading(loading: Boolean) {
@@ -224,10 +240,8 @@ class IntegrationTestsDeprecated {
                 }
             }
             override fun operationsLoaded(operations: List<UserOperation>) {
-
             }
             override fun operationsFailed(error: ApiError) {
-
             }
         }
         ops.startPollingOperations(1_000, true)
@@ -242,18 +256,21 @@ class IntegrationTestsDeprecated {
         val op = IntegrationUtils.createOperation(IntegrationUtils.Companion.Factors.F_2FA)
         val auth = PowerAuthAuthentication.possessionWithPassword(pin)
         val future = CompletableFuture<List<OperationHistoryEntry>?>()
-        ops.getHistory(auth, object : IGetHistoryListener {
-            override fun onSuccess(operations: List<OperationHistoryEntry>) {
-                future.complete(operations)
-            }
+        ops.getHistory(
+            auth,
+            object : IGetHistoryListener {
+                override fun onSuccess(operations: List<OperationHistoryEntry>) {
+                    future.complete(operations)
+                }
 
-            override fun onError(error: ApiError) {
-                future.complete(null)
+                override fun onError(error: ApiError) {
+                    future.complete(null)
+                }
             }
-        })
+        )
 
         val operations = future.get(20, TimeUnit.SECONDS)
-        Assert.assertNotNull("Operations not retrieved" ,operations)
+        Assert.assertNotNull("Operations not retrieved", operations)
         if (operations == null) {
             return
         }

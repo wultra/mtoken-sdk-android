@@ -23,8 +23,8 @@ import com.google.gson.annotations.SerializedName
  */
 internal data class PushRegistrationRequestObject(
     @SerializedName("token")
-    val token: String) {
-
+    val token: String
+) {
     @SerializedName("platform")
     val platform: String = "android"
 }

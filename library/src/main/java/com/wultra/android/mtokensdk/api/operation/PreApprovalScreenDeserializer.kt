@@ -16,12 +16,11 @@
 
 package com.wultra.android.mtokensdk.api.operation
 
-import com.google.gson.*
-import com.google.gson.stream.JsonReader
-import com.google.gson.stream.JsonToken
-import com.google.gson.stream.JsonWriter
-import com.wultra.android.mtokensdk.api.operation.model.*
-import com.wultra.android.mtokensdk.operation.JSONValue
+import com.google.gson.JsonDeserializationContext
+import com.google.gson.JsonDeserializer
+import com.google.gson.JsonElement
+import com.wultra.android.mtokensdk.api.operation.model.PreApprovalScreen
+import com.wultra.android.mtokensdk.api.operation.model.PreApprovalScreenConfirmAction
 import java.lang.reflect.Type
 
 /**

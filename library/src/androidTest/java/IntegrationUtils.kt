@@ -27,7 +27,6 @@ import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonToken
 import com.google.gson.stream.JsonWriter
 import com.wultra.android.mtokensdk.inbox.IInboxService
-import com.wultra.android.mtokensdk.inbox.InboxMessageDetail
 import com.wultra.android.mtokensdk.inbox.createInboxService
 import com.wultra.android.mtokensdk.operation.IOperationsService
 import com.wultra.android.mtokensdk.operation.createOperationsService
@@ -42,7 +41,6 @@ import okhttp3.MediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
-import java.sql.Time
 import java.util.*
 import java.util.Base64.getEncoder
 import java.util.concurrent.CompletableFuture
@@ -66,10 +64,9 @@ class TimestampAdapter: TypeAdapter<Date>() {
     }
 }
 
-
 class IntegrationUtils {
-    companion object {
 
+    companion object {
         val context: Context = ApplicationProvider.getApplicationContext()
         private val client = OkHttpClient.Builder().build()
         private val gson = Gson()
@@ -115,7 +112,8 @@ class IntegrationUtils {
                   "flags": [],
                   "appId": "$cloudApplicationId"
                 }
-                """.trimIndent()
+                """
+                .trimIndent()
             val resp = makeCall<RegistrationObject>(body, "$cloudServerUrl/v2/registrations")
 
             registrationId = resp.registrationId
@@ -123,15 +121,19 @@ class IntegrationUtils {
             // CREATE ACTIVATION LOCALLY
 
             val calFuture = CompletableFuture<Any>()
-            pa.createActivation("tests", resp.activationCode(), object : ICreateActivationListener {
-                override fun onActivationCreateFailed(t: Throwable) {
-                    calFuture.completeExceptionally(t)
-                }
+            pa.createActivation(
+                "tests",
+                resp.activationCode(),
+                object : ICreateActivationListener {
+                    override fun onActivationCreateFailed(t: Throwable) {
+                        calFuture.completeExceptionally(t)
+                    }
 
-                override fun onActivationCreateSucceed(result: CreateActivationResult) {
-                    calFuture.complete(null)
+                    override fun onActivationCreateSucceed(result: CreateActivationResult) {
+                        calFuture.complete(null)
+                    }
                 }
-            })
+            )
             calFuture.get(10, TimeUnit.SECONDS)
 
             // COMMIT ACTIVATION LOCALLY
@@ -144,7 +146,8 @@ class IntegrationUtils {
                 {
                   "externalUserId": "test"
                 }
-                """.trimIndent()
+                """
+                .trimIndent()
             makeCall<CommitObject>(bodyCommit, "$cloudServerUrl/v2/registrations/${resp.registrationId}/commit")
 
             return Triple(
@@ -163,7 +166,7 @@ class IntegrationUtils {
         }
 
         enum class Factors {
-            //F_1FA,
+            // F_1FA,
             F_2FA
         }
 
@@ -237,14 +240,14 @@ class IntegrationUtils {
                 null
             }
             val request = Request.Builder()
-                    .header("authorization", "Basic $creds")
-                    .url(url)
-                    .method(method, body)
-                    .build()
+                .header("authorization", "Basic $creds")
+                .url(url)
+                .method(method, body)
+                .build()
             val resp = client.newCall(request).execute()
             val stringResp = resp.body()!!.string()
             Log.d("make call response", stringResp)
-            return gson.fromJson(stringResp, object: TypeToken<T>(){}.type)
+            return gson.fromJson(stringResp, object: TypeToken<T>() {}.type)
         }
 
         @Throws
@@ -260,27 +263,32 @@ data class RegistrationObject(val activationQrCodeData: String, val registration
 
 data class CommitObject(val status: String)
 
-data class OperationObject(val operationId: String,
-                           val userId: String,
-                           val status : String,
-                           val operationType: String,
-                           //val parameters: [] // not needed for test right now
-                           val failureCount: Int,
-                           val maxFailureCount: Int,
-                           val timestampCreated: Double,
-                           val timestampExpires: Double)
+data class OperationObject(
+    val operationId: String,
+    val userId: String,
+    val status : String,
+    val operationType: String,
+    // val parameters: [] // not needed for test right now
+    val failureCount: Int,
+    val maxFailureCount: Int,
+    val timestampCreated: Double,
+    val timestampExpires: Double
+)
 
-data class QRData(val operationQrCodeData: String,
-                  val nonce: String)
+data class QRData(
+    val operationQrCodeData: String,
+    val nonce: String
+)
 
-data class QROperationVerify(val otpValid: Boolean,
-                             val userId: String,
-                             val registrationId: String,
-                             val registrationStatus: String,
-                             val signatureType: String,
-                             val remainingAttempts: Int
-                            // val flags: []
-                            // val application)
+data class QROperationVerify(
+    val otpValid: Boolean,
+    val userId: String,
+    val registrationId: String,
+    val registrationStatus: String,
+    val signatureType: String,
+    val remainingAttempts: Int
+    // val flags: []
+    // val application)
 )
 
 data class NewInboxMessage(

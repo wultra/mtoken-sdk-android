@@ -23,51 +23,33 @@ import java.util.*
  * QR operation model class.
  */
 data class QROperation(
-        /**
-         * Operation's identifier
-         */
-        val operationId: String,
+    /** Operation's identifier */
+    val operationId: String,
 
-        /**
-         * Title associated with the operation.
-         */
-        val title: String,
+    /** Title associated with the operation. */
+    val title: String,
 
-        /**
-         * Message associated with the operation
-         */
-        val message: String,
+    /** Message associated with the operation */
+    val message: String,
 
-        /**
-         * Significant data fields associated with the operation
-         */
-        val operationData: QROperationData,
+    /** Significant data fields associated with the operation */
+    val operationData: QROperationData,
 
-        /**
-         * Nonce for offline signature calculation, in Base64 format
-         */
-        val nonce: String,
+    /** Nonce for offline signature calculation, in Base64 format */
+    val nonce: String,
 
-        /**
-         * Flags associated with the operation
-         */
-        val flags: QROperationFlags,
+    /** Flags associated with the operation */
+    val flags: QROperationFlags,
 
-        /**
-         * Data for signature validation
-         */
-        val signedData: ByteArray,
+    /** Data for signature validation */
+    val signedData: ByteArray,
 
-        /**
-         * ECDSA signature calculated from 'signedData'
-         */
-        val signature: QROperationSignature,
+    /** ECDSA signature calculated from [signedData] */
+    val signature: QROperationSignature,
 
-        /**
-         * QR code uses a string in newer format that this class implements. This may be used as warning in UI
-         */
-        val isNewerFormat: Boolean) {
-
+    /** QR code uses a string in newer format that this class implements. This may be used as warning in UI */
+    val isNewerFormat: Boolean
+) {
     fun dataForOfflineSigning() = "$operationId&${operationData.sourceString}".toByteArray()
 }
 
@@ -75,56 +57,45 @@ data class QROperation(
  * Flags associated with the operation
  */
 data class QROperationFlags(
+    /** If true, then 2FA signature with biometry factor can be used for operation confirmation.*/
+    val biometryAllowed: Boolean,
 
-        /** If true, then 2FA signature with biometry factor can be used for operation confirmation.*/
-        val biometryAllowed: Boolean,
+    /** If confirm/reject buttons should be flipped in the UI. This can be useful to test users attention. */
+    val flipButtons: Boolean,
 
-        /** If confirm/reject buttons should be flipped in the UI. This can be useful to test users attention. */
-        val flipButtons: Boolean,
+    /** When the operation is considered a "potential fraud" on the server, a warning UI should be displayed to the user. */
+    val fraudWarning: Boolean,
 
-        /** When the operation is considered a "potential fraud" on the server, a warning UI should be displayed to the user. */
-        val fraudWarning: Boolean,
-
-        /** Block confirmation when call is active. */
-        val blockWhenOnCall: Boolean)
+    /** Block confirmation when call is active. */
+    val blockWhenOnCall: Boolean
+)
 
 /**
  * defines operation data in QR operation
  */
 data class QROperationData(
 
-        /**
-         * Version of form data
-         */
-        val version: Version,
+    /** Version of form data */
+    val version: Version,
 
-        /**
-         * Template identifier (0 .. 99 in v1)
-         */
-        val templateId: Int,
+    /** Template identifier (0 .. 99 in v1) */
+    val templateId: Int,
 
-        /**
-         * Array with form fields. Version v1 supports up to 5 fields.
-         */
-        val fields: ArrayList<QROperationDataField>,
+    /** Array with form fields. Version v1 supports up to 5 fields. */
+    val fields: ArrayList<QROperationDataField>,
 
-        /**
-         * A whole line from which was this structure constructed.
-         */
-        val sourceString: String) {
+    /** A whole line from which was this structure constructed. */
+    val sourceString: String
+) {
 
     enum class Version {
-        /**
-         * First version of operation data
-         */
+        /** First version of operation data */
         V1,
 
-        /**
-         * Type representing all newer versions of operation data (for forward compatibility)
-         */
+        /** Type representing all newer versions of operation data (for forward compatibility) */
         VX;
 
-        companion object  {
+        companion object {
             fun parse(value: Char): Version {
                 if (value == 'A') {
                     return V1
@@ -132,42 +103,27 @@ data class QROperationData(
                 return VX
             }
         }
-
     }
 
-    /**
-     * Amount with currency
-     */
+    /** Amount with currency */
     data class AmountField(val amount: BigDecimal, val currency: String): QROperationDataField()
 
-    /**
-     * Account in IBAN format, with optional BIC
-     */
+    /** Account in IBAN format, with optional BIC */
     data class AccountField(val iban: String, val bic: String?): QROperationDataField()
 
-    /**
-     * Account in arbitrary textual format
-     */
+    /** Account in arbitrary textual format */
     data class AnyAccountField(val account: String): QROperationDataField()
 
-    /**
-     * Date field
-     */
+    /** Date field */
     data class DateField(val date: Date): QROperationDataField()
 
-    /**
-     * Reference field
-     */
+    /** Reference field */
     data class ReferenceField(val text: String): QROperationDataField()
 
-    /**
-     * Note Field
-     */
+    /** Note Field */
     data class NoteField(val text: String): QROperationDataField()
 
-    /**
-     * Text Field
-     */
+    /** Text Field */
     data class TextField(val text: String): QROperationDataField()
 
     /**
@@ -176,45 +132,31 @@ data class QROperationData(
      */
     data class FallbackField(val text: String, val type: Char): QROperationDataField()
 
-    /**
-     * Reserved for optional and not used fields
-     */
+    /** Reserved for optional and not used fields */
     object EmptyField: QROperationDataField()
 
     abstract class QROperationDataField
 }
 
-/**
- * Model class for offline QR operation signature.
- */
+/** Model class for offline QR operation signature. */
 data class QROperationSignature(
-        /**
-         * Defines which key has been used for ECDSA signature calculation.
-         */
-        val signingKey: SigningKey,
+    /** Defines which key has been used for ECDSA signature calculation.*/
+    val signingKey: SigningKey,
 
-        /**
-         * Raw signature data
-         */
-        val signature: ByteArray,
+    /** Raw signature data */
+    @Suppress("ArrayInDataClass")
+    val signature: ByteArray,
 
-        /**
-         * Signature in Base64 format
-         */
-        val signatureString: String) {
+    /** Signature in Base64 format */
+    val signatureString: String
+) {
 
-    /**
-     * Defines which key was used for ECDSA signature calculation
-     */
+    /** Defines which key was used for ECDSA signature calculation */
     enum class SigningKey(val typeValue: Char) {
-        /**
-         * Master server key was used for ECDSA signature calculation
-         */
+        /** Master server key was used for ECDSA signature calculation */
         MASTER('0'),
 
-        /**
-         * Personalized server's private key was used for ECDSA signature calculation
-         */
+        /** Personalized server's private key was used for ECDSA signature calculation */
         PERSONALIZED('1');
 
         companion object {
@@ -227,7 +169,6 @@ data class QROperationSignature(
             fun fromTypeValue(typeValue: Char): SigningKey? {
                 return map[typeValue]
             }
-
         }
     }
 

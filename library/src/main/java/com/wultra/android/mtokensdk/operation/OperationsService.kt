@@ -199,12 +199,12 @@ class OperationsService: IOperationsService {
         if (response.currentTimestamp == null) {
             return
         }
-        
+
         val now = ZonedDateTime.now()
         val requestDelayMilliseconds = now.toInstant().toEpochMilli() - requestStarted.toInstant().toEpochMilli()
 
         // We're adding half of the time that the request took to compensate for the network delay
-        val serverTime = response.currentTimestamp.plus((requestDelayMilliseconds/2), ChronoUnit.MILLIS)
+        val serverTime = response.currentTimestamp.plus((requestDelayMilliseconds / 2), ChronoUnit.MILLIS)
 
         // Already calculated server time
         val currentServerDate = currentServerDate()
@@ -231,47 +231,57 @@ class OperationsService: IOperationsService {
     }
 
     override fun getHistory(authentication: PowerAuthAuthentication, callback: (result: Result<List<OperationHistoryEntry>>) -> Unit) {
-        operationApi.history(authentication, object : IApiCallResponseListener<OperationHistoryResponse> {
-            override fun onSuccess(result: OperationHistoryResponse) {
-                callback(Result.success(result.responseObject))
-            }
+        operationApi.history(
+            authentication,
+            object : IApiCallResponseListener<OperationHistoryResponse> {
+                override fun onSuccess(result: OperationHistoryResponse) {
+                    callback(Result.success(result.responseObject))
+                }
 
-            override fun onFailure(error: ApiError) {
-                callback(Result.failure(ApiErrorException(error)))
+                override fun onFailure(error: ApiError) {
+                    callback(Result.failure(ApiErrorException(error)))
+                }
             }
-        })
+        )
     }
 
     override fun authorizeOperation(operation: IOperation, authentication: PowerAuthAuthentication, callback: (result: Result<Unit>) -> Unit) {
         val authorizeRequest = AuthorizeRequest(AuthorizeRequestObject(operation.id, operation.data))
-        operationApi.authorize(authorizeRequest, authentication, object : IApiCallResponseListener<StatusResponse> {
-            override fun onSuccess(result: StatusResponse) {
-                callback(Result.success(Unit))
-            }
+        operationApi.authorize(
+            authorizeRequest,
+            authentication,
+            object : IApiCallResponseListener<StatusResponse> {
+                override fun onSuccess(result: StatusResponse) {
+                    callback(Result.success(Unit))
+                }
 
-            override fun onFailure(error: ApiError) {
-                callback(Result.failure(ApiErrorException(error)))
+                override fun onFailure(error: ApiError) {
+                    callback(Result.failure(ApiErrorException(error)))
+                }
             }
-        })
+        )
     }
 
     override fun rejectOperation(operation: IOperation, reason: RejectionReason, callback: (result: Result<Unit>) -> Unit) {
         val rejectRequest = RejectRequest(RejectRequestObject(operation.id, reason.reason))
-        operationApi.reject(rejectRequest, object : IApiCallResponseListener<StatusResponse> {
-            override fun onSuccess(result: StatusResponse) {
-                callback(Result.success(Unit))
-            }
+        operationApi.reject(
+            rejectRequest,
+            object : IApiCallResponseListener<StatusResponse> {
+                override fun onSuccess(result: StatusResponse) {
+                    callback(Result.success(Unit))
+                }
 
-            override fun onFailure(error: ApiError) {
-                callback(Result.failure(ApiErrorException(error)))
+                override fun onFailure(error: ApiError) {
+                    callback(Result.failure(ApiErrorException(error)))
+                }
             }
-        })
+        )
     }
 
     @Throws
     override fun authorizeOfflineOperation(operation: QROperation, authentication: PowerAuthAuthentication, uriId: String): String {
         return powerAuthSDK.offlineSignatureWithAuthentication(appContext, authentication, uriId, operation.dataForOfflineSigning(), operation.nonce)
-                ?: throw Exception("Cannot sign this operation")
+            ?: throw Exception("Cannot sign this operation")
     }
 
     override fun isPollingOperations() = timer != null
@@ -289,11 +299,15 @@ class OperationsService: IOperationsService {
             0
         }
         val t = Timer("OperationsServiceTimer")
-        t.scheduleAtFixedRate(object : TimerTask() {
-            override fun run() {
-                fetchOperations()
-            }
-        }, delay, pollingInterval)
+        t.scheduleAtFixedRate(
+            object : TimerTask() {
+                override fun run() {
+                    fetchOperations()
+                }
+            },
+            delay,
+            pollingInterval
+        )
         timer = t
         Logger.d("Polling started with $pollingInterval milliseconds interval")
     }

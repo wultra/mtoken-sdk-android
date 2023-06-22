@@ -24,16 +24,12 @@ import java.math.BigDecimal
  * Every type of the attribute has it's own strongly typed implementation based on its [type]
  */
 open class Attribute(
+    /** Type of the operation */
+    val type: Type,
 
-        /**
-         * Type of the operation
-         */
-        val type: Type,
-
-        /**
-         * Label for the value
-         */
-        val label: Label) {
+    /** Label for the value */
+    val label: Label
+) {
 
     enum class Type {
         AMOUNT,
@@ -46,89 +42,64 @@ open class Attribute(
         UNKNOWN
     }
 
-    /**
-     * Attribute label serves as a UI heading for the attribute
-     */
+    /** Attribute label serves as a UI heading for the attribute */
     data class Label(
-            /**
-             * ID (type) of the label. This is highly depended on the backend
-             * and can be used to change the appearance of the label
-             */
-            val id: String,
+        /** ID (type) of the label. This is highly depended on the backend
+         * and can be used to change the appearance of the label */
+        val id: String,
 
-            /**
-             * Label value
-             */
-            val value: String)
+        /** Label value */
+        val value: String
+    )
 }
 
-/**
- * Amount attribute is 1 row in operation that represents "Payment Amount"
- */
+/** Amount attribute is 1 row in operation that represents "Payment Amount" */
 class AmountAttribute(
-        /**
-         * Payment amount
-         */
-        val amount: BigDecimal,
+    /** Payment amount */
+    val amount: BigDecimal,
 
-        /**
-         * Currency
-         */
-        val currency: String,
+    /** Currency */
+    val currency: String,
 
-        /**
-         * Formatted amount for presentation.
-         *
-         * This property will be properly formatted based on the response language.
-         * For example when amount is 100 and the acceptLanguage is "cs" for czech,
-         * he amountFormatted will be "100,00".
-         */
-        val amountFormatted: String?,
+    /** Formatted amount for presentation.
+     *
+     * This property will be properly formatted based on the response language.
+     * For example when amount is 100 and the acceptLanguage is "cs" for czech,
+     * he amountFormatted will be "100,00". */
+    val amountFormatted: String?,
 
-        /**
-         * Formatted currency to the locale based on acceptLanguage.
-         *
-         * For example when the currency is CZK, this property will be "Kč"
-         */
-        val currencyFormatted: String?,
+    /** Formatted currency to the locale based on acceptLanguage.
+     *
+     * For example when the currency is CZK, this property will be "Kč" */
+    val currencyFormatted: String?,
 
-        /**
-         * Formatted amount and currency to the locale based on acceptLanguage
-         *
-         * Both amount and currency are formatted, String will show e.g. "€" in front of the amount
-         * or "EUR" behind the amount depending on the locale
-         */
-        val valueFormatted: String?,
+    /** Formatted amount and currency to the locale based on acceptLanguage
+     *
+     * Both amount and currency are formatted, String will show e.g. "€" in front of the amount
+     * or "EUR" behind the amount depending on the locale */
+    val valueFormatted: String?,
 
-        label: Label) : Attribute(Type.AMOUNT, label)
+    /** Label for the value */
+    label: Label
+): Attribute(Type.AMOUNT, label)
 
-/**
- * Attribute that describes generic key-value row to display
- */
+/** Attribute that describes generic key-value row to display */
 class KeyValueAttribute(
+    /** Value of the attribute */
+    val value: String,
+    /** Label for the value */
+    label: Label
+) : Attribute(Type.KEY_VALUE, label)
 
-        /**
-         * Value of the attribute
-         */
-        val value: String,
-
-        label: Label) : Attribute(Type.KEY_VALUE, label)
-
-/**
- * Attribute that describes note, that should be handled as "long text message"
- */
+/** Attribute that describes note, that should be handled as "long text message" */
 class NoteAttribute(
+    /** Note value */
+    val note: String,
+    /** Label for the value */
+    label: Label
+) : Attribute(Type.NOTE, label)
 
-        /**
-         * Note value
-         */
-        val note: String,
-
-        label: Label) : Attribute(Type.NOTE, label)
-
-/**
- * Heading. This attribute has no value. It only acts as a "section separator"
- */
+/** Heading. This attribute has no value. It only acts as a "section separator" */
 class HeadingAttribute(label: Label) : Attribute(Type.HEADING, label)
 
 /**
@@ -138,35 +109,22 @@ class HeadingAttribute(label: Label) : Attribute(Type.HEADING, label)
  * in such case, information about the eshop will be filled here.
  */
 class PartyInfoAttribute(
-        /**
-         * Information about the 3rd party info
-         */
-        val partyInfo: PartyInfo,
+    /** Information about the 3rd party */
+    val partyInfo: PartyInfo,
 
-        label: Label) : Attribute(Type.PARTY_INFO, label) {
+    /** Label for the value */
+    label: Label
+) : Attribute(Type.PARTY_INFO, label) {
 
-    /**
-     * 3rd party retailer information
-     */
+    /** 3rd party retailer information */
     class PartyInfo(map: Map<String, String>) {
-        /**
-         * URL address to the logo image
-         */
+        /** URL address to the logo image */
         val logoUrl: String by map
-
-        /**
-         * Name of the retailer
-         */
+        /** Name of the retailer */
         val name: String by map
-
-        /**
-         * Description of the retailer
-         */
+        /** Description of the retailer */
         val description: String by map
-
-        /**
-         * Retailer website
-         */
+        /** Retailer website */
         val websiteUrl: String by map
     }
 }
@@ -186,7 +144,9 @@ class ConversionAttribute(
     val source: Money,
     /** Target amount */
     val target: Money,
-    label: Label) : Attribute(Type.AMOUNT_CONVERSION, label) {
+    /** Label for the value */
+    label: Label
+) : Attribute(Type.AMOUNT_CONVERSION, label) {
 
     data class Money(
 
@@ -237,4 +197,6 @@ class ImageAttribute(
     /** Full-size image that should be displayed on thumbnail click (when not null). Url to the public internet */
     val originalUrl: String?,
 
-    label: Label): Attribute(Type.IMAGE, label)
+    /** Image label */
+    label: Label
+): Attribute(Type.IMAGE, label)

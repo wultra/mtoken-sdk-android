@@ -24,7 +24,6 @@ import com.wultra.android.mtokensdk.api.operation.model.OperationHistoryEntrySta
 import com.wultra.android.mtokensdk.api.operation.model.UserOperation
 import java.lang.reflect.Type
 
-
 /**
  * Custom deserializer that extracts status from the returned object into its own property
  */

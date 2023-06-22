@@ -45,13 +45,15 @@ internal class InboxGetMessageDetailRequest(requestObject: GetMessageDetail): Ob
 internal class InboxGetMessageDetailResponse(responseObject: InboxMessageDetail, status: Status): ObjectResponse<InboxMessageDetail>(responseObject, status)
 internal class InboxSetMessageReadRequest(requestObject: SetMessageRead): ObjectRequest<SetMessageRead>(requestObject)
 
-internal class InboxApi(okHttpClient: OkHttpClient,
-                        baseUrl: String,
-                        appContext: Context,
-                        powerAuthSDK: PowerAuthSDK,
-                        tokenProvider: IPowerAuthTokenProvider?,
-                        userAgent: UserAgent?,
-                        gsonBuilder: GsonBuilder?) : Api(baseUrl, okHttpClient, powerAuthSDK, gsonBuilder ?: OperationsUtils.defaultGsonBuilder(), appContext, tokenProvider, userAgent ?: UserAgent.libraryDefault(appContext)) {
+internal class InboxApi(
+    okHttpClient: OkHttpClient,
+    baseUrl: String,
+    appContext: Context,
+    powerAuthSDK: PowerAuthSDK,
+    tokenProvider: IPowerAuthTokenProvider?,
+    userAgent: UserAgent?,
+    gsonBuilder: GsonBuilder?
+) : Api(baseUrl, okHttpClient, powerAuthSDK, gsonBuilder ?: OperationsUtils.defaultGsonBuilder(), appContext, tokenProvider, userAgent ?: UserAgent.libraryDefault(appContext)) {
 
     companion object {
         private val getMessageCount = EndpointSignedWithToken<BaseRequest, InboxCountResponse>("api/inbox/count", "possession_universal")

@@ -76,17 +76,18 @@ class PushService(okHttpClient: OkHttpClient, baseURL: String, powerAuthSDK: Pow
     private val pushApi = PushApi(okHttpClient, baseURL, powerAuthSDK, appContext, tokenProvider, userAgent)
 
     override fun register(fcmToken: String, callback: (Result<Unit>) -> Unit) {
-        pushApi.registerToken(PushRegistrationRequest(PushRegistrationRequestObject(fcmToken)), object :
-            IApiCallResponseListener<StatusResponse> {
-            override fun onSuccess(result: StatusResponse) {
-                callback(Result.success(Unit))
-            }
+        pushApi.registerToken(
+            PushRegistrationRequest(PushRegistrationRequestObject(fcmToken)),
+            object : IApiCallResponseListener<StatusResponse> {
+                override fun onSuccess(result: StatusResponse) {
+                    callback(Result.success(Unit))
+                }
 
-            override fun onFailure(error: ApiError) {
-                Logger.e("Failed to register fcm token for WMT push notifications.")
-                callback(Result.failure(ApiErrorException(error)))
+                override fun onFailure(error: ApiError) {
+                    Logger.e("Failed to register fcm token for WMT push notifications.")
+                    callback(Result.failure(ApiErrorException(error)))
+                }
             }
-        })
+        )
     }
-
 }

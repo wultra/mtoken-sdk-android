@@ -51,7 +51,8 @@ class InboxService(
     powerAuthSDK: PowerAuthSDK,
     appContext: Context,
     tokenProvider: IPowerAuthTokenProvider? = null,
-    userAgent: UserAgent? = null) : IInboxService {
+    userAgent: UserAgent? = null
+) : IInboxService {
 
     // API class for communication.
     private val inboxApi = InboxApi(httpClient, baseURL, appContext, powerAuthSDK, tokenProvider, userAgent, OperationsUtils.defaultGsonBuilder())
@@ -81,39 +82,48 @@ class InboxService(
     }
 
     override fun getMessageList(pageNumber: Int, pageSize: Int, onlyUnread: Boolean, callback: (result: Result<List<InboxMessage>>) -> Unit) {
-        inboxApi.list(InboxGetListRequest(GetList(pageNumber, pageSize, onlyUnread)), object : IApiCallResponseListener<InboxGetListResponse> {
-            override fun onFailure(error: ApiError) {
-                callback(Result.failure(ApiErrorException(error)))
-            }
+        inboxApi.list(
+            InboxGetListRequest(GetList(pageNumber, pageSize, onlyUnread)),
+            object: IApiCallResponseListener<InboxGetListResponse> {
+                override fun onFailure(error: ApiError) {
+                    callback(Result.failure(ApiErrorException(error)))
+                }
 
-            override fun onSuccess(result: InboxGetListResponse) {
-                callback(Result.success(result.responseObject))
+                override fun onSuccess(result: InboxGetListResponse) {
+                    callback(Result.success(result.responseObject))
+                }
             }
-        })
+        )
     }
 
     override fun getMessageDetail(messageId: String, callback: (result: Result<InboxMessageDetail>) -> Unit) {
-        inboxApi.detail(InboxGetMessageDetailRequest(GetMessageDetail(messageId)), object : IApiCallResponseListener<InboxGetMessageDetailResponse> {
-            override fun onFailure(error: ApiError) {
-                callback(Result.failure(ApiErrorException(error)))
-            }
+        inboxApi.detail(
+            InboxGetMessageDetailRequest(GetMessageDetail(messageId)),
+            object: IApiCallResponseListener<InboxGetMessageDetailResponse> {
+                override fun onFailure(error: ApiError) {
+                    callback(Result.failure(ApiErrorException(error)))
+                }
 
-            override fun onSuccess(result: InboxGetMessageDetailResponse) {
-                callback(Result.success(result.responseObject))
+                override fun onSuccess(result: InboxGetMessageDetailResponse) {
+                    callback(Result.success(result.responseObject))
+                }
             }
-        })
+        )
     }
 
     override fun markRead(messageId: String, callback: (result: Result<Unit>) -> Unit) {
-        inboxApi.read(InboxSetMessageReadRequest(SetMessageRead(messageId)), object : IApiCallResponseListener<StatusResponse> {
-            override fun onFailure(error: ApiError) {
-                callback(Result.failure(ApiErrorException(error)))
-            }
+        inboxApi.read(
+            InboxSetMessageReadRequest(SetMessageRead(messageId)),
+            object: IApiCallResponseListener<StatusResponse> {
+                override fun onFailure(error: ApiError) {
+                    callback(Result.failure(ApiErrorException(error)))
+                }
 
-            override fun onSuccess(result: StatusResponse) {
-                callback(Result.success(Unit))
+                override fun onSuccess(result: StatusResponse) {
+                    callback(Result.success(Unit))
+                }
             }
-        })
+        )
     }
 
     override fun markAllRead(callback: (result: Result<Unit>) -> Unit) {

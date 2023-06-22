@@ -20,12 +20,9 @@ package com.wultra.android.mtokensdk.api.operation.model
  * Minimal concrete implementation of [IOperation] for convenience usage.
  */
 data class LocalOperation(
-        /**
-         * Operation identifier
-         */
-        override val id: String,
+    /** Operation identifier */
+    override val id: String,
 
-        /**
-         * Data for signing
-         */
-        override val data: String) : IOperation
+    /** Data for signing */
+    override val data: String
+): IOperation

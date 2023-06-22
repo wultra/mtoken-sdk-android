@@ -35,12 +35,14 @@ internal class PushRegistrationRequest(requestObject: PushRegistrationRequestObj
 /**
  * API for registering with push server.
  */
-internal class PushApi constructor(okHttpClient: OkHttpClient,
-                                   baseURL: String,
-                                   powerAuthSDK: PowerAuthSDK,
-                                   appContext: Context,
-                                   tokenProvider: IPowerAuthTokenProvider?,
-                                   userAgent: UserAgent?) : Api(baseURL, okHttpClient, powerAuthSDK, GsonBuilder(), appContext, tokenProvider, userAgent ?: UserAgent.libraryDefault(appContext)) {
+internal class PushApi constructor(
+    okHttpClient: OkHttpClient,
+    baseURL: String,
+    powerAuthSDK: PowerAuthSDK,
+    appContext: Context,
+    tokenProvider: IPowerAuthTokenProvider?,
+    userAgent: UserAgent?
+) : Api(baseURL, okHttpClient, powerAuthSDK, GsonBuilder(), appContext, tokenProvider, userAgent ?: UserAgent.libraryDefault(appContext)) {
 
     companion object {
         private val endpoint = EndpointSignedWithToken<PushRegistrationRequest, StatusResponse>("api/push/device/register/token", "possession_universal")

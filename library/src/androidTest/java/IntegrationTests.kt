@@ -204,7 +204,7 @@ class IntegrationTests {
     @Test
     fun testOperationPolling() {
         Assert.assertFalse(ops.isPollingOperations())
-        var loadingCount  = 0
+        var loadingCount = 0
         val future = CompletableFuture<Any?>()
         ops.listener = object : IOperationsServiceListener {
             override fun operationsLoading(loading: Boolean) {
@@ -217,10 +217,9 @@ class IntegrationTests {
                 }
             }
             override fun operationsLoaded(operations: List<UserOperation>) {
-
             }
-            override fun operationsFailed(error: ApiError) {
 
+            override fun operationsFailed(error: ApiError) {
             }
         }
         ops.startPollingOperations(1_000, true)
@@ -241,7 +240,7 @@ class IntegrationTests {
         }
 
         val operations = future.get(20, TimeUnit.SECONDS)
-        Assert.assertNotNull("Operations not retrieved" ,operations)
+        Assert.assertNotNull("Operations not retrieved", operations)
         if (operations == null) {
             return
         }
