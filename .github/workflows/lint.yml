@@ -19,10 +19,16 @@ jobs:
 
   androidLint:
     name: Android Lint
-    runs-on: [ self-hosted, macOS ]
+    runs-on: macos-latest
     steps:
       - name: Checkout the repo
         uses: actions/checkout@v2
+      - name: Setup Java 11
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+          cache: 'gradle'
       - name: Android Lint
         run: ./gradlew clean library:lint
       - name: Upload Android Lint results artifact
