@@ -67,7 +67,7 @@ android {
 
 dependencies {
     // Bundled
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:${Constants.BuildScript.kotlinVersion}")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:${Constants.BuildScript.kotlinVersion}")
     implementation("androidx.annotation:annotation:1.6.0")
     implementation("com.google.code.gson:gson:2.8.9")
     implementation("com.jakewharton.threetenabp:threetenabp:1.1.1")
