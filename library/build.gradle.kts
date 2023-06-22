@@ -1,18 +1,20 @@
+@file:Suppress("UnstableApiUsage")
+
 /*
- * Copyright 2022 Wultra s.r.o.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions
- * and limitations under the License.
- */
+* Copyright 2022 Wultra s.r.o.
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions
+* and limitations under the License.
+*/
 
 plugins {
     id("com.android.library")
@@ -55,16 +57,16 @@ android {
 dependencies {
     // Bundled
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:${Constants.BuildScript.kotlinVersion}")
-    implementation("androidx.annotation:annotation:1.5.0")
+    implementation("androidx.annotation:annotation:1.6.0")
     implementation("com.google.code.gson:gson:2.8.9")
     implementation("com.jakewharton.threetenabp:threetenabp:1.1.1")
     // DO NOT UPGRADE ABOVE 3.12.X! Version 3.12 is the last version supporting TLS 1 and 1.1
     // If upgraded, the app will crash on android 4.4
     implementation("com.squareup.okhttp3:okhttp:3.12.13")
-    implementation("com.wultra.android.powerauth:powerauth-networking:1.1.3")
+    implementation("com.wultra.android.powerauth:powerauth-networking:1.2.0")
 
     // Dependencies
-    compileOnly("com.wultra.android.powerauth:powerauth-sdk:1.7.6")
+    compileOnly("com.wultra.android.powerauth:powerauth-sdk:1.7.7")
     compileOnly("io.getlime.core:rest-model-base:1.2.0")
 
     // TestDependencies
@@ -72,9 +74,9 @@ dependencies {
 
     // Android tests
     androidTestImplementation("com.jakewharton.threetenabp:threetenabp:1.1.1")
-    androidTestImplementation("com.wultra.android.powerauth:powerauth-sdk:1.7.6")
-    androidTestImplementation("com.wultra.android.powerauth:powerauth-networking:1.1.3")
-    androidTestImplementation("androidx.test:runner:1.5.1")
+    androidTestImplementation("com.wultra.android.powerauth:powerauth-sdk:1.7.7")
+    androidTestImplementation("com.wultra.android.powerauth:powerauth-networking:1.2.0")
+    androidTestImplementation("androidx.test:runner:1.5.2")
     androidTestImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test:core:1.5.0")
 }

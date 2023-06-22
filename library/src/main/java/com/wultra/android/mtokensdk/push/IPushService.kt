@@ -17,6 +17,7 @@
 package com.wultra.android.mtokensdk.push
 
 import com.wultra.android.mtokensdk.api.apiErrorForListener
+import com.wultra.android.powerauth.networking.OkHttpBuilderInterceptor
 import com.wultra.android.powerauth.networking.error.ApiError
 
 /**
@@ -27,13 +28,24 @@ interface IPushService {
     /**
      * Accept language for the outgoing requests headers.
      * Default value is "en".
+     *
+     * Standard RFC "Accept-Language" https://tools.ietf.org/html/rfc7231#section-5.3.5
+     * Response texts are based on this setting. For example when "de" is set, server
+     * will return operation texts in german (if available).
      */
     var acceptLanguage: String
 
     /**
+     * A custom interceptor can intercept each service call.
+     *
+     * You can use this for request/response logging into your own log system.
+     */
+    var okHttpInterceptor: OkHttpBuilderInterceptor?
+
+    /**
      * Registers FCM on backend to receive notifications about operations
      * @param fcmToken Firebase Cloud Messaging Token
-     * @param listener Result listener
+     * @param callback Result listener
      */
     fun register(fcmToken: String, callback: (result: Result<Unit>) -> Unit)
 }

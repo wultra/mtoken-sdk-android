@@ -22,6 +22,7 @@ import com.wultra.android.mtokensdk.api.push.model.PushRegistrationRequestObject
 import com.wultra.android.powerauth.networking.Api
 import com.wultra.android.powerauth.networking.EndpointSignedWithToken
 import com.wultra.android.powerauth.networking.IApiCallResponseListener
+import com.wultra.android.powerauth.networking.OkHttpBuilderInterceptor
 import com.wultra.android.powerauth.networking.UserAgent
 import com.wultra.android.powerauth.networking.data.ObjectRequest
 import com.wultra.android.powerauth.networking.data.StatusResponse
@@ -45,10 +46,12 @@ internal class PushApi constructor(okHttpClient: OkHttpClient,
         private val endpoint = EndpointSignedWithToken<PushRegistrationRequest, StatusResponse>("api/push/device/register/token", "possession_universal")
     }
 
+    var okHttpInterceptor: OkHttpBuilderInterceptor? = null
+
     /**
      * Register FCM token with push server.
      */
     fun registerToken(requestObject: PushRegistrationRequest, listener: IApiCallResponseListener<StatusResponse>) {
-        post(requestObject, endpoint, null, null, listener)
+        post(requestObject, endpoint, null, null, okHttpInterceptor, listener)
     }
 }

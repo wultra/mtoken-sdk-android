@@ -23,6 +23,7 @@ import com.wultra.android.mtokensdk.api.operation.*
 import com.wultra.android.mtokensdk.api.operation.model.*
 import com.wultra.android.mtokensdk.common.Logger
 import com.wultra.android.powerauth.networking.IApiCallResponseListener
+import com.wultra.android.powerauth.networking.OkHttpBuilderInterceptor
 import com.wultra.android.powerauth.networking.UserAgent
 import com.wultra.android.powerauth.networking.data.StatusResponse
 import com.wultra.android.powerauth.networking.error.ApiError
@@ -97,6 +98,12 @@ class OperationsService: IOperationsService {
         get() = operationApi.acceptLanguage
         set(value) {
             operationApi.acceptLanguage = value
+        }
+
+    override var okHttpInterceptor: OkHttpBuilderInterceptor?
+        get() = operationApi.okHttpInterceptor
+        set(value) {
+            operationApi.okHttpInterceptor = value
         }
 
     private val powerAuthSDK: PowerAuthSDK
