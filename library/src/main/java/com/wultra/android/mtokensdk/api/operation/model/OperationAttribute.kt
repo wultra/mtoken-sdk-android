@@ -92,6 +92,14 @@ class AmountAttribute(
          */
         val currencyFormatted: String?,
 
+        /**
+         * Formatted amount and currency to the locale based on acceptLanguage
+         *
+         * Both amount and currency are formatted, String will show e.g. "€" in front of the amount
+         * or "EUR" behind the amount depending on the locale
+         */
+        val valueFormatted: String?,
+
         label: Label) : Attribute(Type.AMOUNT, label)
 
 /**
@@ -207,7 +215,15 @@ class ConversionAttribute(
          *
          * For example when the currency is CZK, this property will be "Kč"
          */
-        val currencyFormatted: String?
+        val currencyFormatted: String?,
+
+        /**
+         * Formatted amount and currency to the locale based on acceptLanguage
+         *
+         * Both amount and currency are formatted, String will show e.g. "€" in front of the amount
+         * or "EUR" behind the amount depending on the locale
+         */
+        val valueFormatted: String?
     )
 }
 
