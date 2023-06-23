@@ -97,6 +97,7 @@ dependencies {
     androidTestImplementation("androidx.test:runner:1.5.2")
     androidTestImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test:core:1.5.0")
+    androidTestImplementation(platform("org.jetbrains.kotlin:kotlin-bom:1.8.0"))
 }
 
 apply("android-release-aar.gradle")
