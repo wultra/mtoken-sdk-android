@@ -42,14 +42,15 @@ internal class RejectRequest(requestObject: RejectRequestObject): ObjectRequest<
 /**
  * API for operations requests.
  */
-@Suppress("PrivatePropertyName")
-internal class OperationApi(okHttpClient: OkHttpClient,
-                            baseUrl: String,
-                            appContext: Context,
-                            powerAuthSDK: PowerAuthSDK,
-                            tokenProvider: IPowerAuthTokenProvider?,
-                            userAgent: UserAgent?,
-                            gsonBuilder: GsonBuilder?) : Api(baseUrl, okHttpClient, powerAuthSDK, gsonBuilder ?: OperationsUtils.defaultGsonBuilder(), appContext, tokenProvider, userAgent ?: UserAgent.libraryDefault(appContext)) {
+internal class OperationApi(
+    okHttpClient: OkHttpClient,
+    baseUrl: String,
+    appContext: Context,
+    powerAuthSDK: PowerAuthSDK,
+    tokenProvider: IPowerAuthTokenProvider?,
+    userAgent: UserAgent?,
+    gsonBuilder: GsonBuilder?
+) : Api(baseUrl, okHttpClient, powerAuthSDK, gsonBuilder ?: OperationsUtils.defaultGsonBuilder(), appContext, tokenProvider, userAgent ?: UserAgent.libraryDefault(appContext)) {
 
     private object EmptyRequest: BaseRequest()
 
@@ -61,24 +62,26 @@ internal class OperationApi(okHttpClient: OkHttpClient,
         const val OFFLINE_AUTHORIZE_URI_ID = "/operation/authorize/offline"
     }
 
+    var okHttpInterceptor: OkHttpBuilderInterceptor? = null
+
     /** List pending operations. */
     fun list(listener: IApiCallResponseListener<OperationListResponse>) {
-        post(EmptyRequest, listEndpoint, null, null, listener)
+        post(EmptyRequest, listEndpoint, null, null, okHttpInterceptor, listener)
     }
 
     /** Retrieves operation history */
     fun history(authentication: PowerAuthAuthentication, listener: IApiCallResponseListener<OperationHistoryResponse>) {
-        post(EmptyRequest, historyEndpoint, authentication, null, null, listener)
+        post(EmptyRequest, historyEndpoint, authentication, null, null, okHttpInterceptor, listener)
     }
 
     /** Reject an operation. */
     fun reject(rejectRequest: RejectRequest, listener: IApiCallResponseListener<StatusResponse>) {
         val authentication = PowerAuthAuthentication.possession()
-        post(rejectRequest, rejectEndpoint, authentication, null, null, listener)
+        post(rejectRequest, rejectEndpoint, authentication, null, null, okHttpInterceptor, listener)
     }
 
     /** Authorize an operation. */
     fun authorize(authorizeRequest: AuthorizeRequest, authentication: PowerAuthAuthentication, listener: IApiCallResponseListener<StatusResponse>) {
-        post(authorizeRequest, authorizeEndpoint, authentication, null, null, listener)
+        post(authorizeRequest, authorizeEndpoint, authentication, null, null, okHttpInterceptor, listener)
     }
 }

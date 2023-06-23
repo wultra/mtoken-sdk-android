@@ -35,17 +35,24 @@ class QRParserTests {
     fun `test current format`() {
 
         val code = makeCode()
-        val expectedSignedData = ("5ff1b1ed-a3cc-45a3-8ab0-ed60950312b6\n" +
-                "Payment\n" +
-                "Please confirm this payment\n" +
-                "A1*A100CZK*ICZ2730300000001165254011*D20180425*Thello world\n" +
-                "BCFX\n" +
-                "AD8bOO0Df73kNaIGb3Vmpg==\n" +
-                "0").toByteArray()
+
+        /* ktlint-disable indent */
+
+        val expectedSignedData = (
+            "5ff1b1ed-a3cc-45a3-8ab0-ed60950312b6\n" +
+            "Payment\n" +
+            "Please confirm this payment\n" +
+            "A1*A100CZK*ICZ2730300000001165254011*D20180425*Thello world\n" +
+            "BCFX\n" +
+            "AD8bOO0Df73kNaIGb3Vmpg==\n" +
+            "0"
+            ).toByteArray()
+
+        /* ktlint-enable */
 
         try {
             val operation = QROperationParser.parse(code)
-            assertEquals("5ff1b1ed-a3cc-45a3-8ab0-ed60950312b6" ,operation.operationId)
+            assertEquals("5ff1b1ed-a3cc-45a3-8ab0-ed60950312b6", operation.operationId)
             assertEquals("5ff1b1ed-a3cc-45a3-8ab0-ed60950312b6", operation.operationId)
             assertEquals("Payment", operation.title)
             assertEquals("Please confirm this payment", operation.message)
@@ -103,15 +110,18 @@ class QRParserTests {
     @Test
     fun `test forward compatibility`() {
         val qrcode = makeCode(operationData = "B2*Xtest", otherAttrs = listOf("Some Additional Information"), flags = "B")
-        val expectedSignedData =
-        ("5ff1b1ed-a3cc-45a3-8ab0-ed60950312b6\n" +
-                "Payment\n" +
-                "Please confirm this payment\n" +
-                "B2*Xtest\n" +
-                "B\n" +
-                "Some Additional Information\n" +
-                "AD8bOO0Df73kNaIGb3Vmpg==\n" +
-                "0").toByteArray()
+        /* ktlint-disable indent */
+        val expectedSignedData = (
+            "5ff1b1ed-a3cc-45a3-8ab0-ed60950312b6\n" +
+            "Payment\n" +
+            "Please confirm this payment\n" +
+            "B2*Xtest\n" +
+            "B\n" +
+            "Some Additional Information\n" +
+            "AD8bOO0Df73kNaIGb3Vmpg==\n" +
+            "0"
+        ).toByteArray()
+        /* ktlint-enable */
 
         try {
             val operation = QROperationParser.parse(qrcode)
@@ -128,7 +138,6 @@ class QRParserTests {
                     fail("OperationData parser is not forward compatible")
                 }
             }
-
         } catch (e: Exception) {
             fail("This should be parsed. $e")
         }
@@ -151,7 +160,7 @@ class QRParserTests {
     @Test
     fun `test missing title or message`() {
         try {
-            val operation= QROperationParser.parse(makeCode(title = "", message = ""))
+            val operation = QROperationParser.parse(makeCode(title = "", message = ""))
             assertEquals("", operation.title)
             assertEquals("", operation.message)
         } catch (e: Exception) {
@@ -161,20 +170,20 @@ class QRParserTests {
 
     @Test
     fun `test missing or bad operation data version`() {
-            listOf("", "A", "2", "A100", "A-100").forEach {
-                try {
-                    QROperationParser.parse(makeCode(operationData = it))
-                    fail("Operation data $it should not be accepted")
-                } catch (e: Exception) {
-                    // expected
-                }
+        listOf("", "A", "2", "A100", "A-100").forEach {
+            try {
+                QROperationParser.parse(makeCode(operationData = it))
+                fail("Operation data $it should not be accepted")
+            } catch (e: Exception) {
+                // expected
             }
+        }
     }
 
     @Test
     fun `test missing flags`() {
         try {
-            val operation= QROperationParser.parse(makeCode(flags = ""))
+            val operation = QROperationParser.parse(makeCode(flags = ""))
             assertFalse(operation.flags.biometryAllowed)
             assertFalse(operation.flags.blockWhenOnCall)
             assertFalse(operation.flags.flipButtons)
@@ -231,7 +240,7 @@ class QRParserTests {
     @Test
     fun `test attribute string escaping`() {
         try {
-            val operation= QROperationParser.parse(makeCode(title = "Hello\\nWorld\\\\xyz", message = "Hello\\nWorld\\\\xyz\\*"))
+            val operation = QROperationParser.parse(makeCode(title = "Hello\\nWorld\\\\xyz", message = "Hello\\nWorld\\\\xyz\\*"))
             assertEquals("Hello\nWorld\\xyz", operation.title)
             assertEquals("Hello\nWorld\\xyz\\*", operation.message)
         } catch (e: Exception) {
@@ -282,15 +291,15 @@ class QRParserTests {
     @Test
     fun `test field amount`() {
         val valid: List<Triple<String, BigDecimal, String>> = listOf(
-                Triple("A100CZK",BigDecimal("100"),"CZK"),
-                Triple("A100.00EUR",BigDecimal("100.00"),"EUR"),
-                Triple("A99.32USD",BigDecimal("99.32"),"USD"),
-                Triple("A-50000.16GBP",BigDecimal("-50000.16"),"GBP"),
-                Triple("A.325CZK",BigDecimal("0.325"),"CZK")
+            Triple("A100CZK", BigDecimal("100"), "CZK"),
+            Triple("A100.00EUR", BigDecimal("100.00"), "EUR"),
+            Triple("A99.32USD", BigDecimal("99.32"), "USD"),
+            Triple("A-50000.16GBP", BigDecimal("-50000.16"), "GBP"),
+            Triple("A.325CZK", BigDecimal("0.325"), "CZK")
         )
         valid.forEach {
             try {
-                val operation= QROperationParser.parse(makeCode(operationData = "A1*${it.first}"))
+                val operation = QROperationParser.parse(makeCode(operationData = "A1*${it.first}"))
                 operation.operationData.fields[0].let { field ->
                     if (field is QROperationData.AmountField) {
                         assertEquals(it.second, field.amount)
@@ -317,13 +326,13 @@ class QRParserTests {
     @Test
     fun `test field account`() {
         val valid: List<Triple<String, String, String?>> = listOf(
-                Triple("ISOMEIBAN1234,BIC","SOMEIBAN1234","BIC"),
-                Triple("ISOMEIBAN","SOMEIBAN",null),
-                Triple("ISOMEIBAN,","SOMEIBAN",null)
+            Triple("ISOMEIBAN1234,BIC", "SOMEIBAN1234", "BIC"),
+            Triple("ISOMEIBAN", "SOMEIBAN", null),
+            Triple("ISOMEIBAN,", "SOMEIBAN", null)
         )
         valid.forEach {
             try {
-                val operation= QROperationParser.parse(makeCode(operationData = "A1*${it.first}"))
+                val operation = QROperationParser.parse(makeCode(operationData = "A1*${it.first}"))
                 operation.operationData.fields[0].let { field ->
                     if (field is QROperationData.AccountField) {
                         assertEquals(it.second, field.iban)
@@ -360,11 +369,10 @@ class QRParserTests {
         }
     }
 
-
     @Test
     fun `test field empty`() {
         try {
-            val operation= QROperationParser.parse(makeCode(operationData = "A1*A10CZK****Ttest"))
+            val operation = QROperationParser.parse(makeCode(operationData = "A1*A10CZK****Ttest"))
             val fields = operation.operationData.fields
             assertEquals(5, fields.count())
             assert(fields[0] is QROperationData.AmountField)
@@ -377,10 +385,11 @@ class QRParserTests {
         }
     }
 
+    /* ktlint-disable indent no-multi-spaces */
+
     /**
      * Helper methods
      */
-
     private fun makeCode(
             operationId: String          = "5ff1b1ed-a3cc-45a3-8ab0-ed60950312b6",
             title: String                = "Payment",
@@ -395,4 +404,6 @@ class QRParserTests {
         val attrs = otherAttrs?.joinToString("\n", postfix = "\n") ?: ""
         return "${operationId}\n${title}\n${message}\n${operationData}\n${flags}\n${attrs}${nonce}\n${signingKey}${signature}"
     }
+
+    /* ktlint-enable */
 }

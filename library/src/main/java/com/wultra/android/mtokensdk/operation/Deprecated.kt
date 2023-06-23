@@ -53,8 +53,10 @@ interface IGetHistoryListener {
 
 @Deprecated("Use Result<List<UserOperation>> based API") // 1.5.0
 abstract class OperationsResult
+
 @Deprecated("Use Result<List<UserOperation>> based API") // 1.5.0
 data class SuccessOperationsResult(val operations: List<UserOperation>): OperationsResult()
+
 @Deprecated("Use Result<List<UserOperation>> based API") // 1.5.0
 data class ErrorOperationsResult(val error: ApiError): OperationsResult()
 

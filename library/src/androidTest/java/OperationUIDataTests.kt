@@ -24,7 +24,6 @@ import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.fail
 import org.junit.Test
 
-
 class OperationUIDataTests {
 
     @Test
@@ -56,7 +55,6 @@ class OperationUIDataTests {
             assertEquals(result.ui?.preApprovalScreen?.message, ui.preApprovalScreen?.message)
             assertEquals(result.ui?.preApprovalScreen?.items, ui.preApprovalScreen?.items)
             assertEquals(result.ui?.preApprovalScreen?.approvalType, ui.preApprovalScreen?.approvalType)
-
         } else {
             fail("Fail to serialize JSON")
             return
@@ -85,13 +83,11 @@ class OperationUIDataTests {
             assertEquals(result.ui?.preApprovalScreen?.heading, ui.preApprovalScreen?.heading)
             assertEquals(result.ui?.preApprovalScreen?.items, ui.preApprovalScreen?.items)
             assertEquals(result.ui?.preApprovalScreen?.approvalType, ui.preApprovalScreen?.approvalType)
-
         } else {
             fail("Fail to serialize JSON")
             return
         }
     }
-
 
     @Test
     fun testPostApprovalResponseRedirect() {
@@ -170,7 +166,6 @@ class OperationUIDataTests {
         assertEquals((resultPostApproval?.payload?.attributes?.get(0) as? NoteAttribute)?.note, (uiPostApproval?.payload?.attributes?.get(0) as? NoteAttribute)?.note)
     }
 
-
     @Test
     fun testPostApprovalGenericResponse() {
         val result = prepareResult(genericPostApproval)
@@ -209,13 +204,11 @@ class OperationUIDataTests {
         assertEquals(postApprovalGenericResult.payload["nestedMessage"], JSONValue.JSONString("See you next time."))
         assertEquals(postApprovalGenericResult.payload["integer"].toString(), JSONValue.JSONNumber(1).toString())
         assertEquals(postApprovalGenericResult.payload["boolean"], JSONValue.JSONBool(true))
-        assertEquals(postApprovalGenericResult.payload["array"], JSONValue.JSONArray(listOf(JSONValue.JSONString("firstElement"), JSONValue.JSONString( "secondElement"))))
+        assertEquals(postApprovalGenericResult.payload["array"], JSONValue.JSONArray(listOf(JSONValue.JSONString("firstElement"), JSONValue.JSONString("secondElement"))))
         assertEquals(postApprovalGenericResult.payload["object"], JSONValue.JSONObject(mapOf("nestedObject" to JSONValue.JSONString("stringValue"))))
     }
 
-    /**
-    Helpers
-     */
+    /** Helpers */
     private val jsonDecoder: Gson = OperationsUtils.defaultGsonBuilder().setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").create()
 
     private fun prepareResult(response: String): UserOperation? {
@@ -314,7 +307,7 @@ class OperationUIDataTests {
             }
     """
 
-    private val genericPostApproval: String ="""
+    private val genericPostApproval: String = """
     {
         "id": "74654880-6db9-4b84-9174-386fc5e7d8ab",
         "name": "authorize_payment_preApproval",
@@ -458,5 +451,4 @@ class OperationUIDataTests {
         }
     }
     """
-
 }

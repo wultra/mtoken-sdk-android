@@ -25,8 +25,9 @@ import com.google.gson.annotations.SerializedName
  * @property data Operation data.
  */
 internal data class AuthorizeRequestObject(
-        @SerializedName("id")
-        val id: String,
+    @SerializedName("id")
+    val id: String,
 
-        @SerializedName("data")
-        val data: String)
+    @SerializedName("data")
+    val data: String
+)

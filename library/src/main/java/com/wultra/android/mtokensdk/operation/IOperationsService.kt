@@ -19,9 +19,9 @@ package com.wultra.android.mtokensdk.operation
 import com.wultra.android.mtokensdk.api.operation.OperationApi
 import com.wultra.android.mtokensdk.api.operation.model.IOperation
 import com.wultra.android.mtokensdk.api.operation.model.OperationHistoryEntry
-import com.wultra.android.mtokensdk.api.operation.model.UserOperation
 import com.wultra.android.mtokensdk.api.operation.model.QROperation
-import com.wultra.android.powerauth.networking.error.ApiError
+import com.wultra.android.mtokensdk.api.operation.model.UserOperation
+import com.wultra.android.powerauth.networking.OkHttpBuilderInterceptor
 import io.getlime.security.powerauth.sdk.PowerAuthAuthentication
 import org.threeten.bp.ZonedDateTime
 
@@ -38,8 +38,19 @@ interface IOperationsService {
     /**
      * Accept language for the outgoing requests headers.
      * Default value is "en".
+     *
+     * Standard RFC "Accept-Language" https://tools.ietf.org/html/rfc7231#section-5.3.5
+     * Response texts are based on this setting. For example when "de" is set, server
+     * will return operation texts in german (if available).
      */
     var acceptLanguage: String
+
+    /**
+     * A custom interceptor can intercept each service call.
+     *
+     * You can use this for request/response logging into your own log system.
+     */
+    var okHttpInterceptor: OkHttpBuilderInterceptor?
 
     val lastOperationsResult: Result<List<UserOperation>>?
 
@@ -133,7 +144,7 @@ interface IOperationsService {
 }
 
 /**
- * Fetch operations from the server and report result to service's [listener]. The function is effective
+ * Fetch operations from the server and report result to service's [IOperationsService.listener]. The function is effective
  * only if service's listener is set.
  */
 fun IOperationsService.fetchOperations() = getOperations {}

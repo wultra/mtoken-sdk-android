@@ -26,91 +26,77 @@ import org.threeten.bp.ZonedDateTime
  * the real-world operation (for example login or payment).
  */
 open class UserOperation(
-        /**
-         * Unique operation identifier
-         */
-        @SerializedName("id")
-        override val id: String,
+    /** Unique operation identifier */
+    @SerializedName("id")
+    override val id: String,
 
-        /**
-         * System name of the operation (for example login).
-         *
-         * Name of the operation shouldn't be visible to the user. You can use it to distinguish how
-         * the operation will be presented. (for example when the template for login is different than payment).
-         */
-        @SerializedName("name")
-        val name: String,
+    /**
+     * System name of the operation (for example login).
+     *
+     * Name of the operation shouldn't be visible to the user. You can use it to distinguish how
+     * the operation will be presented. (for example when the template for login is different than payment).
+     */
+    @SerializedName("name")
+    val name: String,
 
-        /**
-         * Actual data that will be signed.
-         *
-         * This shouldn't be visible to the user.
-         */
-        @SerializedName("data")
-        override val data: String,
+    /**
+     * Actual data that will be signed.
+     *
+     * This shouldn't be visible to the user.
+     */
+    @SerializedName("data")
+    override val data: String,
 
-        /**
-         * Date and time when the operation was created.
-         */
-        @SerializedName("operationCreated")
-        val created: ZonedDateTime,
+    /** Date and time when the operation was created. */
+    @SerializedName("operationCreated")
+    val created: ZonedDateTime,
 
-        /**
-         * Date and time when the operation will expire.
-         */
-        @SerializedName("operationExpires")
-        override val expires: ZonedDateTime,
+    /** Date and time when the operation will expire. */
+    @SerializedName("operationExpires")
+    override val expires: ZonedDateTime,
 
-        /**
-         * Data that should be presented to the user.
-         */
-        @SerializedName("formData")
-        val formData: FormData,
+    /** Data that should be presented to the user. */
+    @SerializedName("formData")
+    val formData: FormData,
 
-        /**
-         * Allowed signature types.
-         *
-         * For example in some cases, biometric authentication might not available for security reasons.
-         */
-        @SerializedName("allowedSignatureType")
-        val allowedSignatureType: AllowedSignatureType,
+    /**
+     * Allowed signature types.
+     *
+     * For example in some cases, biometric authentication might not available for security reasons.
+     */
+    @SerializedName("allowedSignatureType")
+    val allowedSignatureType: AllowedSignatureType,
 
-        /**
-         * UI data to be shown
-         *
-         * Accompanying information about the operation additional UI which should be presented such as
-         * Pre-Approval Screen or Post-Approval Screen
-         */
-        @SerializedName("ui")
-        val ui: OperationUIData?) : IOperation, ExpirableOperation
+    /**
+     * UI data to be shown
+     *
+     * Accompanying information about the operation additional UI which should be presented such as
+     * Pre-Approval Screen or Post-Approval Screen
+     */
+    @SerializedName("ui")
+    val ui: OperationUIData?
+) : IOperation, ExpirableOperation
 
 /**
  * Model class wrapping allowed signature types.
  */
 data class AllowedSignatureType(
 
-        /**
-         * If operation should be signed with 1 or 2 factor authentication
-         */
-        @SerializedName("type")
-        val type: Type,
+    /** If operation should be signed with 1 or 2 factor authentication */
+    @SerializedName("type")
+    val type: Type,
 
-        /**
-         * What factors ("password" or/and "biometry") can be used for signing this operation.
-         */
-        @SerializedName("variants")
-        val factors: List<Factor> = emptyList()) {
+    /** What factors ("password" or/and "biometry") can be used for signing this operation. */
+    @SerializedName("variants")
+    val factors: List<Factor> = emptyList()
+) {
 
-    /**
-     * Check if biometry factor is allowed for the signature type of an operation.
-     */
+    /** Check if biometry factor is allowed for the signature type of an operation. */
     fun isBiometryAllowed(): Boolean {
         return factors.contains(Factor.POSSESSION_BIOMETRY)
     }
 
-    /**
-     * Signature types.
-     */
+    /** Signature types. */
     enum class Type(val type: String) {
 
         @SerializedName("1FA")
@@ -124,12 +110,10 @@ data class AllowedSignatureType(
         // MULTIFACTOR_3FA("3FA"),
 
         @SerializedName("ECDSA")
-        ASYMMETRIC_ECDSA("ECDSA");
+        ASYMMETRIC_ECDSA("ECDSA")
     }
 
-    /**
-     * Signature factor
-     */
+    /** Signature factor */
     enum class Factor(val variant: String) {
 
         @SerializedName("possession_knowledge")
@@ -150,49 +134,41 @@ data class AllowedSignatureType(
  */
 data class FormData(
 
-        /**
-         * Title of the operation
-         */
-        @SerializedName("title")
-        val title: String,
+    /** Title of the operation */
+    @SerializedName("title")
+    val title: String,
 
-        /**
-         * Message for the user
-         */
-        @SerializedName("message")
-        val message: String,
+    /** Message for the user */
+    @SerializedName("message")
+    val message: String,
 
-        /**
-         * Other attributes.
-         *
-         * Note that attributes can be presented with different classes (Starting with Attribute*) based on the attribute type.
-         */
-        @SerializedName("attributes")
-        val attributes: List<Attribute>)
+    /**
+     * Other attributes.
+     *
+     * Note that attributes can be presented with different classes (Starting with Attribute*) based on the attribute type.
+     */
+    @SerializedName("attributes")
+    val attributes: List<Attribute>
+)
 
 data class OperationUIData(
-        /**
-         * Confirm and Reject buttons should be flipped both in position and style
-         */
-        @SerializedName("flipButtons")
-        val flipButtons: Boolean?,
+    /** Confirm and Reject buttons should be flipped both in position and style */
+    @SerializedName("flipButtons")
+    val flipButtons: Boolean?,
 
-        /**
-         * Block approval when on call (for example when on phone or skype call)
-         */
-        @SerializedName("blockApprovalOnCall")
-        val blockApprovalOnCall: Boolean?,
+    /** Block approval when on call (for example when on phone or skype call) */
+    @SerializedName("blockApprovalOnCall")
+    val blockApprovalOnCall: Boolean?,
 
-        /**
-         * UI for pre-approval operation screen
-         */
-        @SerializedName("preApprovalScreen")
-        val preApprovalScreen: PreApprovalScreen?,
+    /** UI for pre-approval operation screen */
+    @SerializedName("preApprovalScreen")
+    val preApprovalScreen: PreApprovalScreen?,
 
-        /**
-         * UI for post-approval operation screen
-         *
-         * Type of PostApprovalScreen is presented with different classes (Starting with `PostApprovalScreen*`)
-         */
-        @SerializedName("postApprovalScreen")
-        val postApprovalScreen: PostApprovalScreen?)
+    /**
+     * UI for post-approval operation screen
+     *
+     * Type of PostApprovalScreen is presented with different classes (Starting with `PostApprovalScreen*`)
+     */
+    @SerializedName("postApprovalScreen")
+    val postApprovalScreen: PostApprovalScreen?
+)

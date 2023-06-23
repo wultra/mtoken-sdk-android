@@ -35,6 +35,6 @@ object Constants {
         const val compileSdkVersion = 31
         const val targetSdkVersion = 31
         const val minSdkVersion = 19
-        const val buildToolsVersion = "33.0.0"
+        const val buildToolsVersion = "33.0.2"
     }
 }

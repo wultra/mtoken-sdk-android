@@ -33,7 +33,9 @@ sealed class JSONValue {
     operator fun get(key: String): JSONValue? {
         return if (this is JSONObject) {
             value[key]
-        } else null
+        } else {
+            null
+        }
     }
 
     companion object {
@@ -51,9 +53,6 @@ sealed class JSONValue {
                 jsonElement.isJsonPrimitive && jsonElement.asJsonPrimitive.isString ->
                     JSONString(jsonElement.asString)
                 jsonElement.isJsonPrimitive && jsonElement.asJsonPrimitive.isNumber ->
-
-
-
                     JSONNumber(jsonElement.asNumber)
                 jsonElement.isJsonPrimitive && jsonElement.asJsonPrimitive.isBoolean ->
                     JSONBool(jsonElement.asBoolean)

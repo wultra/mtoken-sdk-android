@@ -22,6 +22,7 @@ import com.wultra.android.mtokensdk.api.push.PushRegistrationRequest
 import com.wultra.android.mtokensdk.api.push.model.PushRegistrationRequestObject
 import com.wultra.android.mtokensdk.common.Logger
 import com.wultra.android.powerauth.networking.IApiCallResponseListener
+import com.wultra.android.powerauth.networking.OkHttpBuilderInterceptor
 import com.wultra.android.powerauth.networking.UserAgent
 import com.wultra.android.powerauth.networking.data.StatusResponse
 import com.wultra.android.powerauth.networking.error.ApiError
@@ -66,20 +67,27 @@ class PushService(okHttpClient: OkHttpClient, baseURL: String, powerAuthSDK: Pow
             pushApi.acceptLanguage = value
         }
 
+    override var okHttpInterceptor: OkHttpBuilderInterceptor?
+        get() = pushApi.okHttpInterceptor
+        set(value) {
+            pushApi.okHttpInterceptor = value
+        }
+
     private val pushApi = PushApi(okHttpClient, baseURL, powerAuthSDK, appContext, tokenProvider, userAgent)
 
     override fun register(fcmToken: String, callback: (Result<Unit>) -> Unit) {
-        pushApi.registerToken(PushRegistrationRequest(PushRegistrationRequestObject(fcmToken)), object :
-            IApiCallResponseListener<StatusResponse> {
-            override fun onSuccess(result: StatusResponse) {
-                callback(Result.success(Unit))
-            }
+        pushApi.registerToken(
+            PushRegistrationRequest(PushRegistrationRequestObject(fcmToken)),
+            object : IApiCallResponseListener<StatusResponse> {
+                override fun onSuccess(result: StatusResponse) {
+                    callback(Result.success(Unit))
+                }
 
-            override fun onFailure(error: ApiError) {
-                Logger.e("Failed to register fcm token for WMT push notifications.")
-                callback(Result.failure(ApiErrorException(error)))
+                override fun onFailure(error: ApiError) {
+                    Logger.e("Failed to register fcm token for WMT push notifications.")
+                    callback(Result.failure(ApiErrorException(error)))
+                }
             }
-        })
+        )
     }
-
 }

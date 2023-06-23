@@ -23,6 +23,8 @@ import okhttp3.Response
 import okio.Buffer
 import java.lang.StringBuilder
 
+/* ktlint-disable indent */
+
 /**
  * Logger provides simple logging facility.
  *
@@ -43,8 +45,8 @@ class Logger {
 
     companion object {
 
-        @JvmStatic
         /** Current verbose level. */
+        @JvmStatic
         var verboseLevel = VerboseLevel.WARNING
 
         private val tag = "WMT"
@@ -103,7 +105,6 @@ class Logger {
                     "\n- Headers: ${request.headers().forLog()}" +
                     "\n- Body: $body"
                 }
-
 
                 val response: Response
 

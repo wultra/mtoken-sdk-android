@@ -9,6 +9,8 @@
 jd-gui.cfg
 .java-version
 
+ktlint
+
 # release folder
 /release
 

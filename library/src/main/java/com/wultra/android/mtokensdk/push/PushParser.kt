@@ -43,7 +43,7 @@ class PushParser {
                     PushMessageOperationCreated(id, name, notificationData)
                 }
                 "mtoken.operationFinished" -> {
-                    notificationData["mtokenOperationResult"]?.let { return PushMessageOperationFinished(id, name, PushMessageOperationFinished.parseResult(it), notificationData)  }
+                    notificationData["mtokenOperationResult"]?.let { return PushMessageOperationFinished(id, name, PushMessageOperationFinished.parseResult(it), notificationData) }
                 }
                 else -> {
                     null
@@ -57,71 +57,53 @@ class PushParser {
  * Known push message abstract class.
  */
 abstract class PushMessage(
-        /**
-         * Original data on which was the push message constructed.
-         */
-        val originalData: Map<String, String>
+    /** Original data on which was the push message constructed. */
+    val originalData: Map<String, String>
 )
 
 /**
  * Created when a new operation was triggered.
  */
 class PushMessageOperationCreated(
-        /**
-         * Id of the operation.
-         */
-        val id: String,
+    /** Id of the operation. */
+    val id: String,
 
-        /**
-         * Name of the operation
-         */
-        val name: String,
+    /** Name of the operation */
+    val name: String,
 
-        originalData: Map<String, String>): PushMessage(originalData)
+    /** Original data on which was the push message constructed. */
+    originalData: Map<String, String>
+): PushMessage(originalData)
 
 /**
  * Created when an operation was finished, successfully or non-successfully.
  */
 class PushMessageOperationFinished(
-        /**
-         * Id of the operation.
-         */
-        val id: String,
+    /** Id of the operation. */
+    val id: String,
 
-        /**
-         * Name of the operation
-         */
-        val name: String,
+    /** Name of the operation */
+    val name: String,
 
-        /**
-         * Action which finished the operation
-         */
-        val result: Result,
+    /** Action which finished the operation */
+    val result: Result,
 
-        originalData: Map<String, String>): PushMessage(originalData) {
+    /** Original data on which was the push message constructed. */
+    originalData: Map<String, String>
+): PushMessage(originalData) {
 
-    /**
-     * Action which finished the operation.
-     */
+    /** Action which finished the operation. */
     enum class Result {
-        /**
-         * Operation was successfully confirmed.
-         */
+        /** Operation was successfully confirmed. */
         SUCCESS,
 
-        /**
-         * Operation failed to confirm.
-         */
+        /** Operation failed to confirm. */
         FAIL,
 
-        /**
-         * Operation expired
-         */
+        /** Operation expired */
         TIMEOUT,
 
-        /**
-         * Operation was cancelled by the user.
-         */
+        /** Operation was cancelled by the user. */
         CANCELED,
 
         /**
@@ -130,9 +112,7 @@ class PushMessageOperationFinished(
          */
         METHOD_NOT_AVAILABLE,
 
-        /**
-         * Unknown result.
-         */
+        /** Unknown result. */
         UNKNOWN
     }
 

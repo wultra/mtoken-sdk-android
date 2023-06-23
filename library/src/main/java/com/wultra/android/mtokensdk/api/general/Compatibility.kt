@@ -22,5 +22,6 @@ import com.wultra.android.powerauth.networking.error.ApiError
 
 @Deprecated(
     "This class was moved to different package (com.wultra.android.powerauth.networking.error).",
-    ReplaceWith("com.wultra.android.powerauth.networking.error.ApiError"))
+    ReplaceWith("com.wultra.android.powerauth.networking.error.ApiError")
+)
 typealias ApiError = ApiError

@@ -193,25 +193,28 @@ class OperationExpirationWatcher {
             Logger.d("OperationExpirationWatcher: Scheduling operation expire check in ${interval.toInt()} seconds.")
 
             val t = Timer("OperationsExpirationWatcherTimer", false)
-            t.schedule(object : TimerTask() {
-                override fun run() {
-                    synchronized(mutex) {
-                        val currentDate = currentDateProvider.getCurrentDate()
-                        val expiredOps = operationsToWatch.filter { it.isExpired(currentDate) }
+            t.schedule(
+                object : TimerTask() {
+                    override fun run() {
+                        synchronized(mutex) {
+                            val currentDate = currentDateProvider.getCurrentDate()
+                            val expiredOps = operationsToWatch.filter { it.isExpired(currentDate) }
 
-                        if (expiredOps.isEmpty()) {
-                            return@synchronized
-                        }
+                            if (expiredOps.isEmpty()) {
+                                return@synchronized
+                            }
 
-                        operationsToWatch.removeAll { it.isExpired(currentDate) }
-                        prepareTimer()
-                        Handler(Looper.getMainLooper()).post {
-                            Logger.d("OperationExpirationWatcher: Reporting ${expiredOps.count()} expired operations.")
-                            listener?.operationsExpired(expiredOps)
+                            operationsToWatch.removeAll { it.isExpired(currentDate) }
+                            prepareTimer()
+                            Handler(Looper.getMainLooper()).post {
+                                Logger.d("OperationExpirationWatcher: Reporting ${expiredOps.count()} expired operations.")
+                                listener?.operationsExpired(expiredOps)
+                            }
                         }
                     }
-                }
-            }, interval * 1000)
+                },
+                interval * 1000
+            )
             timer = t
         }
     }

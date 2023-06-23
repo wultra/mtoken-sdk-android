@@ -23,7 +23,6 @@ import com.wultra.android.mtokensdk.push.PushParser
 import org.junit.Assert
 import org.junit.Test
 
-
 class PushTests {
 
     @Test
@@ -56,7 +55,7 @@ class PushTests {
 
     @Test
     fun `test init push missing name`() {
-        Assert.assertNull(makePush("mtoken.operationInit", "1",  null, null))
+        Assert.assertNull(makePush("mtoken.operationInit", "1", null, null))
     }
 
     @Test
@@ -90,7 +89,7 @@ class PushTests {
 
     @Test
     fun `test finish push missing result`() {
-        Assert.assertNull(makePush("mtoken.operationFinished","1", "name", null))
+        Assert.assertNull(makePush("mtoken.operationFinished", "1", "name", null))
     }
 
     @Test
@@ -104,7 +103,7 @@ class PushTests {
     }
 
     private fun makePush(type: String?, id: String?, name: String?, opResult: String?): PushMessage? {
-        val map = mutableMapOf<String,String>()
+        val map = mutableMapOf<String, String>()
         type?.let { map["messageType"] = it }
         id?.let { map["operationId"] = it }
         name?.let { map["operationName"] = it }

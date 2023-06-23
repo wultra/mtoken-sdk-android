@@ -25,8 +25,9 @@ import com.google.gson.annotations.SerializedName
  * @property reason Rejection reason.
  */
 internal data class RejectRequestObject(
-        @SerializedName("id")
-        val id: String,
+    @SerializedName("id")
+    val id: String,
 
-        @SerializedName("reason")
-        val reason: String)
+    @SerializedName("reason")
+    val reason: String
+)

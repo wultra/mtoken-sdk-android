@@ -48,7 +48,6 @@ internal class ZonedDateTimeDeserializer : JsonDeserializer<ZonedDateTime> {
             if (jsonPrimitive.isNumber) {
                 return ZonedDateTime.ofInstant(Instant.ofEpochMilli(jsonPrimitive.asLong), ZoneId.systemDefault())
             }
-
         } catch (e: Exception) {
             throw JsonParseException("Unable to parse ZonedDateTime", e)
         }

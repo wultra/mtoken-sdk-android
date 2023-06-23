@@ -16,6 +16,8 @@
 
 package com.wultra.android.mtokensdk.inbox
 
+import com.wultra.android.powerauth.networking.OkHttpBuilderInterceptor
+
 /**
  * Interface for service that communicates with Inbox API that is managing user's inbox.
  */
@@ -23,8 +25,19 @@ interface IInboxService {
     /**
      * Accept language for the outgoing requests headers.
      * Default value is "en".
+     *
+     * Standard RFC "Accept-Language" https://tools.ietf.org/html/rfc7231#section-5.3.5
+     * Response texts are based on this setting. For example when "de" is set, server
+     * will return operation texts in german (if available).
      */
     var acceptLanguage: String
+
+    /**
+     * A custom interceptor can intercept each service call.
+     *
+     * You can use this for request/response logging into your own log system.
+     */
+    var okHttpInterceptor: OkHttpBuilderInterceptor?
 
     /**
      * Get number of unread messages in the inbox.

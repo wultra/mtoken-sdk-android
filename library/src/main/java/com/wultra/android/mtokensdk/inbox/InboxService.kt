@@ -24,6 +24,7 @@ import com.wultra.android.mtokensdk.api.inbox.model.SetMessageRead
 import com.wultra.android.mtokensdk.common.Logger
 import com.wultra.android.mtokensdk.operation.OperationsUtils
 import com.wultra.android.powerauth.networking.IApiCallResponseListener
+import com.wultra.android.powerauth.networking.OkHttpBuilderInterceptor
 import com.wultra.android.powerauth.networking.UserAgent
 import com.wultra.android.powerauth.networking.data.StatusResponse
 import com.wultra.android.powerauth.networking.error.ApiError
@@ -47,22 +48,25 @@ fun PowerAuthSDK.createInboxService(appContext: Context, baseURL: String, strate
 class InboxService(
     httpClient: OkHttpClient,
     baseURL: String,
-    private val powerAuthSDK: PowerAuthSDK,
-    private val appContext: Context,
+    powerAuthSDK: PowerAuthSDK,
+    appContext: Context,
     tokenProvider: IPowerAuthTokenProvider? = null,
-    userAgent: UserAgent? = null) : IInboxService {
+    userAgent: UserAgent? = null
+) : IInboxService {
 
     // API class for communication.
-    private val inboxApi: InboxApi
-
-    init {
-        this.inboxApi = InboxApi(httpClient, baseURL, appContext, powerAuthSDK, tokenProvider, userAgent, OperationsUtils.defaultGsonBuilder())
-    }
+    private val inboxApi = InboxApi(httpClient, baseURL, appContext, powerAuthSDK, tokenProvider, userAgent, OperationsUtils.defaultGsonBuilder())
 
     override var acceptLanguage: String
         get() = inboxApi.acceptLanguage
         set(value) {
             inboxApi.acceptLanguage = value
+        }
+
+    override var okHttpInterceptor: OkHttpBuilderInterceptor?
+        get() = inboxApi.okHttpInterceptor
+        set(value) {
+            inboxApi.okHttpInterceptor = value
         }
 
     override fun getUnreadCount(callback: (result: Result<InboxCount>) -> Unit) {
@@ -78,39 +82,48 @@ class InboxService(
     }
 
     override fun getMessageList(pageNumber: Int, pageSize: Int, onlyUnread: Boolean, callback: (result: Result<List<InboxMessage>>) -> Unit) {
-        inboxApi.list(InboxGetListRequest(GetList(pageNumber, pageSize, onlyUnread)), object : IApiCallResponseListener<InboxGetListResponse> {
-            override fun onFailure(error: ApiError) {
-                callback(Result.failure(ApiErrorException(error)))
-            }
+        inboxApi.list(
+            InboxGetListRequest(GetList(pageNumber, pageSize, onlyUnread)),
+            object: IApiCallResponseListener<InboxGetListResponse> {
+                override fun onFailure(error: ApiError) {
+                    callback(Result.failure(ApiErrorException(error)))
+                }
 
-            override fun onSuccess(result: InboxGetListResponse) {
-                callback(Result.success(result.responseObject))
+                override fun onSuccess(result: InboxGetListResponse) {
+                    callback(Result.success(result.responseObject))
+                }
             }
-        })
+        )
     }
 
     override fun getMessageDetail(messageId: String, callback: (result: Result<InboxMessageDetail>) -> Unit) {
-        inboxApi.detail(InboxGetMessageDetailRequest(GetMessageDetail(messageId)), object : IApiCallResponseListener<InboxGetMessageDetailResponse> {
-            override fun onFailure(error: ApiError) {
-                callback(Result.failure(ApiErrorException(error)))
-            }
+        inboxApi.detail(
+            InboxGetMessageDetailRequest(GetMessageDetail(messageId)),
+            object: IApiCallResponseListener<InboxGetMessageDetailResponse> {
+                override fun onFailure(error: ApiError) {
+                    callback(Result.failure(ApiErrorException(error)))
+                }
 
-            override fun onSuccess(result: InboxGetMessageDetailResponse) {
-                callback(Result.success(result.responseObject))
+                override fun onSuccess(result: InboxGetMessageDetailResponse) {
+                    callback(Result.success(result.responseObject))
+                }
             }
-        })
+        )
     }
 
     override fun markRead(messageId: String, callback: (result: Result<Unit>) -> Unit) {
-        inboxApi.read(InboxSetMessageReadRequest(SetMessageRead(messageId)), object : IApiCallResponseListener<StatusResponse> {
-            override fun onFailure(error: ApiError) {
-                callback(Result.failure(ApiErrorException(error)))
-            }
+        inboxApi.read(
+            InboxSetMessageReadRequest(SetMessageRead(messageId)),
+            object: IApiCallResponseListener<StatusResponse> {
+                override fun onFailure(error: ApiError) {
+                    callback(Result.failure(ApiErrorException(error)))
+                }
 
-            override fun onSuccess(result: StatusResponse) {
-                callback(Result.success(Unit))
+                override fun onSuccess(result: StatusResponse) {
+                    callback(Result.success(Unit))
+                }
             }
-        })
+        )
     }
 
     override fun markAllRead(callback: (result: Result<Unit>) -> Unit) {

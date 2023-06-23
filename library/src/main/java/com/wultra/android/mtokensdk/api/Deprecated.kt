@@ -23,12 +23,8 @@ import com.wultra.android.powerauth.networking.error.ApiHttpException
 
 // Type aliases to for easier migration, Deprecated in 1.4.0
 
-@Deprecated(
-    "This enum was moved and renamed.",
-    ReplaceWith("com.wultra.android.powerauth.networking.error.ApiErrorCode"))
+@Deprecated("This enum was moved and renamed.", ReplaceWith("com.wultra.android.powerauth.networking.error.ApiErrorCode"))
 typealias MTokenErrorCode = ApiErrorCode
 
-@Deprecated(
-    "This class was moved and renamed.",
-    ReplaceWith("com.wultra.android.powerauth.networking.error.ApiHttpException"))
+@Deprecated("This class was moved and renamed.", ReplaceWith("com.wultra.android.powerauth.networking.error.ApiHttpException"))
 typealias MTokenHttpException = ApiHttpException

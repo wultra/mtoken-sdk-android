@@ -19,7 +19,6 @@ package com.wultra.android.mtokensdk.operation
 import com.wultra.android.mtokensdk.api.operation.model.UserOperation
 import com.wultra.android.powerauth.networking.error.ApiError
 
-
 /**
  * Listener for operations loading events
  */

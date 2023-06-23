@@ -28,6 +28,7 @@ import com.wultra.android.mtokensdk.operation.OperationsUtils
 import com.wultra.android.powerauth.networking.Api
 import com.wultra.android.powerauth.networking.EndpointSignedWithToken
 import com.wultra.android.powerauth.networking.IApiCallResponseListener
+import com.wultra.android.powerauth.networking.OkHttpBuilderInterceptor
 import com.wultra.android.powerauth.networking.UserAgent
 import com.wultra.android.powerauth.networking.data.BaseRequest
 import com.wultra.android.powerauth.networking.data.ObjectRequest
@@ -44,13 +45,15 @@ internal class InboxGetMessageDetailRequest(requestObject: GetMessageDetail): Ob
 internal class InboxGetMessageDetailResponse(responseObject: InboxMessageDetail, status: Status): ObjectResponse<InboxMessageDetail>(responseObject, status)
 internal class InboxSetMessageReadRequest(requestObject: SetMessageRead): ObjectRequest<SetMessageRead>(requestObject)
 
-internal class InboxApi(okHttpClient: OkHttpClient,
-                        baseUrl: String,
-                        appContext: Context,
-                        powerAuthSDK: PowerAuthSDK,
-                        tokenProvider: IPowerAuthTokenProvider?,
-                        userAgent: UserAgent?,
-                        gsonBuilder: GsonBuilder?) : Api(baseUrl, okHttpClient, powerAuthSDK, gsonBuilder ?: OperationsUtils.defaultGsonBuilder(), appContext, tokenProvider, userAgent ?: UserAgent.libraryDefault(appContext)) {
+internal class InboxApi(
+    okHttpClient: OkHttpClient,
+    baseUrl: String,
+    appContext: Context,
+    powerAuthSDK: PowerAuthSDK,
+    tokenProvider: IPowerAuthTokenProvider?,
+    userAgent: UserAgent?,
+    gsonBuilder: GsonBuilder?
+) : Api(baseUrl, okHttpClient, powerAuthSDK, gsonBuilder ?: OperationsUtils.defaultGsonBuilder(), appContext, tokenProvider, userAgent ?: UserAgent.libraryDefault(appContext)) {
 
     companion object {
         private val getMessageCount = EndpointSignedWithToken<BaseRequest, InboxCountResponse>("api/inbox/count", "possession_universal")
@@ -60,38 +63,40 @@ internal class InboxApi(okHttpClient: OkHttpClient,
         private val setMessageAllRead = EndpointSignedWithToken<BaseRequest, StatusResponse>("api/inbox/message/read-all", "possession_universal")
     }
 
+    var okHttpInterceptor: OkHttpBuilderInterceptor? = null
+
     /**
      * Get count of unread messages.
      */
     fun count(listener: IApiCallResponseListener<InboxCountResponse>) {
-        post(BaseRequest(), getMessageCount, null, null, listener)
+        post(BaseRequest(), getMessageCount, null, null, okHttpInterceptor, listener)
     }
 
     /**
      * Get paged message list.
      */
     fun list(request: InboxGetListRequest, listener: IApiCallResponseListener<InboxGetListResponse>) {
-        post(request, getMessageList, null, null, listener)
+        post(request, getMessageList, null, null, okHttpInterceptor, listener)
     }
 
     /**
      * Get message detail.
      */
     fun detail(request: InboxGetMessageDetailRequest, listener: IApiCallResponseListener<InboxGetMessageDetailResponse>) {
-        post(request, getMessageDetail, null, null, listener)
+        post(request, getMessageDetail, null, null, okHttpInterceptor, listener)
     }
 
     /**
      * Set message as read.
      */
     fun read(request: InboxSetMessageReadRequest, listener: IApiCallResponseListener<StatusResponse>) {
-        post(request, setMessageRead, null, null, listener)
+        post(request, setMessageRead, null, null, okHttpInterceptor, listener)
     }
 
     /**
      * Set all messages as read.
      */
     fun readAll(listener: IApiCallResponseListener<StatusResponse>) {
-        post(BaseRequest(), setMessageAllRead, null, null, listener)
+        post(BaseRequest(), setMessageAllRead, null, null, okHttpInterceptor, listener)
     }
 }
