@@ -22,6 +22,9 @@ plugins {
 }
 
 android {
+
+    namespace = "com.wultra.android.mtokensdk"
+
     compileSdk = Constants.Android.compileSdkVersion
     buildToolsVersion = Constants.Android.buildToolsVersion
 
@@ -53,6 +56,10 @@ android {
         }
     }
 
+    buildFeatures {
+        buildConfig = true
+    }
+
     // Custom ktlint script
     tasks.register("ktlint") {
         logger.lifecycle("ktlint")
@@ -67,7 +74,7 @@ android {
 
 dependencies {
     // Bundled
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:${Constants.BuildScript.kotlinVersion}")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:${Constants.BuildScript.kotlinVersion}")
     implementation("androidx.annotation:annotation:1.6.0")
     implementation("com.google.code.gson:gson:2.8.9")
     implementation("com.jakewharton.threetenabp:threetenabp:1.1.1")
@@ -77,7 +84,7 @@ dependencies {
     implementation("com.wultra.android.powerauth:powerauth-networking:1.2.0")
 
     // Dependencies
-    compileOnly("com.wultra.android.powerauth:powerauth-sdk:1.7.7")
+    compileOnly("com.wultra.android.powerauth:powerauth-sdk:1.7.8")
     compileOnly("io.getlime.core:rest-model-base:1.2.0")
 
     // TestDependencies
@@ -85,7 +92,7 @@ dependencies {
 
     // Android tests
     androidTestImplementation("com.jakewharton.threetenabp:threetenabp:1.1.1")
-    androidTestImplementation("com.wultra.android.powerauth:powerauth-sdk:1.7.7")
+    androidTestImplementation("com.wultra.android.powerauth:powerauth-sdk:1.7.8")
     androidTestImplementation("com.wultra.android.powerauth:powerauth-networking:1.2.0")
     androidTestImplementation("androidx.test:runner:1.5.2")
     androidTestImplementation("junit:junit:4.13.2")
