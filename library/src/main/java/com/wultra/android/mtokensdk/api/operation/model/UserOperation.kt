@@ -73,7 +73,16 @@ open class UserOperation(
          * For example in some cases, biometric authentication might not available for security reasons.
          */
         @SerializedName("allowedSignatureType")
-        val allowedSignatureType: AllowedSignatureType) : IOperation, ExpirableOperation
+        val allowedSignatureType: AllowedSignatureType,
+
+        /**
+         * UI data to be shown
+         *
+         * Accompanying information about the operation additional UI which should be presented such as
+         * Pre-Approval Screen or Post-Approval Screen
+         */
+        @SerializedName("ui")
+        val ui: OperationUIData?) : IOperation, ExpirableOperation
 
 /**
  * Model class wrapping allowed signature types.
@@ -160,3 +169,30 @@ data class FormData(
          */
         @SerializedName("attributes")
         val attributes: List<Attribute>)
+
+data class OperationUIData(
+        /**
+         * Confirm and Reject buttons should be flipped both in position and style
+         */
+        @SerializedName("flipButtons")
+        val flipButtons: Boolean?,
+
+        /**
+         * Block approval when on call (for example when on phone or skype call)
+         */
+        @SerializedName("blockApprovalOnCall")
+        val blockApprovalOnCall: Boolean?,
+
+        /**
+         * UI for pre-approval operation screen
+         */
+        @SerializedName("preApprovalScreen")
+        val preApprovalScreen: PreApprovalScreen?,
+
+        /**
+         * UI for post-approval operation screen
+         *
+         * Type of PostApprovalScreen is presented with different classes (Starting with `PostApprovalScreen*`)
+         */
+        @SerializedName("postApprovalScreen")
+        val postApprovalScreen: PostApprovalScreen?)

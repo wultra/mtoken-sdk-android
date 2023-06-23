@@ -401,6 +401,12 @@ class UserOperation: IOperation {
     // tapping an approve button. If the operation requires 2FA, this value also hints if
     // the user may use the biometry, or if a password is required.
     val allowedSignatureType: AllowedSignatureType
+    
+    // Data for the operation UI presented
+    //
+    // Accompanying information about the operation additional UI which should be presented such as
+    // Pre-Approval Screen or Post-Approval Screen
+    val ui: OperationUIData?
 }
 ```
 
