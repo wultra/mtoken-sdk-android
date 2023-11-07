@@ -246,7 +246,9 @@ class OperationsService: IOperationsService {
     }
 
     override fun authorizeOperation(operation: IOperation, authentication: PowerAuthAuthentication, callback: (result: Result<Unit>) -> Unit) {
-        val authorizeRequest = AuthorizeRequest(AuthorizeRequestObject(operation.id, operation.data))
+
+        val currentDate = currentServerDate() ?: ZonedDateTime.now()
+        val authorizeRequest = AuthorizeRequest(AuthorizeRequestObject(operation, currentDate))
         operationApi.authorize(
             authorizeRequest,
             authentication,

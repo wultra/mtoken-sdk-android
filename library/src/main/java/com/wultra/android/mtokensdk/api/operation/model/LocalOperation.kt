@@ -24,5 +24,8 @@ data class LocalOperation(
     override val id: String,
 
     /** Data for signing */
-    override val data: String
+    override val data: String,
+
+    /** Proximity check data */
+    override var proximityCheck: ProximityCheck? = null
 ): IOperation

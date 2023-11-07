@@ -33,10 +33,10 @@ class QROperationParser {
         private const val minimumAttributeFields = 7
 
         // Current number of lines in input string, supported by this parser
-        private const val currentAttributeFields = 7
+        private const val currentAttributeFields = 8
 
         // Maximum number of operation data fields supported in this version.
-        private const val maximumDataFields = 5
+        private const val maximumDataFields = 6
 
         @SuppressLint("SimpleDateFormat")
         private val dateFormatter = SimpleDateFormat("yyyyMMdd").also { it.isLenient = false }
@@ -65,6 +65,8 @@ class QROperationParser {
                 val message = parseAttributeText(attributes[2])
                 val dataString = attributes[3]
                 val flagsString = attributes[4]
+                val totp = if (attributes.size > minimumAttributeFields) attributes[5] else null
+
                 // Signature and nonce are always located at last lines
                 val nonce = attributes[attributes.lastIndex - 1]
                 val signatureString = attributes[attributes.lastIndex]
@@ -92,7 +94,7 @@ class QROperationParser {
                 val flags = parseOperationFlags(flagsString)
                 val isNewerFormat = attributes.count() > currentAttributeFields
 
-                return QROperation(operationId, title, message, formData, nonce, flags, signedData, signature, isNewerFormat)
+                return QROperation(operationId, title, message, formData, nonce, flags, totp, signedData, signature, isNewerFormat)
             } catch (e: IllegalArgumentException) {
                 Logger.e(e.message ?: "Payload is not a valid QR operation")
                 throw e
