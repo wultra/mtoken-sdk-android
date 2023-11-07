@@ -191,9 +191,9 @@ data class ProximityCheck(
     val timestampRequested: ZonedDateTime = ZonedDateTime.now()
 )
 
-    /**
-     * Types of possible Proximity Checks
-     */
+/**
+ * Types of possible Proximity Checks
+ */
 enum class ProximityCheckType(val value: String) {
     QR_CODE("QR_CODE"),
     DEEPLINK("DEEPLINK")

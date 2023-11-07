@@ -1,6 +1,5 @@
 package com.wultra.android.mtokensdk.operation
 
-
 import android.net.Uri
 import android.util.Base64
 import com.google.gson.Gson
