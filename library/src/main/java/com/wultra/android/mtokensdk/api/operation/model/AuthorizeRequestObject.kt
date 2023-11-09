@@ -24,7 +24,7 @@ import org.threeten.bp.ZonedDateTime
  *
  * @property id Operation ID.
  * @property data Operation data.
- * @property proximityCheck Proximity check data object.
+ * @property proximityCheck Proximity check OTP data.
  */
 internal data class AuthorizeRequestObject(
     @SerializedName("id")
@@ -53,7 +53,7 @@ internal data class AuthorizeRequestObject(
 
 internal data class ProximityCheckData(
 
-    /** The actual otp code */
+    /** The actual OTP code */
     @SerializedName("otp")
     val otp: String,
 

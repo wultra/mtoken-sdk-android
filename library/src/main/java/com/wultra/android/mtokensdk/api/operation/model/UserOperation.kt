@@ -77,7 +77,7 @@ open class UserOperation(
     val ui: OperationUIData?,
 
     /**
-     * Proximity Check Data to be passed when otp is handed to the app
+     * Proximity Check Data to be passed when OTP is handed to the app
      */
     @SerializedName("proximityCheck")
     override var proximityCheck: ProximityCheck? = null
@@ -179,6 +179,11 @@ data class OperationUIData(
     val postApprovalScreen: PostApprovalScreen?
 )
 
+/**
+ * Operation OTP data
+ *
+ * Data shall be assigned to the operation when obtained in the app
+ */
 data class ProximityCheck(
 
     /** The actual Time-based one time password */
