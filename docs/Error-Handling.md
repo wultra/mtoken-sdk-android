@@ -7,17 +7,18 @@ Every `ApiError` consist of:
 
 ## Known API Error codes
 
-| Error Code | Description |
-|---|---|
-|`ERROR_GENERIC`|When unexpected error happened|
-|`POWERAUTH_AUTH_FAIL`|General authentication failure (wrong password, wrong activation state, etc...)|
-|`INVALID_REQUEST`|Invalid request sent - missing request object in the request|
-|`INVALID_ACTIVATION`|Activation is not valid (it is different from configured activation)|
-|`PUSH_REGISTRATION_FAILED`|Error code for a situation when registration to push notification fails|
-|`OPERATION_ALREADY_FINISHED`|Operation is already finished|
-|`OPERATION_ALREADY_FAILED`|Operation is already failed|
-|`OPERATION_ALREADY_CANCELED`|Operation is canceled|
-|`OPERATION_EXPIRED`|Operation is expired|
-|`ERR_AUTHENTICATION`|Error in case that PowerAuth authentication fails|
-|`ERR_SECURE_VAULT`|Error during secure vault unlocking|
-|`ERR_ENCRYPTION`|Returned in case encryption or decryption fails|
+| Error Code                   | Description |
+|------------------------------|---|
+| `ERROR_GENERIC`              |When unexpected error happened|
+| `POWERAUTH_AUTH_FAIL`        |General authentication failure (wrong password, wrong activation state, etc...)|
+| `INVALID_REQUEST`            |Invalid request sent - missing request object in the request|
+| `INVALID_ACTIVATION`         |Activation is not valid (it is different from configured activation)|
+| `PUSH_REGISTRATION_FAILED`   |Error code for a situation when registration to push notification fails|
+| `OPERATION_ALREADY_FINISHED` |Operation is already finished|
+| `OPERATION_ALREADY_FAILED`   |Operation is already failed|
+| `OPERATION_ALREADY_CANCELED` |Operation is canceled|
+| `OPERATION_EXPIRED`          |Operation is expired|
+| `OPERATION_FAILED`           |Default operation action failure|
+| `ERR_AUTHENTICATION`         |Error in case that PowerAuth authentication fails|
+| `ERR_SECURE_VAULT`           |Error during secure vault unlocking|
+| `ERR_ENCRYPTION`             |Returned in case encryption or decryption fails|
