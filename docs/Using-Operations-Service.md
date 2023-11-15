@@ -373,43 +373,50 @@ Definition of the `UserOperations`:
 ```kotlin
 class UserOperation: IOperation {
 
-    // Unique operation identifier
+    /** Unique operation identifier */
     val id: String
 
-    // System name of the operation.
-    //
-    // This property lets you adjust the UI for various operation types.
-    // For example, the "login" operation may display a specialized interface with
-    // an icon or an illustration, instead of an empty list of attributes,
-    // "payment" operation can include a special icon that denotes payments, etc.
+    /** 
+     * System name of the operation.
+     *
+     * This property lets you adjust the UI for various operation types.
+     * For example, the "login" operation may display a specialized interface with
+     * an icon or an illustration, instead of an empty list of attributes,
+     * "payment" operation can include a special icon that denotes payments, etc.
+     */
     val name: String
 
-    // Actual data that will be signed.
+    /** Actual data that will be signed. */
     val data: String
 
-    // Date and time when the operation was created.
+    /** Date and time when the operation was created. */
     val created: ZonedDateTime
 
-    // Date and time when the operation will expire.
+    /** Date and time when the operation will expire. */
     val expires: ZonedDateTime
 
-    // Data that should be presented to the user.
+    /** Data that should be presented to the user. */
     val formData: FormData
 
-    // Allowed signature types.
-    //
-    // This hints if the operation needs a 2nd factor or can be approved simply by
-    // tapping an approve button. If the operation requires 2FA, this value also hints if
-    // the user may use the biometry, or if a password is required.
+    /** 
+     * Allowed signature types.
+     *
+     * This hints if the operation needs a 2nd factor or can be approved simply by
+     * tapping an approve button. If the operation requires 2FA, this value also hints if
+     * the user may use the biometry, or if a password is required.
+     */
     val allowedSignatureType: AllowedSignatureType
     
-    // Data for the operation UI presented
-    //
-    // Accompanying information about the operation additional UI which should be presented such as
-    // Pre-Approval Screen or Post-Approval Screen
+    
+    /**
+     *  Data for the operation UI presented
+     *
+     *  Accompanying information about the operation additional UI which should be presented such as
+     *  Pre-Approval Screen or Post-Approval Screen
+     */
     val ui: OperationUIData?
     
-    // Proximity Check Data to be passed when OTP is handed to the app
+    /** Proximity Check Data to be passed when OTP is handed to the app */
     var proximityCheck: ProximityCheck? = null
 }
 ```
@@ -419,16 +426,18 @@ Definition of `FormData`:
 ```kotlin
 class FormData {
 
-    /// Title of the operation
+    /** Title of the operation */
     val title: String
 
-    /// Message for the user
+    /** Message for the user */
     val message: String
 
-    /// Other attributes.
-    ///
-    /// Each attribute presents one line in the UI. Attributes are differentiated by type property
-    /// and specific classes such as NoteAttribute or AmountAttribute.
+    /**
+     * Other attributes. 
+     * 
+     * Each attribute presents one line in the UI. Attributes are differentiated by type property
+     * and specific classes such as NoteAttribute or AmountAttribute.
+     */
     val attributes: List<Attribute>
 }
 ```
@@ -446,19 +455,21 @@ Attributes types:
 Definition of `OperationUIData`:
 
 ```kotlin
-class OperationUIData: Codable {
-    /// Confirm and Reject buttons should be flipped both in position and style
+class OperationUIData {
+    /** Confirm and Reject buttons should be flipped both in position and style */
     val flipButtons: Boolean?
     
-    /// Block approval when on call (for example when on a phone or Skype call)
+    /** Block approval when on call (for example when on a phone or Skype call) */
     val blockApprovalOnCall: Boolean?
     
-    /// UI for pre-approval operation screen
+    /** UI for pre-approval operation screen */
     val preApprovalScreen: PreApprovalScreen?
-    
-    /// UI for post-approval operation screen
-    ///
-    /// Type of PostApprovalScreen is presented with different classes (Starting with `PostApprovalScreen*`)
+
+    /**
+     * UI for post-approval operation screen
+     * 
+     * Type of PostApprovalScreen is presented with different classes (Starting with `PostApprovalScreen*`)
+     */
     val postApprovalScreen: PostApprovalScreen?
 }
 ```
@@ -477,18 +488,18 @@ PostApprovalScreen types:
 - `REDIRECT` providing text for button, countdown, and redirection URL
 - `GENERIC` may contain any object
 
-Definition of `ProximityCheckData`:
+Definition of `ProximityCheck`:
 
 ```kotlin
-class ProximityCheck: Codable {
+class ProximityCheck {
   
-    /// Tha actual Time-based one time password
+    /** The actual Time-based one time password */
     val totp: String
     
-    /// Type of the Proximity check
+    /** Type of the Proximity check */
     val type: ProximityCheckType
     
-    /// Timestamp when the operation was scanned (QR Code) or delivered to the device (Deeplink)
+    /** Timestamp when the operation was scanned (QR Code) or delivered to the device (Deeplink) */
     val timestampRequested: ZonedDateTime = ZonedDateTime.now()
 }
 ```
