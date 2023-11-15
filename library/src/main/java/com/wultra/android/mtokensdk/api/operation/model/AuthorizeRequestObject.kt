@@ -37,7 +37,7 @@ internal data class AuthorizeRequestObject(
     val proximityCheck: ProximityCheckData? = null
 ) {
 
-    constructor(operation: IOperation, timestampSigned: ZonedDateTime = ZonedDateTime.now()) :this (
+    constructor(operation: IOperation, timestampSigned: ZonedDateTime = ZonedDateTime.now()): this(
         operation.id,
         operation.data,
         operation.proximityCheck?.let {
