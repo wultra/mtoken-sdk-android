@@ -58,8 +58,7 @@ class TOTPUtils {
             } ?: run {
                 Logger.e("Failed to parse deeplink. Key `code` not found")
             }
-
-
+            
             Logger.e("Failed to parse deeplink from $uri")
             return null
         }
