@@ -48,11 +48,6 @@ class TOTPUtils {
                 key to value
             }
 
-            if ("code" in queryItems) {
-                val code = queryItems["code"]
-                return code?.let { parseJWT(it) }
-            }
-
             queryItems["code"]?.let {
                 parseJWT(it)
             } ?: run {
