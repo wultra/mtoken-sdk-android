@@ -27,4 +27,7 @@ interface IOperation {
 
     /** Data for signing */
     val data: String
+
+    /** Additional information with proximity check data */
+    var proximityCheck: ProximityCheck?
 }

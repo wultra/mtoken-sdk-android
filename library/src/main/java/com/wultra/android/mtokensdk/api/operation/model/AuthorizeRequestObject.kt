@@ -17,17 +17,55 @@
 package com.wultra.android.mtokensdk.api.operation.model
 
 import com.google.gson.annotations.SerializedName
+import org.threeten.bp.ZonedDateTime
 
 /**
  * Authorize request model class.
  *
  * @property id Operation ID.
  * @property data Operation data.
+ * @property proximityCheck Proximity check OTP data.
  */
 internal data class AuthorizeRequestObject(
     @SerializedName("id")
     val id: String,
 
     @SerializedName("data")
-    val data: String
+    val data: String,
+
+    @SerializedName("proximityCheck")
+    val proximityCheck: ProximityCheckData? = null
+) {
+
+    constructor(operation: IOperation, timestampSigned: ZonedDateTime = ZonedDateTime.now()): this(
+        operation.id,
+        operation.data,
+        operation.proximityCheck?.let {
+            ProximityCheckData(
+                it.totp,
+                it.type,
+                it.timestampRequested,
+                timestampSigned
+            )
+        }
+    )
+}
+
+internal data class ProximityCheckData(
+
+    /** The actual OTP code */
+    @SerializedName("otp")
+    val otp: String,
+
+    /** Type of the Proximity check */
+    @SerializedName("type")
+    val type: ProximityCheckType,
+
+    /** Timestamp when the operation was delivered to the app */
+    @SerializedName("timestampRequested")
+    val timestampRequested: ZonedDateTime,
+
+    /** Timestamp when the operation was signed */
+    @SerializedName("timestampSigned")
+    val timestampSigned: ZonedDateTime
 )

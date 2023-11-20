@@ -20,6 +20,9 @@ import com.google.gson.JsonDeserializationContext
 import com.google.gson.JsonDeserializer
 import com.google.gson.JsonElement
 import com.google.gson.JsonParseException
+import com.google.gson.JsonPrimitive
+import com.google.gson.JsonSerializationContext
+import com.google.gson.JsonSerializer
 import org.threeten.bp.Instant
 import org.threeten.bp.ZoneId
 import org.threeten.bp.ZonedDateTime
@@ -29,7 +32,7 @@ import java.lang.reflect.Type
 /**
  * Gson deserializer for [ZonedDateTime].
  */
-internal class ZonedDateTimeDeserializer : JsonDeserializer<ZonedDateTime> {
+internal class ZonedDateTimeDeserializer : JsonDeserializer<ZonedDateTime>, JsonSerializer<ZonedDateTime> {
 
     override fun deserialize(json: JsonElement, typeOfT: Type, context: JsonDeserializationContext): ZonedDateTime {
         val jsonPrimitive = json.asJsonPrimitive
@@ -52,5 +55,16 @@ internal class ZonedDateTimeDeserializer : JsonDeserializer<ZonedDateTime> {
             throw JsonParseException("Unable to parse ZonedDateTime", e)
         }
         throw JsonParseException("Unable to parse ZonedDateTime")
+    }
+
+    override fun serialize(src: ZonedDateTime?, typeOfSrc: Type?, context: JsonSerializationContext?): JsonElement {
+        // Custom format for ZonedDateTime
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+
+        // Format the ZonedDateTime using the defined format
+        val formattedZonedDateTime = src?.format(formatter)
+
+        // Create a JsonPrimitive from the formatted string
+        return JsonPrimitive(formattedZonedDateTime)
     }
 }

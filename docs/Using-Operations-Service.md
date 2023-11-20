@@ -11,6 +11,7 @@
 - [Operations API Reference](#operations-api-reference)
 - [UserOperation](#useroperation)
 - [Creating a Custom Operation](#creating-a-custom-operation)
+- [TOTP ProximityCheck](#totp-proximitycheck)
 ## Introduction
 <!-- end -->
 
@@ -372,41 +373,51 @@ Definition of the `UserOperations`:
 ```kotlin
 class UserOperation: IOperation {
 
-    // Unique operation identifier
+    /** Unique operation identifier */
     val id: String
 
-    // System name of the operation.
-    //
-    // This property lets you adjust the UI for various operation types.
-    // For example, the "login" operation may display a specialized interface with
-    // an icon or an illustration, instead of an empty list of attributes,
-    // "payment" operation can include a special icon that denotes payments, etc.
+    /** 
+     * System name of the operation.
+     *
+     * This property lets you adjust the UI for various operation types.
+     * For example, the "login" operation may display a specialized interface with
+     * an icon or an illustration, instead of an empty list of attributes,
+     * "payment" operation can include a special icon that denotes payments, etc.
+     */
     val name: String
 
-    // Actual data that will be signed.
+    /** Actual data that will be signed. */
     val data: String
 
-    // Date and time when the operation was created.
+    /** Date and time when the operation was created. */
     val created: ZonedDateTime
 
-    // Date and time when the operation will expire.
+    /** Date and time when the operation will expire. */
     val expires: ZonedDateTime
 
-    // Data that should be presented to the user.
+    /** Data that should be presented to the user. */
     val formData: FormData
 
-    // Allowed signature types.
-    //
-    // This hints if the operation needs a 2nd factor or can be approved simply by
-    // tapping an approve button. If the operation requires 2FA, this value also hints if
-    // the user may use the biometry, or if a password is required.
+    /** 
+     * Allowed signature types.
+     *
+     * This hints if the operation needs a 2nd factor or can be approved simply by
+     * tapping an approve button. If the operation requires 2FA, this value also hints if
+     * the user may use the biometry, or if a password is required.
+     */
     val allowedSignatureType: AllowedSignatureType
     
-    // Data for the operation UI presented
-    //
-    // Accompanying information about the operation additional UI which should be presented such as
-    // Pre-Approval Screen or Post-Approval Screen
+    
+    /**
+     *  Data for the operation UI presented
+     *
+     *  Accompanying information about the operation additional UI which should be presented such as
+     *  Pre-Approval Screen or Post-Approval Screen
+     */
     val ui: OperationUIData?
+    
+    /** Proximity Check Data to be passed when OTP is handed to the app */
+    var proximityCheck: ProximityCheck? = null
 }
 ```
 
@@ -415,16 +426,18 @@ Definition of `FormData`:
 ```kotlin
 class FormData {
 
-    /// Title of the operation
+    /** Title of the operation */
     val title: String
 
-    /// Message for the user
+    /** Message for the user */
     val message: String
 
-    /// Other attributes.
-    ///
-    /// Each attribute presents one line in the UI. Attributes are differentiated by type property
-    /// and specific classes such as NoteAttribute or AmountAttribute.
+    /**
+     * Other attributes. 
+     * 
+     * Each attribute presents one line in the UI. Attributes are differentiated by type property
+     * and specific classes such as NoteAttribute or AmountAttribute.
+     */
     val attributes: List<Attribute>
 }
 ```
@@ -438,6 +451,63 @@ Attributes types:
 - `AMOUNT_CONVERSION` providing data about Money conversion  
 - `IMAGE` image row  
 - `UNKNOWN` fallback option when unknown attribute type is passed. Such attribute only contains the label.  
+
+Definition of `OperationUIData`:
+
+```kotlin
+class OperationUIData {
+    /** Confirm and Reject buttons should be flipped both in position and style */
+    val flipButtons: Boolean?
+    
+    /** Block approval when on call (for example when on a phone or Skype call) */
+    val blockApprovalOnCall: Boolean?
+    
+    /** UI for pre-approval operation screen */
+    val preApprovalScreen: PreApprovalScreen?
+
+    /**
+     * UI for post-approval operation screen
+     * 
+     * Type of PostApprovalScreen is presented with different classes (Starting with `PostApprovalScreen*`)
+     */
+    val postApprovalScreen: PostApprovalScreen?
+}
+```
+
+PreApprovalScreen types:
+
+- `WARNING`
+- `INFO`
+- `QR_SCAN` this type indicates that the `ProximityCheck` must be used for authorization
+- `UNKNOWN`
+
+PostApprovalScreen types:
+`PostApprovalScreen*` classes commonly contain `heading` and `message` and different payload data
+
+- `REVIEW` provides an array of operations attributes with data: type, id, label, and note
+- `REDIRECT` providing text for button, countdown, and redirection URL
+- `GENERIC` may contain any object
+
+Definition of `ProximityCheck`:
+
+```kotlin
+class ProximityCheck {
+  
+    /** The actual Time-based one time password */
+    val totp: String
+    
+    /** Type of the Proximity check */
+    val type: ProximityCheckType
+    
+    /** Timestamp when the operation was scanned (QR Code) or delivered to the device (Deeplink) */
+    val timestampRequested: ZonedDateTime = ZonedDateTime.now()
+}
+```
+
+ProximityCheckType types:
+
+- `QR_CODE` TOTP was scanned from QR code
+- `DEEPLINK` TOTP was delivered to the app via Deeplink
 
 ## Creating a Custom Operation
 
@@ -461,5 +531,31 @@ interface IOperation {
      * Data for signing
      */
     val data: String
+
+    /** 
+     * Additional information with proximity check data 
+     */ 
+    var proximityCheck: ProximityCheck?
 }
 ```
+
+## TOTP ProximityCheck
+
+Two-Factor Authentication (2FA) using Time-Based One-Time Passwords (TOTP) in the Operations Service is facilitated through the use of ProximityCheck. This allows secure approval of operations through QR code scanning or deeplink handling.
+
+- QR Code Flow:
+
+When the `UserOperation` contains a `PreApprovalScreen.QR_SCAN`, the app should open the camera to scan the QR code before confirming the operation. Use the camera to scan the QR code containing the necessary data payload for the operation.
+
+- Deeplink Flow:
+
+When the app is launched via a deeplink, preserve the data from the deeplink and extract the relevant data. When operations are loaded compare the operation ID from the deeplink data to the operations within the app to find a match.
+
+- Assign TOTP and Type to the Operation
+  Once the QR code is scanned or match from the deeplink is found, create a `WMTProximityCheck` with:
+  - `totp`: The actual Time-Based One-Time Password.
+  - `type`: Set to `ProximityCheckType.QR_CODE` or `ProximityCheckType.DEEPLINK`.
+  - `timestampRequested`: The timestamp when the QR code was scanned (by default, it is created as the current timestamp when the object is instantiated).
+
+- Authorizing the ProximityCheck
+  When authorizing, the SDK will by default add `timestampSigned` to the `ProximityCheck` object. This timestamp indicates when the operation was signed.

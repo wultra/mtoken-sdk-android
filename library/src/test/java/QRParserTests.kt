@@ -109,7 +109,7 @@ class QRParserTests {
 
     @Test
     fun `test forward compatibility`() {
-        val qrcode = makeCode(operationData = "B2*Xtest", otherAttrs = listOf("Some Additional Information"), flags = "B")
+        val qrcode = makeCode(operationData = "B2*Xtest", otherAttrs = listOf("12345678", "Some Additional Information"), flags = "B")
         /* ktlint-disable indent */
         val expectedSignedData = (
             "5ff1b1ed-a3cc-45a3-8ab0-ed60950312b6\n" +
@@ -117,6 +117,7 @@ class QRParserTests {
             "Please confirm this payment\n" +
             "B2*Xtest\n" +
             "B\n" +
+            "12345678\n" +
             "Some Additional Information\n" +
             "AD8bOO0Df73kNaIGb3Vmpg==\n" +
             "0"

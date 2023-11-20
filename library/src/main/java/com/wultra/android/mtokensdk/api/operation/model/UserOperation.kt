@@ -74,7 +74,13 @@ open class UserOperation(
      * Pre-Approval Screen or Post-Approval Screen
      */
     @SerializedName("ui")
-    val ui: OperationUIData?
+    val ui: OperationUIData?,
+
+    /**
+     * Proximity Check Data to be passed when OTP is handed to the app
+     */
+    @SerializedName("proximityCheck")
+    override var proximityCheck: ProximityCheck? = null
 ) : IOperation, ExpirableOperation
 
 /**
@@ -172,3 +178,28 @@ data class OperationUIData(
     @SerializedName("postApprovalScreen")
     val postApprovalScreen: PostApprovalScreen?
 )
+
+/**
+ * Operation OTP data
+ *
+ * Data shall be assigned to the operation when obtained in the app
+ */
+data class ProximityCheck(
+
+    /** The actual Time-based one time password */
+    val totp: String,
+
+    /** Type of the Proximity check */
+    val type: ProximityCheckType,
+
+    /** Timestamp when the operation was scanned (qrCode) or delivered to the device (deeplink) */
+    val timestampRequested: ZonedDateTime = ZonedDateTime.now()
+)
+
+/**
+ * Types of possible Proximity Checks
+ */
+enum class ProximityCheckType(val value: String) {
+    QR_CODE("QR_CODE"),
+    DEEPLINK("DEEPLINK")
+}

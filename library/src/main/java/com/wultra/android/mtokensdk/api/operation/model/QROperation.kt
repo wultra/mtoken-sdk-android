@@ -41,6 +41,9 @@ data class QROperation(
     /** Flags associated with the operation */
     val flags: QROperationFlags,
 
+    /** Additional Time-based one time password for proximity check */
+    val totp: String?,
+
     /** Data for signature validation */
     val signedData: ByteArray,
 
@@ -50,7 +53,13 @@ data class QROperation(
     /** QR code uses a string in newer format that this class implements. This may be used as warning in UI */
     val isNewerFormat: Boolean
 ) {
-    fun dataForOfflineSigning() = "$operationId&${operationData.sourceString}".toByteArray()
+    fun dataForOfflineSigning(): ByteArray {
+        return if (totp == null) {
+            "$operationId&${operationData.sourceString}".toByteArray(Charsets.UTF_8)
+        } else {
+            "$operationId&${operationData.sourceString}&$totp".toByteArray(Charsets.UTF_8)
+        }
+    }
 }
 
 /**
