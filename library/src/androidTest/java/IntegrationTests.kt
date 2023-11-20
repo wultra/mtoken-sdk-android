@@ -92,7 +92,7 @@ class IntegrationTests {
         val secDiff = kotlin.math.abs(date.toEpochSecond() - ZonedDateTime.now().toEpochSecond())
         // if the difference between the server and the device is more than 20 seconds, there is something wrong with the server
         // or there is a bug. Both cases needs a fix
-        Assert.assertTrue(secDiff < 20)
+        Assert.assertTrue("Difference is $secDiff seconds", secDiff < 20)
     }
 
     // 1FA test are temporally disabled
