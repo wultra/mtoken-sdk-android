@@ -90,12 +90,12 @@ class IntegrationTests {
         Assert.assertNotNull(date)
 
         // Sometimes the CI or the emulator on the CI are behind with time because emulator boot takes some time.
-        // To verify that that time makes sense (at the diff is not like hours or days) accept 10 minus window.
+        // To verify that the time makes sense (the diff is not like hours or days) we accept 10 minus window.
         val maxDiffSeconds = 60 * 10
 
         val secDiff = kotlin.math.abs(date.toEpochSecond() - ZonedDateTime.now().toEpochSecond())
-        // if the difference between the server and the device is more than the limit, there is something wrong with the server
-        // or there is a bug. Both cases needs a fix
+        // If the difference between the server and the device is more than the limit, there is something wrong with the server
+        // or there is a bug. Both cases need a fix.
         Assert.assertTrue("Difference is $secDiff seconds, but max $maxDiffSeconds seconds is allowed", secDiff < maxDiffSeconds)
     }
 
