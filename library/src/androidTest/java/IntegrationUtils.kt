@@ -79,9 +79,7 @@ class IntegrationUtils {
         private val enrollmentUrl = getInstrumentationParameter("enrollmentServerUrl")
         private val operationsUrl = getInstrumentationParameter("operationsServerUrl")
         private val inboxUrl = getInstrumentationParameter("inboxServerUrl")
-        private val appKey = getInstrumentationParameter("appKey")
-        private val appSecret = getInstrumentationParameter("appSecret")
-        private val masterPublicKey = getInstrumentationParameter("masterServerPublicKey")
+        private val sdkConfig = getInstrumentationParameter("sdkConfig")
         private var activationName = "" // will be filled when activation is created
         private var registrationId = "" // will be filled when activation is created
 
@@ -96,7 +94,7 @@ class IntegrationUtils {
 
             // CREATE PA INSTANCE
 
-            val cfg = PowerAuthConfiguration.Builder("tests", enrollmentUrl, appKey, appSecret, masterPublicKey).build()
+            val cfg = PowerAuthConfiguration.Builder("tests", enrollmentUrl, sdkConfig).build()
             val clientCfg = PowerAuthClientConfiguration.Builder().allowUnsecuredConnection(true).build()
             val pa = PowerAuthSDK.Builder(cfg).clientConfiguration(clientCfg).build(context)
 
@@ -138,7 +136,7 @@ class IntegrationUtils {
 
             // COMMIT ACTIVATION LOCALLY
 
-            val result = pa.commitActivationWithPassword(context, pin)
+            val result = pa.persistActivationWithPassword(context, pin)
             Log.d("prepare activation", "commitActivationWithPassword result: $result")
 
             // COMMIT ACTIVATION ON THE SERVER
