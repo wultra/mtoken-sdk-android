@@ -31,6 +31,7 @@ class TOTPUtils {
     data class OperationTOTPData(
 
         /** The ID of the operations associated with the TOTP */
+        @SerializedName("potp")
         val totp: String,
 
         /** The actual Time-based one time password */
