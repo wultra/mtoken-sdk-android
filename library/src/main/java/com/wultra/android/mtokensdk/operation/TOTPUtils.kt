@@ -49,7 +49,7 @@ class TOTPUtils {
             }
 
             queryItems["code"]?.let {
-                parseJWT(it)
+                return parseJWT(it)
             } ?: run {
                 Logger.e("Failed to parse deeplink. Key `code` not found")
             }
