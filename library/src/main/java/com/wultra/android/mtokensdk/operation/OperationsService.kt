@@ -193,6 +193,28 @@ class OperationsService: IOperationsService {
         }
     }
 
+    //TODO: test and decide if it needs to be rewritten to more sophisticated OperationsRegistry or something like that...
+    private fun processOperationResult(result: UserOperation) {
+        synchronized(mutex) {
+            lastGetOperationsResult = lastGetOperationsResult?.let { currentResult ->
+                when {
+                    currentResult.isSuccess -> {
+                        val updatedList = currentResult.getOrNull()?.toMutableList() ?: mutableListOf()
+                        if (updatedList.firstOrNull()?.id == result.id) {
+                            currentResult
+                        } else {
+                            updatedList.add(result)
+                            Result.success(updatedList)
+                        }
+                    }
+                    else -> {
+                        currentResult
+                    }
+                }
+            }
+        }
+    }
+
     private fun processServerTime(response: OperationListResponse, requestStarted: ZonedDateTime) {
 
         // server does not support this feature
@@ -284,6 +306,40 @@ class OperationsService: IOperationsService {
     override fun authorizeOfflineOperation(operation: QROperation, authentication: PowerAuthAuthentication, uriId: String): String {
         return powerAuthSDK.offlineSignatureWithAuthentication(appContext, authentication, uriId, operation.dataForOfflineSigning(), operation.nonce)
             ?: throw Exception("Cannot sign this operation")
+    }
+
+    override fun getDetail(operationId: String, callback: (Result<UserOperation>) -> Unit) {
+        val claimRequest = OperationClaimRequest(ClaimRequestObject(operationId))
+        operationApi.claim(
+            claimRequest,
+            object : IApiCallResponseListener<OperationClaimResponse> {
+                override fun onFailure(error: ApiError) {
+                    callback(Result.failure(ApiErrorException(error)))
+                }
+
+                override fun onSuccess(result: OperationClaimResponse) {
+                    callback(Result.success(result.responseObject))
+                }
+            }
+        )
+    }
+
+
+    override fun claim(operationId: String, callback: (Result<UserOperation>) -> Unit) {
+        val claimRequest = OperationClaimRequest(ClaimRequestObject(operationId))
+        operationApi.claim(
+            claimRequest,
+            object : IApiCallResponseListener<OperationClaimResponse> {
+                override fun onFailure(error: ApiError) {
+                    callback(Result.failure(ApiErrorException(error)))
+                }
+
+                override fun onSuccess(result: OperationClaimResponse) {
+                    processOperationResult(result.responseObject)
+                    callback(Result.success(result.responseObject))
+                }
+            }
+        )
     }
 
     override fun isPollingOperations() = timer != null
