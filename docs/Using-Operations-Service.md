@@ -11,7 +11,8 @@
 - [Operations API Reference](#operations-api-reference)
 - [UserOperation](#useroperation)
 - [Creating a Custom Operation](#creating-a-custom-operation)
-- [TOTP ProximityCheck](#totp-proximitycheck)
+- [ProximityCheck](#proximitycheck)
+
 ## Introduction
 <!-- end -->
 
@@ -562,16 +563,17 @@ When the app is launched via a deeplink, preserve the data from the deeplink and
 
 ### PACUtils
 - For convenience, utility class for parsing and extracting data from QR codes and deeplinks used in the PAC (Proximity Anti-fraud Check), is provided.
+
 ```kotlin
-    /** Data payload which is returned from the parser */
-    data class PACData(
+/** Data payload which is returned from the parser */
+data class PACData(
 
-        /** The ID of the operation associated with the TOTP */
-        val operationId: String,
+    /** The ID of the operation associated with the TOTP */
+    val operationId: String,
 
-        /** The actual Time-based one time password */
-        val totp: String?
-    )
+    /** The actual Time-based one time password */
+    val totp: String?
+)
 ```
 
 - two methods are provided:
