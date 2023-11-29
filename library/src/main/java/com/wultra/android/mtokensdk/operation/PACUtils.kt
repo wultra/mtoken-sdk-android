@@ -35,7 +35,7 @@ class PACUtils {
         val operationId: String,
 
         /** The actual Time-based one time password */
-        @SerializedName("potp")
+        @SerializedName(value = "potp", alternate = ["totp"])
         val totp: String?
     )
 
@@ -43,18 +43,17 @@ class PACUtils {
 
         /** Method accepts deeplink Uri and returns payload data or null */
         fun parseDeeplink(uri: Uri): PACData? {
-            val query = uri.query ?: return null
-            val queryItems = query.split("&").associate {
-                val (key, value) = it.split("=")
-                key to value
-            }
 
             // Deeplink can have two query items with operationId & optional totp or single query item with JWT value
-            queryItems["oid"]?.let { operationId ->
-                val totp = queryItems["potp"]
+            uri.getQueryParameter("oid")?.let { operationId ->
+                if (uri.query?.contains(operationId) == false) {
+                    Logger.e("Operation could not be resolved - probably contains invalid characters - please, encode the URL first")
+                    return null
+                }
+                val totp = uri.getQueryParameter("totp") ?: uri.getQueryParameter("potp")
                 return PACData(operationId, totp)
-            } ?: queryItems.entries.firstOrNull()?.let {
-                return parseJWT(it.value)
+            } ?: uri.queryParameterNames.firstOrNull()?.let {
+                return parseJWT(uri.getQueryParameter(it) ?: "")
             } ?: run {
                 Logger.e("Failed to parse deeplink. Valid keys not found in Uri: $uri")
                 return null
@@ -63,9 +62,7 @@ class PACUtils {
 
         /** Method accepts scanned code as a String and returns PAC data */
         fun parseQRCode(code: String): PACData? {
-            val encodedURLString = Uri.encode(code)
-            val uri = Uri.parse(encodedURLString)
-
+            val uri = Uri.parse(code)
             // if the QR code is in the deeplink format parse it the same way as the deeplink
             return if (uri.scheme != null) {
                 parseDeeplink(uri)
