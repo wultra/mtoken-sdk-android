@@ -28,6 +28,8 @@ buildscript {
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${Constants.BuildScript.kotlinVersion}")
         // releasing
         classpath("io.github.gradle-nexus:publish-plugin:1.1.0")
+        // tests
+        classpath("com.github.bjoernq:unmockplugin:0.7.9")
     }
 }
 
