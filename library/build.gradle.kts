@@ -31,6 +31,7 @@ android {
 
     defaultConfig {
         minSdk = Constants.Android.minSdkVersion
+        @Suppress("DEPRECATION")
         targetSdk = Constants.Android.targetSdkVersion
 
         // since Android Gradle Plugin 4.1.0
