@@ -31,6 +31,7 @@ android {
 
     defaultConfig {
         minSdk = Constants.Android.minSdkVersion
+        @Suppress("DEPRECATION")
         targetSdk = Constants.Android.targetSdkVersion
 
         // since Android Gradle Plugin 4.1.0
@@ -76,8 +77,8 @@ android {
 dependencies {
     // Bundled
     implementation("org.jetbrains.kotlin:kotlin-stdlib:${Constants.BuildScript.kotlinVersion}")
-    implementation("androidx.annotation:annotation:1.6.0")
-    implementation("com.google.code.gson:gson:2.8.9")
+    implementation("androidx.annotation:annotation:1.7.0")
+    implementation("com.google.code.gson:gson:2.10.1")
     implementation("com.jakewharton.threetenabp:threetenabp:1.1.1")
     // DO NOT UPGRADE ABOVE 3.12.X! Version 3.12 is the last version supporting TLS 1 and 1.1
     // If upgraded, the app will crash on android 4.4
@@ -98,7 +99,7 @@ dependencies {
     androidTestImplementation("androidx.test:runner:1.5.2")
     androidTestImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test:core:1.5.0")
-    androidTestImplementation(platform("org.jetbrains.kotlin:kotlin-bom:1.8.0"))
+    androidTestImplementation(platform("org.jetbrains.kotlin:kotlin-bom:${Constants.BuildScript.kotlinVersion}"))
 }
 
 apply("android-release-aar.gradle")
