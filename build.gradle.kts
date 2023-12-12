@@ -19,7 +19,7 @@ buildscript {
         mavenLocal()
         mavenCentral()
         google()
-        maven( url = "https://plugins.gradle.org/m2/")
+        maven(url = "https://plugins.gradle.org/m2/")
     }
     dependencies {
         classpath("com.android.tools.build:gradle:${Constants.BuildScript.androidPluginVersion}")
