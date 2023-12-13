@@ -20,6 +20,7 @@ plugins {
     id("com.android.library")
     kotlin("android")
     id("de.mobilej.unmock")
+    id("org.jetbrains.dokka")
 }
 
 android {
