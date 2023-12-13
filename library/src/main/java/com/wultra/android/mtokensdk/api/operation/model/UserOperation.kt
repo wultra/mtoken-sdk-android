@@ -193,7 +193,7 @@ data class ProximityCheck(
     val type: ProximityCheckType,
 
     /** Timestamp when the operation was scanned (qrCode) or delivered to the device (deeplink) */
-    val timestampRequested: ZonedDateTime = ZonedDateTime.now()
+    val timestampReceived: ZonedDateTime = ZonedDateTime.now()
 )
 
 /**
