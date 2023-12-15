@@ -53,6 +53,9 @@ class IntegrationTests {
 
     @After
     fun tearDown() {
+        if (!::pa.isInitialized) {
+            return
+        }
         IntegrationUtils.removeRegistration(pa.activationIdentifier)
         pa.removeActivationLocal(IntegrationUtils.context)
     }

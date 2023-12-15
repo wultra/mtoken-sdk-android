@@ -501,7 +501,7 @@ class ProximityCheck {
     val type: ProximityCheckType
     
     /** Timestamp when the operation was scanned (QR Code) or delivered to the device (Deeplink) */
-    val timestampRequested: ZonedDateTime = ZonedDateTime.now()
+    val timestampReceived: ZonedDateTime = ZonedDateTime.now()
 }
 ```
 
@@ -556,10 +556,10 @@ When the app is launched via a deeplink, preserve the data from the deeplink and
   Once the QR code is scanned or match from the deeplink is found, create a `WMTProximityCheck` with:
   - `totp`: The actual Time-Based One-Time Password.
   - `type`: Set to `ProximityCheckType.QR_CODE` or `ProximityCheckType.DEEPLINK`.
-  - `timestampRequested`: The timestamp when the QR code was scanned (by default, it is created as the current timestamp when the object is instantiated).
+  - `timestampReceived`: The timestamp when the QR code was scanned (by default, it is created as the current timestamp when the object is instantiated).
 
 - Authorizing the ProximityCheck
-  When authorizing, the SDK will by default add `timestampSigned` to the `ProximityCheck` object. This timestamp indicates when the operation was signed.
+  When authorizing, the SDK will by default add `timestampSent` to the `ProximityCheck` object. This timestamp indicates when the operation was sent.
 
 ### PACUtils
 - For convenience, utility class for parsing and extracting data from QR codes and deeplinks used in the PAC (Proximity Anti-fraud Check), is provided.

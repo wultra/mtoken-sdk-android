@@ -19,15 +19,14 @@ buildscript {
         mavenLocal()
         mavenCentral()
         google()
-        maven {
-            url = java.net.URI("https://plugins.gradle.org/m2/")
-        }
+        maven(url = "https://plugins.gradle.org/m2/")
     }
     dependencies {
         classpath("com.android.tools.build:gradle:${Constants.BuildScript.androidPluginVersion}")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${Constants.BuildScript.kotlinVersion}")
+        classpath("org.jetbrains.dokka:dokka-gradle-plugin:${Constants.BuildScript.dokkaVersion}")
         // releasing
-        classpath("io.github.gradle-nexus:publish-plugin:1.1.0")
+        classpath("io.github.gradle-nexus:publish-plugin:${Constants.BuildScript.publishVersion}")
         // tests
         classpath("com.github.bjoernq:unmockplugin:0.7.9")
     }
