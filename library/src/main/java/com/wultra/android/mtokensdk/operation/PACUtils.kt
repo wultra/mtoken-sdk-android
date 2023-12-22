@@ -44,18 +44,23 @@ class PACUtils {
         /** Method accepts deeplink Uri and returns payload data or null */
         fun parseDeeplink(uri: Uri): PACData? {
 
-            // Deeplink can have two query items with operationId & optional totp or single query item with JWT value
-            uri.getQueryParameter("oid")?.let { operationId ->
-                if (uri.query?.contains(operationId) == false) {
-                    Logger.e("Operation could not be resolved - probably contains invalid characters - please, encode the URL first")
+            try {
+                // Deeplink can have two query items with operationId & optional totp or single query item with JWT value
+                uri.getQueryParameter("oid")?.let { operationId ->
+                    if (uri.query?.contains(operationId) == false) {
+                        Logger.e("Operation could not be resolved - probably contains invalid characters - please, encode the URL first")
+                        return null
+                    }
+                    val totp = uri.getQueryParameter("totp") ?: uri.getQueryParameter("potp")
+                    return PACData(operationId, totp)
+                } ?: uri.queryParameterNames.firstOrNull()?.let {
+                    return parseJWT(uri.getQueryParameter(it) ?: "")
+                } ?: run {
+                    Logger.e("Failed to parse deeplink. Valid keys not found in Uri: $uri")
                     return null
                 }
-                val totp = uri.getQueryParameter("totp") ?: uri.getQueryParameter("potp")
-                return PACData(operationId, totp)
-            } ?: uri.queryParameterNames.firstOrNull()?.let {
-                return parseJWT(uri.getQueryParameter(it) ?: "")
-            } ?: run {
-                Logger.e("Failed to parse deeplink. Valid keys not found in Uri: $uri")
+            } catch (t: Throwable) {
+                Logger.e("Failed to parse deeplink - $t")
                 return null
             }
         }
