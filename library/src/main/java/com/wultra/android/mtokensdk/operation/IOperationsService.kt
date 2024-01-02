@@ -97,7 +97,7 @@ interface IOperationsService {
     fun getDetail(operationId: String, callback: (Result<UserOperation>) -> Unit)
 
     /**
-     * Claims the "anonymous" operation and assigns it to the user.
+     * Claims the "non-personalized" operation and assigns it to the user.
      *
      * @param operationId Operation ID that will be claimed as belonging to the user.
      * @param callback Callback with result.

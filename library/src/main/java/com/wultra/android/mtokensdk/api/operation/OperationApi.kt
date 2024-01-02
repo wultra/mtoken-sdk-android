@@ -24,12 +24,10 @@ import com.wultra.android.mtokensdk.operation.OperationsUtils
 import com.wultra.android.powerauth.networking.*
 import com.wultra.android.powerauth.networking.data.*
 import com.wultra.android.powerauth.networking.tokens.IPowerAuthTokenProvider
-import io.getlime.security.powerauth.core.EciesEncryptor
 import io.getlime.security.powerauth.sdk.PowerAuthAuthentication
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
 import okhttp3.OkHttpClient
 import org.threeten.bp.ZonedDateTime
-import java.util.HashMap
 
 internal class OperationListResponse(
     @SerializedName("currentTimestamp")
@@ -40,10 +38,8 @@ internal class OperationListResponse(
 internal class OperationHistoryResponse(responseObject: List<OperationHistoryEntry>, status: Status): ObjectResponse<List<OperationHistoryEntry>>(responseObject, status)
 internal class AuthorizeRequest(requestObject: AuthorizeRequestObject): ObjectRequest<AuthorizeRequestObject>(requestObject)
 internal class RejectRequest(requestObject: RejectRequestObject): ObjectRequest<RejectRequestObject>(requestObject)
-internal class OperationDetailRequest(requestObject: ClaimRequestObject): ObjectRequest<ClaimRequestObject>(requestObject)
-internal class OperationDetailResponse(responseObject: UserOperation, status: Status): ObjectResponse<UserOperation>(responseObject, status)
-internal class OperationClaimRequest(requestObject: ClaimRequestObject): ObjectRequest<ClaimRequestObject>(requestObject)
-internal class OperationClaimResponse(responseObject: UserOperation, status: Status): ObjectResponse<UserOperation>(responseObject, status)
+internal class OperationClaimDetailRequest(requestObject: OperationClaimDetailData): ObjectRequest<OperationClaimDetailData>(requestObject)
+internal class OperationClaimDetailResponse(responseObject: UserOperation, status: Status): ObjectResponse<UserOperation>(responseObject, status)
 
 /**
  * API for operations requests.
@@ -65,8 +61,8 @@ internal class OperationApi(
         private val listEndpoint = EndpointSignedWithToken<EmptyRequest, OperationListResponse>("api/auth/token/app/operation/list", "possession_universal")
         private val authorizeEndpoint = EndpointSigned<AuthorizeRequest, StatusResponse>("api/auth/token/app/operation/authorize", "/operation/authorize")
         private val rejectEndpoint = EndpointSigned<RejectRequest, StatusResponse>("api/auth/token/app/operation/cancel", "/operation/cancel")
-        private val detailEndpoint = EndpointBasic<OperationDetailRequest, OperationDetailResponse>("api/auth/token/app/operation/detail")
-        private val claimEndpoint = EndpointBasic<OperationClaimRequest, OperationClaimResponse>("api/auth/token/app/operation/detail/claim")
+        private val detailEndpoint = EndpointSignedWithToken<OperationClaimDetailRequest, OperationClaimDetailResponse>("api/auth/token/app/operation/detail", "possession_universal")
+        private val claimEndpoint = EndpointSignedWithToken<OperationClaimDetailRequest, OperationClaimDetailResponse>("api/auth/token/app/operation/detail/claim", "possession_universal")
         const val OFFLINE_AUTHORIZE_URI_ID = "/operation/authorize/offline"
     }
 
@@ -94,12 +90,12 @@ internal class OperationApi(
     }
 
     /** Get an operation detail. */
-    fun detail(claimRequest: OperationDetailRequest, listener: IApiCallResponseListener<OperationDetailResponse>) {
-        post(data = claimRequest, endpoint =  detailEndpoint, headers = null, encryptor =  null, okHttpInterceptor = okHttpInterceptor, listener = listener)
+    fun getDetail(claimRequest: OperationClaimDetailRequest, listener: IApiCallResponseListener<OperationClaimDetailResponse>) {
+        post(data = claimRequest, endpoint = detailEndpoint, headers = null, encryptor = null, okHttpInterceptor = okHttpInterceptor, listener = listener)
     }
 
     /** Claim an operation. */
-    fun claim(claimRequest: OperationClaimRequest, listener: IApiCallResponseListener<OperationClaimResponse>) {
-        post(data = claimRequest, endpoint =  claimEndpoint, headers = null, encryptor =  null, okHttpInterceptor = okHttpInterceptor, listener = listener)
+    fun claim(claimRequest: OperationClaimDetailRequest, listener: IApiCallResponseListener<OperationClaimDetailResponse>) {
+        post(data = claimRequest, endpoint = claimEndpoint, headers = null, encryptor = null, okHttpInterceptor = okHttpInterceptor, listener = listener)
     }
 }

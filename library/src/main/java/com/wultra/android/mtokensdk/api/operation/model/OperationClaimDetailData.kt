@@ -14,12 +14,12 @@ package com.wultra.android.mtokensdk.api.operation.model
 import com.google.gson.annotations.SerializedName
 
 /**
- * Claim request model class.
+ * Model class for handling requests related to claiming and retrieving details of operations.
  *
- * @property operationId Operation Id to be claimed.
+ * @property operationId The unique identifier of the operation to be claimed or for which details are requested.
  */
-internal data class ClaimRequestObject(
+internal data class OperationClaimDetailData(
 
-    @SerializedName("operationId")
+    @SerializedName("id")
     val operationId: String
 )
