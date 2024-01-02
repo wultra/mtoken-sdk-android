@@ -37,15 +37,15 @@ internal data class AuthorizeRequestObject(
     val proximityCheck: ProximityCheckData? = null
 ) {
 
-    constructor(operation: IOperation, timestampSigned: ZonedDateTime = ZonedDateTime.now()): this(
+    constructor(operation: IOperation, timestampSent: ZonedDateTime = ZonedDateTime.now()): this(
         operation.id,
         operation.data,
         operation.proximityCheck?.let {
             ProximityCheckData(
                 it.totp,
                 it.type,
-                it.timestampRequested,
-                timestampSigned
+                it.timestampReceived,
+                timestampSent
             )
         }
     )
@@ -61,11 +61,11 @@ internal data class ProximityCheckData(
     @SerializedName("type")
     val type: ProximityCheckType,
 
-    /** Timestamp when the operation was delivered to the app */
-    @SerializedName("timestampRequested")
-    val timestampRequested: ZonedDateTime,
+    /** Timestamp when the operation was received by the */
+    @SerializedName("timestampReceived")
+    val timestampReceived: ZonedDateTime,
 
-    /** Timestamp when the operation was signed */
-    @SerializedName("timestampSigned")
-    val timestampSigned: ZonedDateTime
+    /** Timestamp when the operation was sent */
+    @SerializedName("timestampSent")
+    val timestampSent: ZonedDateTime
 )
