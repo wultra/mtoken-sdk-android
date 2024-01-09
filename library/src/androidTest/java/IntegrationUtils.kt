@@ -193,6 +193,32 @@ class IntegrationUtils {
         }
 
         @Throws
+        fun createNonPersonalizedPACOperation(factors: Factors): NonPersonalisedTOTPOperationObject {
+            val opBody = when (factors) {
+                Factors.F_2FA -> { """
+                {
+                  "template": "login_preApproval",
+                  "proximityCheckEnabled": true,
+                   "parameters": {
+                     "party.id": "666",
+                     "party.name": "Datová schránka",
+                         "session.id": "123",
+                         "session.ip-address": "192.168.0.1"
+                   }
+                }
+                """.trimIndent()
+                }
+            }
+            // create an operation on the nextstep server
+            return makeCall(opBody, "$cloudServerUrl/v2/operations")
+        }
+
+        @Throws
+        fun getOperation(operation: NonPersonalisedTOTPOperationObject): NonPersonalisedTOTPOperationObject {
+            return makeCall(null, "$cloudServerUrl/v2/operations/${operation.operationId}", "GET")
+        }
+
+        @Throws
         fun getQROperation(operation: OperationObject): QRData {
             return makeCall(null, "$cloudServerUrl/v2/operations/${operation.operationId}/offline/qr?registrationId=$registrationId", "GET")
         }
@@ -273,6 +299,17 @@ data class OperationObject(
     val maxFailureCount: Int,
     val timestampCreated: Double,
     val timestampExpires: Double
+)
+
+data class NonPersonalisedTOTPOperationObject(
+    val operationId: String,
+    val status: String,
+    val operationType: String,
+    val failureCount: Int,
+    val maxFailureCount: Int,
+    val timestampCreated: Double,
+    val timestampExpires: Double,
+    val proximityOtp: String?
 )
 
 data class QRData(

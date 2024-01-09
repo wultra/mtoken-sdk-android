@@ -286,6 +286,39 @@ class OperationsService: IOperationsService {
             ?: throw Exception("Cannot sign this operation")
     }
 
+    override fun getDetail(operationId: String, callback: (Result<UserOperation>) -> Unit) {
+        val detailRequest = OperationClaimDetailRequest(OperationClaimDetailData(operationId))
+
+        operationApi.getDetail(
+            detailRequest,
+            object : IApiCallResponseListener<OperationClaimDetailResponse> {
+                override fun onFailure(error: ApiError) {
+                    callback(Result.failure(ApiErrorException(error)))
+                }
+
+                override fun onSuccess(result: OperationClaimDetailResponse) {
+                    callback(Result.success(result.responseObject))
+                }
+            }
+        )
+    }
+
+    override fun claim(operationId: String, callback: (Result<UserOperation>) -> Unit) {
+        val claimRequest = OperationClaimDetailRequest(OperationClaimDetailData(operationId))
+        operationApi.claim(
+            claimRequest,
+            object : IApiCallResponseListener<OperationClaimDetailResponse> {
+                override fun onFailure(error: ApiError) {
+                    callback(Result.failure(ApiErrorException(error)))
+                }
+
+                override fun onSuccess(result: OperationClaimDetailResponse) {
+                    callback(Result.success(result.responseObject))
+                }
+            }
+        )
+    }
+
     override fun isPollingOperations() = timer != null
 
     @Synchronized
