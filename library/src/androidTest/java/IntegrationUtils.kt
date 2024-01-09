@@ -310,7 +310,6 @@ data class NonPersonalisedTOTPOperationObject(
     val proximityOtp: String?
 )
 
-
 data class QRData(
     val operationQrCodeData: String,
     val nonce: String

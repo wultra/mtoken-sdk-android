@@ -281,7 +281,6 @@ class IntegrationTests {
         Assert.assertTrue(verifiedResult.otpValid)
     }
 
-
     @Test
     fun testDetail() {
         val op = IntegrationUtils.createNonPersonalizedPACOperation(IntegrationUtils.Companion.Factors.F_2FA)
@@ -302,9 +301,10 @@ class IntegrationTests {
         val op = IntegrationUtils.createNonPersonalizedPACOperation(IntegrationUtils.Companion.Factors.F_2FA)
         val future = CompletableFuture<UserOperation>()
 
-        ops.claim(op.operationId) {result ->
+        ops.claim(op.operationId) { result ->
             result.onSuccess { future.complete(it) }
-                .onFailure { future.completeExceptionally(it) }}
+                .onFailure { future.completeExceptionally(it) }
+        }
 
         val operation = future.get(20, TimeUnit.SECONDS)
 

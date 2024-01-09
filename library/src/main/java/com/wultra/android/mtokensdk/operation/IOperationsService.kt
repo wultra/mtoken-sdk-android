@@ -91,7 +91,7 @@ interface IOperationsService {
     /**
      * Retrieves operation detail based on operation ID
      *
-     * @param operationId Operation ID that will be claimed as belonging to the user.
+     * @param operationId The identifier of the specific operation.
      * @param callback Callback with result.
      */
     fun getDetail(operationId: String, callback: (Result<UserOperation>) -> Unit)
