@@ -7,6 +7,8 @@
 - [Start Periodic Polling](#start-periodic-polling)
 - [Approve an Operation](#approve-an-operation)
 - [Reject an Operation](#reject-an-operation)
+- [Operation detail](#operation-detail)
+- [Claim the Operation](#claim-the-operation)
 - [Off-line Authorization](#off-line-authorization)
 - [Operations API Reference](#operations-api-reference)
 - [UserOperation](#useroperation)
@@ -194,6 +196,45 @@ fun reject(operation: IOperation, reason: RejectionReason) {
     }
 }
 ```
+
+## Operation detail
+
+To get a detail of the operation based on operation ID use `IOperationsService.getDetail`. Operation detail is confirmed by the possession factor so there is no need for creating  `PowerAuthAuthentication` object. The returned result is the operation and its current status.
+
+```kotlin
+// Retrieve operation details based on the operation ID.
+fun getDetail(operationId: String) {
+    this.operationService.getDetail(operationId: operationId) {
+        it.onSuccess {
+            // process operation
+        }.onFailure {
+            // show error UI
+        }
+    }
+}
+```
+
+## Claim the Operation
+
+To claim a non-persolized operation use `IOperationsService.claim`. 
+
+A non-personalized operation refers to an operation that is initiated without a specific operationId. In this state, the operation is not tied to a particular user and lacks a unique identifier. 
+
+Operation claim is confirmed by the possession factor so there is no need for creating  `PowerAuthAuthentication` object. Returned result is the operation and its current status. You can simply use it with the following example.
+
+```kotlin
+// Assigns the 'non-personalized' operation to the user
+fun claim(operationId: String) {
+    this.operationService.claim(operationId: operationId) { 
+        it.onSuccess { 
+            // process operation 
+        }.onFailure { 
+            // show error UI 
+        }
+    }
+}
+```
+
 
 ## Operation History
 

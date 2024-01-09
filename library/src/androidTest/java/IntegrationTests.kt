@@ -18,6 +18,9 @@ package com.wultra.android.mtokensdk.test
 
 import com.wultra.android.mtokensdk.api.operation.model.OperationHistoryEntry
 import com.wultra.android.mtokensdk.api.operation.model.OperationHistoryEntryStatus
+import com.wultra.android.mtokensdk.api.operation.model.PreApprovalScreen
+import com.wultra.android.mtokensdk.api.operation.model.ProximityCheck
+import com.wultra.android.mtokensdk.api.operation.model.ProximityCheckType
 import com.wultra.android.mtokensdk.api.operation.model.QROperationParser
 import com.wultra.android.mtokensdk.api.operation.model.UserOperation
 import com.wultra.android.mtokensdk.operation.*
@@ -276,5 +279,57 @@ class IntegrationTests {
         val verifiedResult = IntegrationUtils.verifyQROperation(op, qrData, otp)
 
         Assert.assertTrue(verifiedResult.otpValid)
+    }
+
+    @Test
+    fun testDetail() {
+        val op = IntegrationUtils.createNonPersonalizedPACOperation(IntegrationUtils.Companion.Factors.F_2FA)
+        val future = CompletableFuture<UserOperation>()
+
+        ops.getDetail(op.operationId) { result ->
+            result.onSuccess { future.complete(it) }
+                .onFailure { future.completeExceptionally(it) }
+        }
+
+        val operation = future.get(20, TimeUnit.SECONDS)
+        Assert.assertTrue("Failed to create & get the operation", operation != null)
+        Assert.assertEquals("Operations ids are not equal", op.operationId, operation.id)
+    }
+
+    @Test
+    fun testClaim() {
+        val op = IntegrationUtils.createNonPersonalizedPACOperation(IntegrationUtils.Companion.Factors.F_2FA)
+        val future = CompletableFuture<UserOperation>()
+
+        ops.claim(op.operationId) { result ->
+            result.onSuccess { future.complete(it) }
+                .onFailure { future.completeExceptionally(it) }
+        }
+
+        val operation = future.get(20, TimeUnit.SECONDS)
+
+        Assert.assertEquals("Incorrect type of preapproval screen", operation.ui?.preApprovalScreen?.type, PreApprovalScreen.Type.QR_SCAN)
+
+        val totp = IntegrationUtils.getOperation(op).proximityOtp
+        Assert.assertNotNull("Even with proximityCheckEnabled: true, in proximityOtp nil", totp)
+
+        operation.proximityCheck = ProximityCheck(totp!!, ProximityCheckType.QR_CODE)
+
+        val authorizedFuture = CompletableFuture<UserOperation?>()
+        var auth = PowerAuthAuthentication.possessionWithPassword("xxxx") // wrong password on purpose
+
+        ops.authorizeOperation(operation, auth) { result ->
+            result.onSuccess { authorizedFuture.completeExceptionally(Exception("Operation should not be authorized")) }
+                .onFailure { authorizedFuture.complete(null) }
+        }
+        Assert.assertNull(authorizedFuture.get(20, TimeUnit.SECONDS))
+
+        auth = PowerAuthAuthentication.possessionWithPassword(pin)
+        val authorizedFuture2 = CompletableFuture<Any?>()
+        ops.authorizeOperation(operation, auth) { result ->
+            result.onSuccess { authorizedFuture2.complete(null) }
+                .onFailure { authorizedFuture2.completeExceptionally(it) }
+        }
+        Assert.assertNull(authorizedFuture2.get(20, TimeUnit.SECONDS))
     }
 }
