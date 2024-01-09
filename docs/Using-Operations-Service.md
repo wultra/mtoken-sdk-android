@@ -226,11 +226,11 @@ Operation claim is confirmed by the possession factor so there is no need for cr
 // Assigns the 'non-personalized' operation to the user
 fun claim(operationId: String) {
     this.operationService.claim(operationId: operationId) { 
-        it.onSuccess {
-			// process operation
-	    }.onFailure {
-	    	// show error UI
-	    }
+        it.onSuccess { 
+            // process operation 
+        }.onFailure { 
+            // show error UI 
+        }
     }
 }
 ```
