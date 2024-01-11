@@ -94,9 +94,11 @@ internal class AttributeTypeAdapter : TypeAdapter<Attribute>() {
         fun build(): Attribute? {
             return when (type) {
                 Attribute.Type.AMOUNT -> {
-                    val amount: BigDecimal = attr("amount") ?: return null
-                    val currency: String = attr("currency") ?: return null
-                    AmountAttribute(amount, currency, attr("amountFormatted"), attr("currencyFormatted"), attr("valueFormatted"), label)
+                    // For backward compatibility with legacy implementation, where the `amountFormatted` and `currencyFormatted` values might not be present,
+                    // we decode from `amount` and `currency` which were not nullable
+                    val amountFormatted: String = attr("amountFormatted") ?: attr("amount")!!
+                    val currencyFormatted: String = attr("currencyFormatted") ?: attr("currency")!!
+                    AmountAttribute(amountFormatted, currencyFormatted, attr("amount"), attr("currency"), attr("valueFormatted"), label)
                 }
                 Attribute.Type.KEY_VALUE -> KeyValueAttribute(attr("value") ?: return null, label)
                 Attribute.Type.NOTE -> NoteAttribute(attr("note") ?: return null, label)
@@ -104,8 +106,10 @@ internal class AttributeTypeAdapter : TypeAdapter<Attribute>() {
                 Attribute.Type.PARTY_INFO -> PartyInfoAttribute(PartyInfoAttribute.PartyInfo(partyInfoMap), label)
                 Attribute.Type.AMOUNT_CONVERSION -> ConversionAttribute(
                     attr("dynamic") ?: return null,
-                    ConversionAttribute.Money(attr("sourceAmount") ?: return null, attr("sourceCurrency") ?: return null, attr("sourceAmountFormatted"), attr("sourceCurrencyFormatted"), attr("sourceValueFormatted")),
-                    ConversionAttribute.Money(attr("targetAmount") ?: return null, attr("targetCurrency") ?: return null, attr("targetAmountFormatted"), attr("targetCurrencyFormatted"), attr("targetValueFormatted")),
+                    // For backward compatibility with legacy implementation, where the `sourceAmountFormatted`/`targetAmountFormatted` and `sourceCurrencyFormatted`/`targetCurrencyFormatted` values might not be present,
+                    // we decode from `sourceAmount`/`targetAmount` and `sourceCurrency`/`targetCurrency` which were not nullable
+                    ConversionAttribute.Money(attr("sourceAmountFormatted") ?: attr("sourceAmount")!!, attr("sourceCurrencyFormatted") ?: attr("sourceCurrency")!!, attr("sourceAmount"), attr("sourceCurrency"), attr("sourceValueFormatted")),
+                    ConversionAttribute.Money(attr("targetAmountFormatted") ?: attr("targetAmount")!!, attr("targetCurrencyFormatted") ?: attr("targetCurrency")!!, attr("targetAmount"), attr("targetCurrency"), attr("targetValueFormatted")),
                     label
                 )
                 Attribute.Type.IMAGE -> ImageAttribute(attr("thumbnailUrl") ?: return null, attr("originalUrl"), label)

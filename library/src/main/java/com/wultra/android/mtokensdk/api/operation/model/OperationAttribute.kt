@@ -55,23 +55,23 @@ open class Attribute(
 
 /** Amount attribute is 1 row in operation that represents "Payment Amount" */
 class AmountAttribute(
-    /** Payment amount */
-    val amount: BigDecimal,
-
-    /** Currency */
-    val currency: String,
-
     /** Formatted amount for presentation.
      *
      * This property will be properly formatted based on the response language.
      * For example when amount is 100 and the acceptLanguage is "cs" for czech,
      * he amountFormatted will be "100,00". */
-    val amountFormatted: String?,
+    val amountFormatted: String,
 
     /** Formatted currency to the locale based on acceptLanguage.
      *
      * For example when the currency is CZK, this property will be "Kč" */
-    val currencyFormatted: String?,
+    val currencyFormatted: String,
+
+    /** Payment amount */
+    val amount: BigDecimal?,
+
+    /** Currency */
+    val currency: String?,
 
     /** Formatted amount and currency to the locale based on acceptLanguage
      *
@@ -149,18 +149,6 @@ class ConversionAttribute(
 ) : Attribute(Type.AMOUNT_CONVERSION, label) {
 
     data class Money(
-
-        /**
-         * Payment amount
-         *
-         * Amount might not be precise (due to floating point conversion during deserialization from json)
-         * use amountFormatted property instead when available
-         */
-        val amount: BigDecimal,
-
-        /** Currency */
-        val currency: String,
-
         /**
          * Formatted amount for presentation.
          *
@@ -168,14 +156,25 @@ class ConversionAttribute(
          * For example when amount is 100 and the acceptLanguage is "cs" for czech,
          * the amountFormatted will be "100,00".
          */
-        val amountFormatted: String?,
+        val amountFormatted: String,
 
         /**
          * Formatted currency to the locale based on acceptLanguage
          *
          * For example when the currency is CZK, this property will be "Kč"
          */
-        val currencyFormatted: String?,
+        val currencyFormatted: String,
+
+        /**
+         * Payment amount
+         *
+         * Amount might not be precise (due to floating point conversion during deserialization from json)
+         * use amountFormatted property instead when available
+         */
+        val amount: BigDecimal?,
+
+        /** Currency */
+        val currency: String?,
 
         /**
          * Formatted amount and currency to the locale based on acceptLanguage
