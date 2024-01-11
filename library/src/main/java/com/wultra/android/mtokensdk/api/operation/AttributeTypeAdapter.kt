@@ -96,7 +96,7 @@ internal class AttributeTypeAdapter : TypeAdapter<Attribute>() {
                 Attribute.Type.AMOUNT -> {
                     // For backward compatibility with legacy implementation, where the `amountFormatted` and `currencyFormatted` values might not be present,
                     // we decode from `amount` and `currency` which were not nullable
-                    val amountFormatted: String = attr("amountFormatted") ?: attr("amount")!!
+                    val amountFormatted: String = attr("amountFormatted") ?: attr<String>("amount").toString()
                     val currencyFormatted: String = attr("currencyFormatted") ?: attr("currency")!!
                     AmountAttribute(amountFormatted, currencyFormatted, attr("amount"), attr("currency"), attr("valueFormatted"), label)
                 }
@@ -108,8 +108,8 @@ internal class AttributeTypeAdapter : TypeAdapter<Attribute>() {
                     attr("dynamic") ?: return null,
                     // For backward compatibility with legacy implementation, where the `sourceAmountFormatted`/`targetAmountFormatted` and `sourceCurrencyFormatted`/`targetCurrencyFormatted` values might not be present,
                     // we decode from `sourceAmount`/`targetAmount` and `sourceCurrency`/`targetCurrency` which were not nullable
-                    ConversionAttribute.Money(attr("sourceAmountFormatted") ?: attr("sourceAmount")!!, attr("sourceCurrencyFormatted") ?: attr("sourceCurrency")!!, attr("sourceAmount"), attr("sourceCurrency"), attr("sourceValueFormatted")),
-                    ConversionAttribute.Money(attr("targetAmountFormatted") ?: attr("targetAmount")!!, attr("targetCurrencyFormatted") ?: attr("targetCurrency")!!, attr("targetAmount"), attr("targetCurrency"), attr("targetValueFormatted")),
+                    ConversionAttribute.Money(attr("sourceAmountFormatted") ?: attr<String>("sourceAmount").toString(), attr("sourceCurrencyFormatted") ?: attr("sourceCurrency")!!, attr("sourceAmount"), attr("sourceCurrency"), attr("sourceValueFormatted")),
+                    ConversionAttribute.Money(attr("targetAmountFormatted") ?: attr<String>("targetAmount").toString(), attr("targetCurrencyFormatted") ?: attr("targetCurrency")!!, attr("targetAmount"), attr("targetCurrency"), attr("targetValueFormatted")),
                     label
                 )
                 Attribute.Type.IMAGE -> ImageAttribute(attr("thumbnailUrl") ?: return null, attr("originalUrl"), label)

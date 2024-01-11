@@ -186,8 +186,9 @@ class OperationJsonDeserializationTests {
         Assert.assertEquals(BigDecimal(965165234082.23), amountAttr.amount)
         Assert.assertEquals("CZK", amountAttr.currency)
         Assert.assertEquals("965165234082.23 CZK", amountAttr.valueFormatted)
-        Assert.assertNull(amountAttr.amountFormatted)
-        Assert.assertNull(amountAttr.currencyFormatted)
+        // old implementation was null, now formatted values are not nullable and are made from amount and currency
+        Assert.assertNotNull(amountAttr.amountFormatted)
+        Assert.assertNotNull(amountAttr.currencyFormatted)
 
         val kva = operation.formData.attributes[1] as KeyValueAttribute
         Assert.assertEquals(Attribute.Type.KEY_VALUE, kva.type)
