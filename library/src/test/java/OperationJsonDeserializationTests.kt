@@ -186,8 +186,9 @@ class OperationJsonDeserializationTests {
         Assert.assertEquals(BigDecimal(965165234082.23), amountAttr.amount)
         Assert.assertEquals("CZK", amountAttr.currency)
         Assert.assertEquals("965165234082.23 CZK", amountAttr.valueFormatted)
-        Assert.assertNull(amountAttr.amountFormatted)
-        Assert.assertNull(amountAttr.currencyFormatted)
+        // old implementation was null, now formatted values are not nullable and are made from amount and currency
+        Assert.assertNotNull(amountAttr.amountFormatted)
+        Assert.assertNotNull(amountAttr.currencyFormatted)
 
         val kva = operation.formData.attributes[1] as KeyValueAttribute
         Assert.assertEquals(Attribute.Type.KEY_VALUE, kva.type)
@@ -244,6 +245,58 @@ class OperationJsonDeserializationTests {
         Assert.assertEquals("https://example.com/123_thumb.jpeg", ia3.thumbnailUrl)
         // here we're testing if a wrong type (int) was parsed to null
         Assert.assertEquals(null, ia3.originalUrl)
+    }
+
+    @Test
+    fun `test Amount & Conversion Attributes response with only amount and currency - legacy backend`() {
+        val json = """{"status":"OK", "currentTimestamp":"2023-02-10T12:30:42+0000", "responseObject":[{"id":"930febe7-f350-419a-8bc0-c8883e7f71e3", "name":"authorize_payment", "data":"A1*A100CZK*Q238400856/0300**D20170629*NUtility Bill Payment - 05/2017", "operationCreated":"2018-08-08T12:30:42+0000", "operationExpires":"2018-08-08T12:35:43+0000", "allowedSignatureType": {"type":"2FA", "variants": ["possession_knowledge", "possession_biometry"]}, "formData": {"title":"Potvrzení platby", "message":"Dobrý den,prosíme o potvrzení následující platby:", "attributes": [{"type":"AMOUNT", "id":"operation.amount", "label":"Částka", "amount":965165234082.23, "currency":"CZK"}, { "type": "AMOUNT_CONVERSION", "id": "operation.conversion", "label": "Conversion", "dynamic": true, "sourceAmount": 1.26, "sourceCurrency": "ETC", "targetAmount": 1710.98, "targetCurrency": "USD"}]}}]}
+        """.trimIndent()
+
+        val response = typeAdapter.fromJson(json)
+        Assert.assertNotNull(response)
+
+        val amountAttr = response.responseObject[0].formData.attributes[0] as AmountAttribute
+        Assert.assertEquals(BigDecimal(965165234082.23), amountAttr.amount)
+        Assert.assertEquals("CZK", amountAttr.currency)
+        Assert.assertEquals("965165234082.23", amountAttr.amountFormatted)
+        Assert.assertEquals("CZK", amountAttr.currencyFormatted)
+
+        val conversionAttr = response.responseObject[0].formData.attributes[1] as ConversionAttribute
+        Assert.assertEquals(BigDecimal(1.26), conversionAttr.source.amount)
+        Assert.assertEquals("ETC", conversionAttr.source.currency)
+        Assert.assertEquals(BigDecimal(1710.98), conversionAttr.target.amount)
+        Assert.assertEquals("USD", conversionAttr.target.currency)
+
+        Assert.assertEquals("1.26", conversionAttr.source.amountFormatted)
+        Assert.assertEquals("ETC", conversionAttr.source.currencyFormatted)
+        Assert.assertEquals("1710.98", conversionAttr.target.amountFormatted)
+        Assert.assertEquals("USD", conversionAttr.target.currencyFormatted)
+    }
+
+    @Test
+    fun `test Amount & Conversion Attributes response with only amountFormatted and currencyFormatted`() {
+        val json = """{"status":"OK", "currentTimestamp":"2023-02-10T12:30:42+0000", "responseObject":[{"id":"930febe7-f350-419a-8bc0-c8883e7f71e3", "name":"authorize_payment", "data":"A1*A100CZK*Q238400856/0300**D20170629*NUtility Bill Payment - 05/2017", "operationCreated":"2018-08-08T12:30:42+0000", "operationExpires":"2018-08-08T12:35:43+0000", "allowedSignatureType": {"type":"2FA", "variants": ["possession_knowledge", "possession_biometry"]}, "formData": {"title":"Potvrzení platby", "message":"Dobrý den,prosíme o potvrzení následující platby:", "attributes": [{"type":"AMOUNT", "id":"operation.amount", "label":"Částka", "amountFormatted":"965165234082.23", "currencyFormatted":"CZK"}, { "type": "AMOUNT_CONVERSION", "id": "operation.conversion", "label": "Conversion", "dynamic": true, "sourceAmountFormatted": "1.26", "sourceCurrencyFormatted": "ETC", "targetAmountFormatted": "1710.98", "targetCurrencyFormatted": "USD"}]}}]}
+        """.trimIndent()
+
+        val response = typeAdapter.fromJson(json)
+        Assert.assertNotNull(response)
+
+        val amountAttr = response.responseObject[0].formData.attributes[0] as AmountAttribute
+        Assert.assertNull(amountAttr.amount)
+        Assert.assertNull(amountAttr.currency)
+        Assert.assertEquals("965165234082.23", amountAttr.amountFormatted)
+        Assert.assertEquals("CZK", amountAttr.currencyFormatted)
+
+        val conversionAttr = response.responseObject[0].formData.attributes[1] as ConversionAttribute
+        Assert.assertNull(conversionAttr.source.amount)
+        Assert.assertNull(conversionAttr.source.currency)
+        Assert.assertNull(conversionAttr.target.amount)
+        Assert.assertNull(conversionAttr.target.currency)
+
+        Assert.assertEquals("1.26", conversionAttr.source.amountFormatted)
+        Assert.assertEquals("ETC", conversionAttr.source.currencyFormatted)
+        Assert.assertEquals("1710.98", conversionAttr.target.amountFormatted)
+        Assert.assertEquals("USD", conversionAttr.target.currencyFormatted)
     }
 
     @Test
