@@ -204,7 +204,7 @@ class IntegrationTests {
             return
         }
         val opFuture = CompletableFuture<Any?>()
-        ops.rejectOperation(opFromList, RejectionReason.UNEXPECTED_OPERATION) { result ->
+        ops.rejectOperation(opFromList, "UNEXPECTED_OPERATION") { result ->
             result.onSuccess { opFuture.complete(null) }
                 .onFailure { opFuture.completeExceptionally(it) }
         }

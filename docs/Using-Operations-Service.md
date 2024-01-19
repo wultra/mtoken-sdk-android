@@ -186,7 +186,7 @@ To reject an operation use `IOperationsService.rejectOperation`. Operation rejec
 
 ```kotlin
 // Reject operation with some reason
-fun reject(operation: IOperation, reason: RejectionReason) {
+fun reject(operation: IOperation, reason: String) {
     this.operationsService.rejectOperation(operation, reason) {
         it.onSuccess {
             // show success UI

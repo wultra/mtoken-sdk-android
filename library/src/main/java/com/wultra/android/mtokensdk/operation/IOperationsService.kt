@@ -141,7 +141,7 @@ interface IOperationsService {
      * @param reason Rejection reason
      * @param callback Callback with result.
      */
-    fun rejectOperation(operation: IOperation, reason: RejectionReason, callback: (result: Result<Unit>) -> Unit)
+    fun rejectOperation(operation: IOperation, reason: String, callback: (result: Result<Unit>) -> Unit)
 
     /**
      * Sign offline QR operation with provided authentication.
