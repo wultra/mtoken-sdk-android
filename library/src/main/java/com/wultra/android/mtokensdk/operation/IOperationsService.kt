@@ -21,6 +21,7 @@ import com.wultra.android.mtokensdk.api.operation.model.IOperation
 import com.wultra.android.mtokensdk.api.operation.model.OperationHistoryEntry
 import com.wultra.android.mtokensdk.api.operation.model.QROperation
 import com.wultra.android.mtokensdk.api.operation.model.UserOperation
+import com.wultra.android.mtokensdk.operation.rejection.RejectionData
 import com.wultra.android.powerauth.networking.OkHttpBuilderInterceptor
 import io.getlime.security.powerauth.sdk.PowerAuthAuthentication
 import org.threeten.bp.ZonedDateTime
@@ -141,7 +142,7 @@ interface IOperationsService {
      * @param reason Rejection reason
      * @param callback Callback with result.
      */
-    fun rejectOperation(operation: IOperation, reason: String, callback: (result: Result<Unit>) -> Unit)
+    fun rejectOperation(operation: IOperation, reason: RejectionData, callback: (result: Result<Unit>) -> Unit)
 
     /**
      * Sign offline QR operation with provided authentication.

@@ -22,6 +22,8 @@ import com.wultra.android.mtokensdk.api.apiErrorForListener
 import com.wultra.android.mtokensdk.api.operation.model.IOperation
 import com.wultra.android.mtokensdk.api.operation.model.OperationHistoryEntry
 import com.wultra.android.mtokensdk.api.operation.model.UserOperation
+import com.wultra.android.mtokensdk.operation.rejection.RejectionData
+import com.wultra.android.mtokensdk.operation.rejection.RejectionReason
 import com.wultra.android.powerauth.networking.error.ApiError
 import io.getlime.security.powerauth.sdk.PowerAuthAuthentication
 
@@ -143,9 +145,9 @@ fun IOperationsService.rejectOperation(operation: IOperation, reason: RejectionR
     }
 }
 
-@Deprecated("Enum RejectionReason is deprecated. Use String reason instead") // 1.8.3
+@Deprecated("Enum RejectionReason is deprecated. Use RejectionData wrapper object instead") // 1.8.3
 fun IOperationsService.rejectOperation(operation: IOperation, reason: RejectionReason, callback: (result: Result<Unit>) -> Unit) {
-    rejectOperation(operation, reason.reason) { result ->
+    rejectOperation(operation, RejectionData(reason)) { result ->
         callback(result)
     }
 }

@@ -24,6 +24,7 @@ import com.wultra.android.mtokensdk.api.operation.model.ProximityCheckType
 import com.wultra.android.mtokensdk.api.operation.model.QROperationParser
 import com.wultra.android.mtokensdk.api.operation.model.UserOperation
 import com.wultra.android.mtokensdk.operation.*
+import com.wultra.android.mtokensdk.operation.rejection.RejectionData
 import com.wultra.android.powerauth.networking.error.ApiError
 import io.getlime.security.powerauth.sdk.PowerAuthAuthentication
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
@@ -204,7 +205,7 @@ class IntegrationTests {
             return
         }
         val opFuture = CompletableFuture<Any?>()
-        ops.rejectOperation(opFromList, "UNEXPECTED_OPERATION") { result ->
+        ops.rejectOperation(opFromList, RejectionData("UNEXPECTED_OPERATION")) { result ->
             result.onSuccess { opFuture.complete(null) }
                 .onFailure { opFuture.completeExceptionally(it) }
         }
