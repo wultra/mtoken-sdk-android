@@ -22,7 +22,6 @@ import com.wultra.android.mtokensdk.api.apiErrorForListener
 import com.wultra.android.mtokensdk.api.operation.*
 import com.wultra.android.mtokensdk.api.operation.model.*
 import com.wultra.android.mtokensdk.common.Logger
-import com.wultra.android.mtokensdk.operation.rejection.RejectionData
 import com.wultra.android.powerauth.networking.IApiCallResponseListener
 import com.wultra.android.powerauth.networking.OkHttpBuilderInterceptor
 import com.wultra.android.powerauth.networking.UserAgent

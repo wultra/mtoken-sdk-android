@@ -18,7 +18,7 @@ import com.wultra.android.mtokensdk.api.operation.model.OperationHistoryEntrySta
 import com.wultra.android.mtokensdk.api.operation.model.QROperationParser
 import com.wultra.android.mtokensdk.api.operation.model.UserOperation
 import com.wultra.android.mtokensdk.operation.*
-import com.wultra.android.mtokensdk.operation.rejection.RejectionReason
+import com.wultra.android.mtokensdk.operation.RejectionReason
 import com.wultra.android.powerauth.networking.error.ApiError
 import io.getlime.security.powerauth.networking.response.IActivationRemoveListener
 import io.getlime.security.powerauth.sdk.PowerAuthAuthentication

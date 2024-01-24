@@ -14,7 +14,7 @@
  * and limitations under the License.
  */
 
-package com.wultra.android.mtokensdk.operation.rejection
+package com.wultra.android.mtokensdk.operation
 
 /**
  * Wrapper class for operation rejection reason
@@ -32,7 +32,8 @@ class RejectionData {
     /**
      * Constructs a [RejectionData] with the specified reason.
      *
-     * @param reason The reason for rejection as a [String] for custom reasons
+     * Represents a custom reason for rejection, allowing for flexibility in specifying rejection reasons.
+     * @param reason The reason for rejection as a [String], e.g., `POSSIBLE_FRAUD`.
      */
     constructor(reason: String) {
         this.serialized = reason

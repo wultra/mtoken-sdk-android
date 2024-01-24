@@ -14,7 +14,7 @@
  * and limitations under the License.
  */
 
-package com.wultra.android.mtokensdk.operation.rejection
+package com.wultra.android.mtokensdk.operation
 
 /**
  * Reason for rejecting a pending operation.

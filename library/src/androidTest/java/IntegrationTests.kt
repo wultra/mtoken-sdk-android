@@ -24,14 +24,12 @@ import com.wultra.android.mtokensdk.api.operation.model.ProximityCheckType
 import com.wultra.android.mtokensdk.api.operation.model.QROperationParser
 import com.wultra.android.mtokensdk.api.operation.model.UserOperation
 import com.wultra.android.mtokensdk.operation.*
-import com.wultra.android.mtokensdk.operation.rejection.RejectionData
+import com.wultra.android.mtokensdk.operation.RejectionData
 import com.wultra.android.powerauth.networking.error.ApiError
 import io.getlime.security.powerauth.sdk.PowerAuthAuthentication
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
 import org.junit.*
 import org.threeten.bp.ZonedDateTime
-import java.lang.Exception
-import java.lang.Math.abs
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
