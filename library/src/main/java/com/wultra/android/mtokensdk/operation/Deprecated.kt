@@ -142,3 +142,10 @@ fun IOperationsService.rejectOperation(operation: IOperation, reason: RejectionR
         }
     }
 }
+
+@Deprecated("Enum RejectionReason is deprecated. Use RejectionData wrapper object instead") // 1.8.3
+fun IOperationsService.rejectOperation(operation: IOperation, reason: RejectionReason, callback: (result: Result<Unit>) -> Unit) {
+    rejectOperation(operation, RejectionData(reason)) { result ->
+        callback(result)
+    }
+}

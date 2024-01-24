@@ -186,7 +186,7 @@ To reject an operation use `IOperationsService.rejectOperation`. Operation rejec
 
 ```kotlin
 // Reject operation with some reason
-fun reject(operation: IOperation, reason: RejectionReason) {
+fun reject(operation: IOperation, reason: RejectionData) {
     this.operationsService.rejectOperation(operation, reason) {
         it.onSuccess {
             // show success UI
@@ -390,7 +390,7 @@ All available methods and attributes of `IOperationsService` API are:
   - `operation` - An operation to approve, retrieved from `getOperations` call or [created locally](#creating-a-custom-operation).
   - `authentication` - PowerAuth authentication object for operation signing.
   - `callback` - Called when authorization request finishes.
-- `rejectOperation(operation: IOperation, reason: RejectionReason, callback: (result: Result<Unit>) -> Unit)` - Reject provided operation.
+- `rejectOperation(operation: IOperation, reason: RejectionData, callback: (result: Result<Unit>) -> Unit)` - Reject provided operation.
   - `operation` - An operation to reject, retrieved from `getOperations` call or [created locally](#creating-a-custom-operation).
   - `reason` - Rejection reason.
   - `callback` - Called when rejection request finishes.

@@ -264,8 +264,8 @@ class OperationsService: IOperationsService {
         )
     }
 
-    override fun rejectOperation(operation: IOperation, reason: RejectionReason, callback: (result: Result<Unit>) -> Unit) {
-        val rejectRequest = RejectRequest(RejectRequestObject(operation.id, reason.reason))
+    override fun rejectOperation(operation: IOperation, reason: RejectionData, callback: (result: Result<Unit>) -> Unit) {
+        val rejectRequest = RejectRequest(RejectRequestObject(operation.id, reason.serialized))
         operationApi.reject(
             rejectRequest,
             object : IApiCallResponseListener<StatusResponse> {
