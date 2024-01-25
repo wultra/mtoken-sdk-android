@@ -6,3 +6,4 @@
 - [Using Inbox Service](./Using-Inbox-Service.md)
 - [Error Handling](./Error-Handling.md)
 - [Language Configuration](./Language-Configuration.md)
+- [Changelog](./Changelog.md)

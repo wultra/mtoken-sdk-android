@@ -6,7 +6,7 @@ To understand the Wultra Mobile Token SDK purpose on a business level better, yo
 
 WMT SDK library does precisely this:
 
-- Retrieves the list of operations that are pending for approval for a given user.
+- Retrieves the list of operations that are pending approval for a given user.
 - Approves or rejects operations with PowerAuth transaction signing.
 - Registers an existing PowerAuth activation to receive push notifications.
 
@@ -17,7 +17,7 @@ Remarks:
 
 ## Migration Guides
 
-If you need to upgrade Wultra Mobile Token SDK for Android to a newer version, you can check the following migration guides:
+If you need to upgrade the Wultra Mobile Token SDK for Android to a newer version, you can check the following migration guides:
 
 - [Migration from version `1.4.x` to `1.5.x`](Migration-1.5.md)
 
@@ -32,4 +32,5 @@ If you need to upgrade Wultra Mobile Token SDK for Android to a newer version, y
 - [Error Handling](Error-Handling.md)
 - [Language Configuration](Language-Configuration.md)
 - [Logging](Logging.md)
+- [Changelog](Changelog.md)
 <!-- end -->
