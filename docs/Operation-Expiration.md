@@ -14,14 +14,14 @@ If you're creating your own custom operation by implementing the `IOperation` in
 
 If the device is [registered to receive push notifications](Using-Push-Service.md), it will receive an [`PushMessageOperationFinished `](https://github.com/wultra/mtoken-sdk-android/blob/develop/library/src/main/java/com/wultra/android/mtokensdk/push/PushParser.kt#L80#docucheck-keep-link) notification with the [`TIMEOUT `](https://github.com/wultra/mtoken-sdk-android/blob/develop/library/src/main/java/com/wultra/android/mtokensdk/push/PushParser.kt#L115#docucheck-keep-link) result when the operation expires.
 
-Operation list should be refreshed on such notification.
+The operation list should be refreshed on such notification.
 
 
 Please be aware that push notifications are not guaranteed to be received. There are several scenarios where push notification delivery will fail, such as:
 
 - user didn't grant notification permission to your app
 - network error occurred
-- notification token has expired and is waiting for renewal
+- the notification token has expired and is waiting for renewal
 - ... other situations not under the developer's control
 
 ## Local Handling
@@ -32,7 +32,7 @@ Server and client device time could differ! You should never remove the operatio
 
 ### OperationExpirationWatcher
 
-Utility class that will observe operations and informs you when it expired.
+Utility class that will observe operations and inform you when it expires.
 
 #### Sample Implementation
 
@@ -44,12 +44,12 @@ class OperationsManager(private val ops: IOperationsService) {
 
     init {
         operationWatcher.listener = object : OperationExpirationWatcherListener {
-            // operationsExpired is called on main thread
+            // operationsExpired is called on the main thread
             override fun operationsExpired(expiredOperations: List<ExpirableOperation>) {
                 // some operation expired, refresh the list
                 launchFetchOperations()
                 // this behavior could be improved for example with
-                // checking if the expired operations is currently displayed etc..
+                // checking if the expired operations are currently displayed etc..
             }
         }
     }
@@ -57,7 +57,7 @@ class OperationsManager(private val ops: IOperationsService) {
     fun launchFetchOperations() {
         ops.getOperations(object : IGetOperationListener {
             override fun onSuccess(operations: List<UserOperation>) {
-                // simplified but working example how operations can be observed for expiration
+                // simplified but working example of how operations can be observed for expiration
                 operationWatcher.removeAll()
                 operationWatcher.add(operations)
                 // process operations
