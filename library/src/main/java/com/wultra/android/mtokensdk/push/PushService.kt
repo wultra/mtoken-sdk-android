@@ -19,6 +19,7 @@ package com.wultra.android.mtokensdk.push
 import android.content.Context
 import com.wultra.android.mtokensdk.api.push.PushApi
 import com.wultra.android.mtokensdk.api.push.PushRegistrationRequest
+import com.wultra.android.mtokensdk.api.push.model.Platform
 import com.wultra.android.mtokensdk.api.push.model.PushRegistrationRequestObject
 import com.wultra.android.mtokensdk.common.Logger
 import com.wultra.android.powerauth.networking.IApiCallResponseListener
@@ -85,6 +86,22 @@ class PushService(okHttpClient: OkHttpClient, baseURL: String, powerAuthSDK: Pow
 
                 override fun onFailure(error: ApiError) {
                     Logger.e("Failed to register fcm token for WMT push notifications.")
+                    callback(Result.failure(ApiErrorException(error)))
+                }
+            }
+        )
+    }
+
+    override fun registerHuawei(hmsToken: String, callback: (result: Result<Unit>) -> Unit) {
+        pushApi.registerToken(
+            PushRegistrationRequest(PushRegistrationRequestObject(hmsToken, Platform.HUAWEI)),
+            object : IApiCallResponseListener<StatusResponse> {
+                override fun onSuccess(result: StatusResponse) {
+                    callback(Result.success(Unit))
+                }
+
+                override fun onFailure(error: ApiError) {
+                    Logger.e("Failed to register hms token for WMT push notifications.")
                     callback(Result.failure(ApiErrorException(error)))
                 }
             }
