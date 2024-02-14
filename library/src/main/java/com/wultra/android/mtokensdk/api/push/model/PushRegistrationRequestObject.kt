@@ -34,6 +34,7 @@ internal data class PushRegistrationRequestObject(
 internal enum class Platform {
     @SerializedName("android")
     ANDROID,
+
     @SerializedName("huawei")
-    HUAWEI;
+    HUAWEI
 }
