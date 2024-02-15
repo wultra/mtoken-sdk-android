@@ -56,8 +56,8 @@ __Optional parameters:__
 All available methods of the `IPushService` API are:
 
 - `acceptLanguage` - Language settings, that will be sent along with each request.
-- `register(fcmToken: String, callback: (result: Result<Unit>) -> Unit)` - Registers Firebase Cloud 
-- `registerHuawei(hmsToken: String, callback: (result: Result<Unit>)` -> Unit)
+- `register(fcmToken: String, callback: (result: Result<Unit>) -> Unit)` - Registers Firebase Cloud Messaging token on the backend
+- `registerHuawei(hmsToken: String, callback: (result: Result<Unit>) -> Unit)` - Registers Huawei Mobile Services token on the backend
 
 Messaging token on the backend
 
@@ -66,7 +66,7 @@ Messaging token on the backend
 - `callback` - Called when the request finishes.
 
 ## Registering to Push Notifications
-### Android
+### Android (with Google Play Services)
 To register an app to push notifications, you can simply call the `register` method:
 
 ```kotlin
@@ -90,28 +90,27 @@ FirebaseInstanceId.getInstance().instanceId.addOnCompleteListener { task ->
 
 To be able to successfully process notifications, you need to register the app to receive push notifications in the first place. For more information visit [official documentation](https://firebase.google.com/docs/cloud-messaging/android/client).
 
-### Huawei
+### Huawei (HarmonyOS / EMUI)
 For Huawei devices, you can also register your app to receive push notifications using Huawei Push Kit. To integrate Huawei Push Kit into your app, please refer to the Huawei Push Kit documentation.
 
 ```kotlin
 // first, retrieve HMS token (do so in the background thread)
-val appId = AGConnectOptionsBuilder().build(context).getString("client/app_id")
-HmsInstanceId.getInstance(context).getToken(appId, "HMS").addOnCompleteListener { task ->
-    if (task.isSuccessful) {
-        val token = task.result
-        if (!token.isNullOrEmpty()) {
-            // Register the Huawei token with your push service.
-            pushService.registerHuawei(token) {
-                it.onSuccess {
-                    // Huawei push notification registered successfully.
-                }.onFailure {
-                    // Huawei push notification registration failed.
-                }
+try {
+    val appId = AGConnectOptionsBuilder().build(appContext).getString("client/app_id")
+    val token = HmsInstanceId.getInstance(appContext).getToken(appId, "HCM")
+
+    if (token.isNotEmpty()) {
+        pushService.registerHuawei(token) {
+            it.onSuccess {
+                // push notification registered
+            }.onFailure {
+                // push notification registration failed  
             }
-        }
     } else {
-        // on error
+        // token retrieval failed
     }
+} catch (e: Exception) {
+    // token retrieval failed
 }
 ```
 For more information visit [official documentation](https://developer.huawei.com/consumer/en/doc/hmscore-guides/android-client-dev-0000001050042041)
