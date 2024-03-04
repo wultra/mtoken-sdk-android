@@ -181,7 +181,7 @@ class OperationsService: IOperationsService {
 
     private fun processOperationsListResult(result: Result<List<UserOperation>>) {
         synchronized(mutex) {
-            // At first, capture result to "lastOperationsResult"
+            // At first, capture result to "lastFetchResult"
             lastFetchOperationsResult = result
             // Then, report result back to the listener, if it's set.
             listener?.let { listener ->

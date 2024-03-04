@@ -52,6 +52,9 @@ interface IOperationsService {
      */
     var okHttpInterceptor: OkHttpBuilderInterceptor?
 
+    /**
+     * Last result of getOperations.
+     */
     val lastFetchResult: Result<List<UserOperation>>?
 
     /**
