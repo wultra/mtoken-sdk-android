@@ -52,7 +52,7 @@ interface IOperationsService {
      */
     var okHttpInterceptor: OkHttpBuilderInterceptor?
 
-    val lastOperationsResult: Result<List<UserOperation>>?
+    val lastFetchResult: Result<List<UserOperation>>?
 
     /**
      * Current server date

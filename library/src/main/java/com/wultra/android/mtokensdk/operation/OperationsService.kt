@@ -110,11 +110,11 @@ class OperationsService: IOperationsService {
     private val appContext: Context
     private var timer: Timer? = null
 
-    override val lastOperationsResult: Result<List<UserOperation>>?
-        get() = synchronized(mutex) { lastGetOperationsResult }
+    override val lastFetchResult: Result<List<UserOperation>>?
+        get() = synchronized(mutex) { lastFetchOperationsResult }
 
     // Contains last fetched result with operations. Must be accessed from the mutex.
-    private var lastGetOperationsResult: Result<List<UserOperation>>? = null
+    private var lastFetchOperationsResult: Result<List<UserOperation>>? = null
 
     // Operation register holds operations in order
     private val operationsRegister: OperationsRegister by lazy {
@@ -182,7 +182,7 @@ class OperationsService: IOperationsService {
     private fun processOperationsListResult(result: Result<List<UserOperation>>) {
         synchronized(mutex) {
             // At first, capture result to "lastOperationsResult"
-            lastGetOperationsResult = result
+            lastFetchOperationsResult = result
             // Then, report result back to the listener, if it's set.
             listener?.let { listener ->
                 result.onSuccess { operationsRegister.replace(it) }
