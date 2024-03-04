@@ -24,11 +24,13 @@ import com.wultra.android.powerauth.networking.error.ApiError
  */
 interface IOperationsServiceListener {
     /**
-     * Called when operations has loaded.
+     * Called when operations have changed
      *
-     * @param operations Loaded operations
+     * @param operations current operations list
+     * @param removed removed operations since the last call
+     * @param added added operations since the last call
      */
-    fun operationsLoaded(operations: List<UserOperation>)
+    fun operationsChanged(operations: List<UserOperation>, removed: List<UserOperation>, added: List<UserOperation>)
 
     /**
      * Called when operations loading changed

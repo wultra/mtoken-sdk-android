@@ -116,6 +116,13 @@ class OperationsService: IOperationsService {
     // Contains last fetched result with operations. Must be accessed from the mutex.
     private var lastGetOperationsResult: Result<List<UserOperation>>? = null
 
+    // Operation register holds operations in order
+    private val operationsRegister: OperationsRegister by lazy {
+        OperationsRegister { data ->
+            listener?.operationsChanged(data.operationsList, data.removed, data.added)
+        }
+    }
+
     // API class for communication.
     private val operationApi: OperationApi
 
@@ -178,7 +185,7 @@ class OperationsService: IOperationsService {
             lastGetOperationsResult = result
             // Then, report result back to the listener, if it's set.
             listener?.let { listener ->
-                result.onSuccess { listener.operationsLoaded(it) }
+                result.onSuccess { operationsRegister.replace(it) }
                     .onFailure { listener.operationsFailed(it.apiErrorForListener()) }
             }
             // Now notify all tasks. We should iterate over copy of the list, to prevent
@@ -254,6 +261,7 @@ class OperationsService: IOperationsService {
             authentication,
             object : IApiCallResponseListener<StatusResponse> {
                 override fun onSuccess(result: StatusResponse) {
+                    operationsRegister.remove(operation)
                     callback(Result.success(Unit))
                 }
 
@@ -270,6 +278,7 @@ class OperationsService: IOperationsService {
             rejectRequest,
             object : IApiCallResponseListener<StatusResponse> {
                 override fun onSuccess(result: StatusResponse) {
+                    operationsRegister.remove(operation)
                     callback(Result.success(Unit))
                 }
 
@@ -313,6 +322,7 @@ class OperationsService: IOperationsService {
                 }
 
                 override fun onSuccess(result: OperationClaimDetailResponse) {
+                    operationsRegister.add(result.responseObject)
                     callback(Result.success(result.responseObject))
                 }
             }
@@ -351,5 +361,62 @@ class OperationsService: IOperationsService {
         timer?.cancel()
         timer = null
         Logger.d("Operation polling stopped")
+    }
+}
+
+data class CallbackData(val operationsList: List<UserOperation>, val removed: List<UserOperation>, val added: List<UserOperation>)
+
+private class OperationsRegister(private val onChangeCallback: (CallbackData) -> Unit) {
+    private var currentOperations = mutableListOf<UserOperation>()
+    private var currentOperationIds = mutableSetOf<String>()
+
+    // Adds an operation to the register
+    fun add(operation: UserOperation) {
+        if (!currentOperations.any { it.id == operation.id }) {
+            currentOperations.add(operation)
+            currentOperationIds.add(operation.id)
+            onChangeCallback(CallbackData(currentOperations, emptyList(), listOf(operation)))
+        }
+    }
+
+    // Adds a multiple operations to the register.
+    // Returns list of added and removed operations.
+    fun replace(operations: List<UserOperation>): Pair<List<UserOperation>, List<UserOperation>> {
+        // Process received list of operations to build a mutable list of added objects
+        val addedOperations = mutableListOf<UserOperation>()
+        val addedOperationsSet = mutableSetOf<String>()
+        for (newOp in operations) {
+            if (!currentOperationIds.contains(newOp.id)) {
+                // identifier is not in current set
+                addedOperations.add(newOp)
+                addedOperationsSet.add(newOp.id)
+            }
+        }
+        // Build a list of removed operations
+        val newOperationsSet = operations.map { it.id }.toSet()
+        val removedOperations = currentOperations.filterNot { newOperationsSet.contains(it.id) }
+
+        // Now remove no longer valid operations
+        currentOperations.removeAll { removedOperations.contains(it) }
+
+        // append new objects
+        currentOperations.addAll(addedOperations)
+        currentOperationIds.addAll(addedOperationsSet)
+
+        // Notify about changes
+        onChangeCallback(CallbackData(currentOperations, removedOperations, addedOperations))
+
+        // Return added and removed operations
+        return Pair(addedOperations, removedOperations)
+    }
+
+    // Removes an operation from the register
+    fun remove(operation: IOperation) {
+        currentOperations.firstOrNull { it.id == operation.id }?.let { operationToRemove ->
+            if (currentOperationIds.remove(operationToRemove.id)) {
+                currentOperations.remove(operationToRemove)
+                onChangeCallback(CallbackData(currentOperations, listOf(operationToRemove), emptyList()))
+            }
+        }
     }
 }
