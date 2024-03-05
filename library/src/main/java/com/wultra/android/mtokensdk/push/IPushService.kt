@@ -46,4 +46,11 @@ interface IPushService {
      * @param callback Result listener
      */
     fun register(fcmToken: String, callback: (result: Result<Unit>) -> Unit)
+
+    /**
+     * Registers HMS on backend to receive notifications about operations
+     * @param hmsToken Huawei Push Token
+     * @param callback Result listener
+     */
+    fun registerHuawei(hmsToken: String, callback: (result: Result<Unit>) -> Unit)
 }
