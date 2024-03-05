@@ -18,7 +18,7 @@
 ## Introduction
 <!-- end -->
 
-Operations Service is responsible for fetching the operation list and for approving or rejecting operations.
+The Operations Service is responsible for fetching the operation list and for approving or rejecting operations.
 
 An operation can be anything you need to be approved or rejected by the user. It can be for example money transfer, login request, access approval, ...
 
@@ -40,7 +40,7 @@ fun PowerAuthSDK.createOperationsService(appContext: Context, baseURL: String, s
 
 - `appContext` - application context
 - `baseURL` - address, where your operations server can be reached
-- `strategy` - strategy used when validating HTTPS requests. Following strategies can be used:
+- `strategy` - a strategy used when validating HTTPS requests. The following strategies can be used:
     - `SSLValidationStrategy.default`
     - `SSLValidationStrategy.noValidation`
     - `SSLValidationStrategy.sslPinning`
@@ -81,7 +81,7 @@ operationsService.getOperations {
 }
 ```
 
-After you retrieve the pending operations, you can render them in the UI, for example, as a list of items with a detail of operation shown after a tap.
+After you retrieve the pending operations, you can render them in the UI, for example, as a list of items with a detail of the operation shown after a tap.
 
 <!-- begin box warning -->
 Note: The language of the UI data inside the operation depends on the configuration of the `IOperationsService.acceptLanguage`.
@@ -122,7 +122,7 @@ operationsService.listener = object: IOperationsServiceListener {
 
 ## Approve an Operation
 
-To approve an operation use `IOperationsService.authorizeOperation`. You can simply use it with following examples:
+To approve an operation use `IOperationsService.authorizeOperation`. You can simply use it with the following examples:
 
 ```kotlin
 // Approve operation with password
@@ -139,7 +139,7 @@ fun approve(operation: IOperation, password: String) {
 }
 ```
 
-To approve offline operations with biometry, your PowerAuth instance [need to be configured with biometry factor](https://github.com/wultra/powerauth-mobile-sdk/blob/develop/docs/PowerAuth-SDK-for-Android.md#biometric-authentication-setup).
+To approve offline operations with biometry, your PowerAuth instance [needs to be configured with biometry factor](https://github.com/wultra/powerauth-mobile-sdk/blob/develop/docs/PowerAuth-SDK-for-Android.md#biometric-authentication-setup).
 
 ```kotlin
 // Approve operation with biometry
@@ -182,7 +182,7 @@ fun approveWithBiometry(operation: IOperation) {
 
 ## Reject an Operation
 
-To reject an operation use `IOperationsService.rejectOperation`. Operation rejection is confirmed by possession factor so there is no need for creating  `PowerAuthAuthentication ` object. You can simply use it with the following example.
+To reject an operation use `IOperationsService.rejectOperation`. Operation rejection is confirmed by the possession factor so there is no need for creating  `PowerAuthAuthentication ` object. You can simply use it with the following example.
 
 ```kotlin
 // Reject operation with some reason
@@ -199,7 +199,7 @@ fun reject(operation: IOperation, reason: RejectionData) {
 
 ## Operation detail
 
-To get a detail of the operation based on operation ID use `IOperationsService.getDetail`. Operation detail is confirmed by the possession factor so there is no need for creating  `PowerAuthAuthentication` object. The returned result is the operation and its current status.
+To get a detail of the operation based on operation ID use `IOperationsService.getDetail`. Operation detail is confirmed by the possession factor so there is no need for creating a `PowerAuthAuthentication` object. The returned result is the operation and its current status.
 
 ```kotlin
 // Retrieve operation details based on the operation ID.
@@ -218,9 +218,9 @@ fun getDetail(operationId: String) {
 
 To claim a non-persolized operation use `IOperationsService.claim`. 
 
-A non-personalized operation refers to an operation that is initiated without a specific operationId. In this state, the operation is not tied to a particular user and lacks a unique identifier. 
+A non-personalized operation refers to an operation that is initiated without a specific userId. In this state, the operation is not tied to a particular user. 
 
-Operation claim is confirmed by the possession factor so there is no need for creating  `PowerAuthAuthentication` object. Returned result is the operation and its current status. You can simply use it with the following example.
+Operation claim is confirmed by the possession factor so there is no need for creating a `PowerAuthAuthentication` object. The returned result is the operation and its current status. You can simply use it with the following example.
 
 ```kotlin
 // Assigns the 'non-personalized' operation to the user
@@ -260,7 +260,7 @@ Note that the operation history availability depends on the backend implementati
 
 ## Off-line Authorization
 
-In case the user is not online, you can use off-line authorizations. In this operation mode, the user needs to scan a QR code, enter PIN code or use biometry, and rewrite the resulting code. Wultra provides a special format for [the operation QR codes](https://github.com/wultra/powerauth-webflow/blob/develop/docs/Off-line-Signatures-QR-Code.md), that are automatically processed with the SDK.
+In case the user is not online, you can use off-line authorizations. In this operation mode, the user needs to scan a QR code, enter a PIN code, or use biometry, and rewrite the resulting code. Wultra provides a special format for [the operation QR codes](https://github.com/wultra/powerauth-webflow/blob/develop/docs/Off-line-Signatures-QR-Code.md), which are automatically processed with the SDK.
 
 ### Processing Scanned QR Operation
 
@@ -281,7 +281,7 @@ fun onQROperationScanned(scannedCode: String): QROperation {
 ### Authorizing Scanned QR Operation
 
 <!-- begin box info -->
-An offline operation needs to be __always__ approved with __2-factor scheme__ (password or biometry).
+An offline operation needs to be __always__ approved with __a 2-factor scheme__ (password or biometry).
 <!-- end -->
 
 <!-- begin box info -->
@@ -326,7 +326,7 @@ fun approveQROperation(operation: QROperation, password: String) {
 
 #### With Biometry
 
-To approve offline operations with biometry, your PowerAuth instance [need to be configured with biometry factor](https://github.com/wultra/powerauth-mobile-sdk/blob/develop/docs/PowerAuth-SDK-for-Android.md#biometric-authentication-setup).
+To approve offline operations with biometry, your PowerAuth instance [needs to be configured with biometry factor](https://github.com/wultra/powerauth-mobile-sdk/blob/develop/docs/PowerAuth-SDK-for-Android.md#biometric-authentication-setup).
 
 To determine if biometry can be used for offline operation authorization, use `QROperation.flags.biometryAllowed`.
 
@@ -397,18 +397,18 @@ All available methods and attributes of `IOperationsService` API are:
 - `fun authorizeOfflineOperation(operation: QROperation, authentication: PowerAuthAuthentication, uriId: String)` - Sign offline (QR) operation
   - `operation` - Offline operation retrieved via `QROperationParser.parse` method.
   - `authentication` - PowerAuth authentication object for operation signing.
-  - `uriId` - Custom signature URI ID of the operation. Use URI ID under which the operation was created on the server. Default value is `/operation/authorize/offline`.
+  - `uriId` - Custom signature URI ID of the operation. Use the URI ID under which the operation was created on the server. The default value is `/operation/authorize/offline`.
 - `signOfflineOperationWithBiometry(biometry: ByteArray, offlineOperation: QROperation)` - Sign offline (QR) operation with biometry data.
-  - `biometry` - Biometry data retrieved from `powerAuthSDK.authenticateUsingBiometry` call.
+  - `biometry` - Biometry data retrieved from the `powerAuthSDK.authenticateUsingBiometry` call.
   - `offlineOperation` - Offline operation retrieved via `processOfflineQrPayload` method.
 
 ## UserOperation
 
-Operations objects retrieved through the `getOperations` API method (like `getOperations` method in `IOperationsService`) are called "user operations".
+Operations objects retrieved through the `getOperations` API method (like the `getOperations` method in `IOperationsService`) are called "user operations".
 
 Under this abstract name, you can imagine for example "Login operation", which is a request for signing in to the online account in a web browser on another device. **In general, it can be any operation that can be either approved or rejected by the user.**
 
-Visually, the operation should be displayed as an info page with all the attributes (rows) of such operation, where the user can decide if he wants to approve or reject it.
+Visually, the operation should be displayed as an info page with all the attributes (rows) of such an operation, where the user can decide if he wants to approve or reject it.
 
 Definition of the `UserOperations`:
 
@@ -477,7 +477,7 @@ class FormData {
     /**
      * Other attributes. 
      * 
-     * Each attribute presents one line in the UI. Attributes are differentiated by type property
+     * Each attribute presents one line in the UI. Attributes are differentiated by `type` property
      * and specific classes such as NoteAttribute or AmountAttribute.
      */
     val attributes: List<Attribute>
@@ -486,13 +486,13 @@ class FormData {
 
 Attributes types:  
 - `AMOUNT` like "100.00 CZK"  
-- `KEY_VALUE` any key value pair  
+- `KEY_VALUE` any key-value pair  
 - `NOTE` just like `KEY_VALUE`, emphasizing that the value is a note or message  
 - `HEADING` single highlighted text, written in a larger font, used as a section heading  
 - `PARTY_INFO` providing structured information about third-party data (for example known e-shop)  
-- `AMOUNT_CONVERSION` providing data about Money conversion  
+- `AMOUNT_CONVERSION` provides data about Money conversion  
 - `IMAGE` image row  
-- `UNKNOWN` fallback option when unknown attribute type is passed. Such attribute only contains the label.  
+- `UNKNOWN` fallback option when an unknown attribute type is passed. Such an attribute only contains the label.  
 
 Definition of `OperationUIData`:
 
@@ -535,7 +535,7 @@ Definition of `ProximityCheck`:
 ```kotlin
 class ProximityCheck {
   
-    /** The actual Time-based one time password */
+    /** The actual Time-based one-time password */
     val totp: String
     
     /** Type of the Proximity check */
@@ -548,7 +548,7 @@ class ProximityCheck {
 
 ProximityCheckType types:
 
-- `QR_CODE` TOTP was scanned from QR code
+- `QR_CODE` TOTP was scanned from the QR code
 - `DEEPLINK` TOTP was delivered to the app via Deeplink
 
 ## Creating a Custom Operation
@@ -594,7 +594,7 @@ When the `UserOperation` contains a `PreApprovalScreen.QR_SCAN`, the app should 
 When the app is launched via a deeplink, preserve the data from the deeplink and extract the relevant data. When operations are loaded compare the operation ID from the deeplink data to the operations within the app to find a match.
 
 - Assign TOTP and Type to the Operation
-  Once the QR code is scanned or match from the deeplink is found, create a `WMTProximityCheck` with:
+  Once the QR code is scanned or a match from the deeplink is found, create a `WMTProximityCheck` with:
   - `totp`: The actual Time-Based One-Time Password.
   - `type`: Set to `ProximityCheckType.QR_CODE` or `ProximityCheckType.DEEPLINK`.
   - `timestampReceived`: The timestamp when the QR code was scanned (by default, it is created as the current timestamp when the object is instantiated).
@@ -603,7 +603,8 @@ When the app is launched via a deeplink, preserve the data from the deeplink and
   When authorizing, the SDK will by default add `timestampSent` to the `ProximityCheck` object. This timestamp indicates when the operation was sent.
 
 ### PACUtils
-- For convenience, utility class for parsing and extracting data from QR codes and deeplinks used in the PAC (Proximity Anti-fraud Check), is provided.
+
+- For convenience, a utility class for parsing and extracting data from QR codes and deeplinks used in the PAC (Proximity Anti-fraud Check), is provided.
 
 ```kotlin
 /** Data payload which is returned from the parser */
@@ -612,15 +613,15 @@ data class PACData(
     /** The ID of the operation associated with the TOTP */
     val operationId: String,
 
-    /** The actual Time-based one time password */
+    /** The actual Time-based one-time password */
     val totp: String?
 )
 ```
 
 - two methods are provided:
-  - `parseDeeplink(uri: Uri): PACData?` - uri is expected to be in format `"scheme://code=$JWT"` or `scheme://operation?oid=5b753d0d-d59a-49b7-bec4-eae258566dbb&potp=12345678}`
+  - `parseDeeplink(uri: Uri): PACData?` - URI is expected to be in the format `"scheme://code=$JWT"` or `scheme://operation?oid=5b753d0d-d59a-49b7-bec4-eae258566dbb&potp=12345678}`
   - `parseQRCode(code: String): PACData?` - code is to be expected in the same format as deeplink formats or as a plain JWT
-  - mentioned JWT should be in format `{“typ”:”JWT”, “alg”:”none”}.{“oid”:”5b753d0d-d59a-49b7-bec4-eae258566dbb”, “potp”:”12345678”} `
+  - mentioned JWT should be in the format `{“typ”:”JWT”, “alg”:”none”}.{“oid”:”5b753d0d-d59a-49b7-bec4-eae258566dbb”, “potp”:”12345678”} `
 
 - Accepted formats:
-  - notice that totp key in JWT and in query shall be `potp`!
+  - notice that the totp key in JWT and in query shall be `potp`!
