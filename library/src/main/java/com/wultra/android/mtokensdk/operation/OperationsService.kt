@@ -364,57 +364,57 @@ class OperationsService: IOperationsService {
     }
 }
 
-data class CallbackData(val operationsList: List<UserOperation>, val removed: List<UserOperation>, val added: List<UserOperation>)
+private data class CallbackData(val operationsList: List<UserOperation>, val removed: List<UserOperation>, val added: List<UserOperation>)
 
 private class OperationsRegister(private val onChangeCallback: (CallbackData) -> Unit) {
-    private var currentOperations = mutableListOf<UserOperation>()
-    private var currentOperationIds = mutableSetOf<String>()
+    private val currentOperations = mutableListOf<UserOperation>()
+
+    // Mutex to prevent race conditions from running multiple operations calls simultaneously
+    private val currentOperationsMutex = Object()
 
     // Adds an operation to the register
     fun add(operation: UserOperation) {
-        if (!currentOperations.any { it.id == operation.id }) {
-            currentOperations.add(operation)
-            currentOperationIds.add(operation.id)
-            onChangeCallback(CallbackData(currentOperations, emptyList(), listOf(operation)))
+        synchronized(currentOperationsMutex) {
+            if (currentOperations.none { it.id == operation.id }) {
+                currentOperations.add(operation)
+                onChangeCallback(CallbackData(currentOperations, emptyList(), listOf(operation)))
+            }
         }
     }
 
     // Adds a multiple operations to the register.
     // Returns list of added and removed operations.
     fun replace(operations: List<UserOperation>): Pair<List<UserOperation>, List<UserOperation>> {
-        // Process received list of operations to build a mutable list of added objects
-        val addedOperations = mutableListOf<UserOperation>()
-        val addedOperationsSet = mutableSetOf<String>()
-        for (newOp in operations) {
-            if (!currentOperationIds.contains(newOp.id)) {
-                // identifier is not in current set
-                addedOperations.add(newOp)
-                addedOperationsSet.add(newOp.id)
+        synchronized(currentOperationsMutex) {
+            // Build a list of operations which were added
+            val addedOperations = operations.filter { newOp ->
+                currentOperations.none { it.id == newOp.id }
             }
+
+            // Build a list of operations which were removed
+            val removedOperations = currentOperations.filter { currentOp ->
+                operations.none { it.id == currentOp.id }
+            }
+
+            // Remove operations which are no longer valid
+            currentOperations.removeAll { op -> op.id in removedOperations.map { it.id } }
+
+            // Append new operations
+            currentOperations.addAll(addedOperations)
+
+            // Notify about changes
+            onChangeCallback(CallbackData(currentOperations, removedOperations, addedOperations))
+
+            // Return added and removed operations
+            return Pair(addedOperations, removedOperations)
         }
-        // Build a list of removed operations
-        val newOperationsSet = operations.map { it.id }.toSet()
-        val removedOperations = currentOperations.filterNot { newOperationsSet.contains(it.id) }
-
-        // Now remove no longer valid operations
-        currentOperations.removeAll { removedOperations.contains(it) }
-
-        // append new objects
-        currentOperations.addAll(addedOperations)
-        currentOperationIds.addAll(addedOperationsSet)
-
-        // Notify about changes
-        onChangeCallback(CallbackData(currentOperations, removedOperations, addedOperations))
-
-        // Return added and removed operations
-        return Pair(addedOperations, removedOperations)
     }
 
     // Removes an operation from the register
     fun remove(operation: IOperation) {
-        currentOperations.firstOrNull { it.id == operation.id }?.let { operationToRemove ->
-            if (currentOperationIds.remove(operationToRemove.id)) {
-                currentOperations.remove(operationToRemove)
+        synchronized(currentOperationsMutex) {
+            val operationToRemove = currentOperations.firstOrNull { it.id == operation.id }
+            if (operationToRemove != null && currentOperations.removeAll { it.id == operationToRemove.id }) {
                 onChangeCallback(CallbackData(currentOperations, listOf(operationToRemove), emptyList()))
             }
         }

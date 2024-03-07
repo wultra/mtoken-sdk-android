@@ -110,8 +110,8 @@ operationsService.listener = object: IOperationsServiceListener {
         // show UI the last fetch has failed
     }
 
-    fun operationsChanged(operations: List<UserOperation>, removed: List<UserOperation>, added: List<UserOperation>) {
-        // refresh operation list UI
+    override fun operationsChanged(operations: List<UserOperation>, removed: List<UserOperation>, added: List<UserOperation>) {
+        // update UI with the latest operation list based on the last call
     }
 
     override fun operationsLoading(loading: Boolean) {
