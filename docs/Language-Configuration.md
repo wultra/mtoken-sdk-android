@@ -1,6 +1,6 @@
 # Language Configuration
 
-Before using any methods from this SDK that call the backend, a proper language should be set. A properly translated content is served based on this configuration. The property that stores language settings is not persisted. You need to set `acceptLanguage` every time that the application boots.
+Before using any methods from this SDK that call the backend, a proper language should be set. A properly translated content is served based on this configuration. The property that stores language settings does not persist. You need to set `acceptLanguage` every time that the application boots.
 
 <!-- begin box warning -->
 Note: Content language capabilities are limited by the implementation of the server - it must support the provided language.

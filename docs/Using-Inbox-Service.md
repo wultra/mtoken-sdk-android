@@ -16,7 +16,7 @@
 Inbox Service is responsible for managing messages in the Inbox. The inbox is a simple one way delivery system that allows you to deliver messages to the user.
 
 <!-- begin box warning -->
-Note: Before using Inbox Service, you need to have a `PowerAuthSDK` object available and initialized with a valid activation. Without a valid PowerAuth activation, service will return an error.
+Note: Before using Inbox Service, you need to have a `PowerAuthSDK` object available and initialized with a valid activation. Without a valid PowerAuth activation, the service will return an error.
 <!-- end -->
 
 ## Creating an Instance
@@ -31,7 +31,7 @@ fun PowerAuthSDK.createInboxService(appContext: Context, baseURL: String, strate
 
 - `appContext` - application context
 - `baseURL` - address, where your operations server can be reached
-- `strategy` - strategy used when validating HTTPS requests. Following strategies can be used:
+- `strategy` - a strategy used when validating HTTPS requests. The following strategies can be used:
     - `SSLValidationStrategy.default`
     - `SSLValidationStrategy.noValidation`
     - `SSLValidationStrategy.sslPinning`
@@ -76,7 +76,7 @@ inboxService.getUnreadCount {
 }
 ```
 
-### Get List of Messages
+### Get a List of Messages
 
 The Inbox Service provide a paged list of messages:
 
@@ -112,7 +112,7 @@ inboxService.getAllMessages {
 
 ### Get Message Detail
 
-Each message has its unique identifier. To get the body of message, use the following code:
+Each message has its unique identifier. To get the body of the message, use the following code:
 
 ```kotlin
 let messageId = messagesList.first!.id
@@ -129,7 +129,7 @@ inboxService.getMessageDetail(messageId) {
 
 ### Set Message as Read
 
-To mark message as read by the user, use the following code:
+To mark the message as read by the user, use the following code:
 
 ```kotlin
 let messageId = messagesList.first!.id
