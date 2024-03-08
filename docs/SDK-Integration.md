@@ -2,7 +2,7 @@
 
 ## Requirements
 
-- `minSdkVersion 19` (Android 4.4 KitKat)
+- `minSdkVersion 21` (Android 5.0 Lollipop)
 - [PowerAuth Mobile SDK](https://github.com/wultra/powerauth-mobile-sdk) needs to be available in your project.
 
 ## Gradle
@@ -21,11 +21,11 @@ implementation "com.wultra.android.powerauth:powerauth-sdk:1.x.y"
 
 ## PowerAuth Compatibility
 
-| WMT SDK           | PowerAuth SDK |  
-|-------------------|---|
-| `1.0.x` - `1.2.x` | `1.0.x` - `1.5.x` |
-| `1.3.x` - `1.4.x` | `1.6.x` |
-| `1.5.x` - `1.7.x` | `1.7.x` |
-| `1.8.x` - `1.9.x` | `1.8.x` |
+| WMT SDK            | PowerAuth SDK |  
+|--------------------|---|
+| `1.0.x` - `1.2.x`  | `1.0.x` - `1.5.x` |
+| `1.3.x` - `1.4.x`  | `1.6.x` |
+| `1.5.x` - `1.7.x`  | `1.7.x` |
+| `1.8.x` - `1.10.x` | `1.8.x` |
 
 
