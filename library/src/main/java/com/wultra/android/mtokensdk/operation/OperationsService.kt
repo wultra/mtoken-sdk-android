@@ -110,11 +110,18 @@ class OperationsService: IOperationsService {
     private val appContext: Context
     private var timer: Timer? = null
 
-    override val lastOperationsResult: Result<List<UserOperation>>?
-        get() = synchronized(mutex) { lastGetOperationsResult }
+    override val lastFetchResult: Result<List<UserOperation>>?
+        get() = synchronized(mutex) { lastFetchOperationsResult }
 
     // Contains last fetched result with operations. Must be accessed from the mutex.
-    private var lastGetOperationsResult: Result<List<UserOperation>>? = null
+    private var lastFetchOperationsResult: Result<List<UserOperation>>? = null
+
+    // Operation register holds operations in order
+    private val operationsRegister: OperationsRegister by lazy {
+        OperationsRegister { data ->
+            listener?.operationsChanged(data.operationsList, data.removed, data.added)
+        }
+    }
 
     // API class for communication.
     private val operationApi: OperationApi
@@ -174,11 +181,11 @@ class OperationsService: IOperationsService {
 
     private fun processOperationsListResult(result: Result<List<UserOperation>>) {
         synchronized(mutex) {
-            // At first, capture result to "lastOperationsResult"
-            lastGetOperationsResult = result
+            // At first, capture result to "lastFetchResult"
+            lastFetchOperationsResult = result
             // Then, report result back to the listener, if it's set.
             listener?.let { listener ->
-                result.onSuccess { listener.operationsLoaded(it) }
+                result.onSuccess { operationsRegister.replace(it) }
                     .onFailure { listener.operationsFailed(it.apiErrorForListener()) }
             }
             // Now notify all tasks. We should iterate over copy of the list, to prevent
@@ -254,6 +261,7 @@ class OperationsService: IOperationsService {
             authentication,
             object : IApiCallResponseListener<StatusResponse> {
                 override fun onSuccess(result: StatusResponse) {
+                    operationsRegister.remove(operation)
                     callback(Result.success(Unit))
                 }
 
@@ -270,6 +278,7 @@ class OperationsService: IOperationsService {
             rejectRequest,
             object : IApiCallResponseListener<StatusResponse> {
                 override fun onSuccess(result: StatusResponse) {
+                    operationsRegister.remove(operation)
                     callback(Result.success(Unit))
                 }
 
@@ -313,6 +322,7 @@ class OperationsService: IOperationsService {
                 }
 
                 override fun onSuccess(result: OperationClaimDetailResponse) {
+                    operationsRegister.add(result.responseObject)
                     callback(Result.success(result.responseObject))
                 }
             }
@@ -351,5 +361,62 @@ class OperationsService: IOperationsService {
         timer?.cancel()
         timer = null
         Logger.d("Operation polling stopped")
+    }
+}
+
+private data class CallbackData(val operationsList: List<UserOperation>, val removed: List<UserOperation>, val added: List<UserOperation>)
+
+private class OperationsRegister(private val onChangeCallback: (CallbackData) -> Unit) {
+    private val currentOperations = mutableListOf<UserOperation>()
+
+    // Mutex to prevent race conditions from running multiple operations calls simultaneously
+    private val currentOperationsMutex = Object()
+
+    // Adds an operation to the register
+    fun add(operation: UserOperation) {
+        synchronized(currentOperationsMutex) {
+            if (currentOperations.none { it.id == operation.id }) {
+                currentOperations.add(operation)
+                onChangeCallback(CallbackData(currentOperations, emptyList(), listOf(operation)))
+            }
+        }
+    }
+
+    // Adds a multiple operations to the register.
+    // Returns list of added and removed operations.
+    fun replace(operations: List<UserOperation>): Pair<List<UserOperation>, List<UserOperation>> {
+        synchronized(currentOperationsMutex) {
+            // Build a list of operations which were added
+            val addedOperations = operations.filter { newOp ->
+                currentOperations.none { it.id == newOp.id }
+            }
+
+            // Build a list of operations which were removed
+            val removedOperations = currentOperations.filter { currentOp ->
+                operations.none { it.id == currentOp.id }
+            }
+
+            // Remove operations which are no longer valid
+            currentOperations.removeAll { op -> op.id in removedOperations.map { it.id } }
+
+            // Append new operations
+            currentOperations.addAll(addedOperations)
+
+            // Notify about changes
+            onChangeCallback(CallbackData(currentOperations, removedOperations, addedOperations))
+
+            // Return added and removed operations
+            return Pair(addedOperations, removedOperations)
+        }
+    }
+
+    // Removes an operation from the register
+    fun remove(operation: IOperation) {
+        synchronized(currentOperationsMutex) {
+            val operationToRemove = currentOperations.firstOrNull { it.id == operation.id }
+            if (operationToRemove != null && currentOperations.removeAll { it.id == operationToRemove.id }) {
+                onChangeCallback(CallbackData(currentOperations, listOf(operationToRemove), emptyList()))
+            }
+        }
     }
 }

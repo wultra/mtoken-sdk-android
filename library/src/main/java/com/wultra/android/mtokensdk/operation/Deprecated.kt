@@ -67,7 +67,7 @@ data class ErrorOperationsResult(val error: ApiError): OperationsResult()
  */
 @Deprecated("Use lastOperationsResult property", ReplaceWith("lastOperationsResult")) // 1.5.0
 fun IOperationsService.getLastOperationsResult(): OperationsResult? {
-    return lastOperationsResult?.let { result ->
+    return lastFetchResult?.let { result ->
         result.fold(
             onSuccess = { SuccessOperationsResult(it) },
             onFailure = { ErrorOperationsResult(it.apiErrorForListener()) }
