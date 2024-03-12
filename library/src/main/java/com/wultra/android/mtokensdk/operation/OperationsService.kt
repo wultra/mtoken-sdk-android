@@ -33,10 +33,10 @@ import com.wultra.android.powerauth.networking.tokens.IPowerAuthTokenProvider
 import io.getlime.security.powerauth.sdk.PowerAuthAuthentication
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
 import okhttp3.OkHttpClient
+import org.threeten.bp.Instant
+import org.threeten.bp.ZoneId
 import org.threeten.bp.ZonedDateTime
-import org.threeten.bp.temporal.ChronoUnit
 import java.util.*
-import kotlin.math.abs
 
 /**
  * Convenience factory method to create an IOperationsService instance
@@ -133,9 +133,6 @@ class OperationsService: IOperationsService {
     // Mutex
     private val mutex = Object()
 
-    // Difference in milliseconds between server and phone time
-    private var serverDateShiftInMilliSeconds: Long? = null
-
     /**
      * Constructs OperationService
      *
@@ -152,7 +149,16 @@ class OperationsService: IOperationsService {
         this.operationApi = OperationApi(httpClient, baseURL, appContext, powerAuthSDK, tokenProvider, userAgent, gsonBuilder)
     }
 
-    override fun currentServerDate() = serverDateShiftInMilliSeconds?.let { ZonedDateTime.now().plus(it, ChronoUnit.MILLIS) }
+    private fun currentDate(): ZonedDateTime = run {
+        val timeService = powerAuthSDK.timeSynchronizationService
+        if (timeService.isTimeSynchronized) {
+            val currentTimeInstant = Instant.ofEpochMilli(timeService.currentTime)
+            val defaultTimeZoneId = ZoneId.systemDefault()
+            return ZonedDateTime.ofInstant(currentTimeInstant, defaultTimeZoneId)
+        } else {
+            return ZonedDateTime.now()
+        }
+    }
 
     override fun isLoadingOperations() = synchronized(mutex) { tasks.isNotEmpty() }
 
@@ -163,10 +169,8 @@ class OperationsService: IOperationsService {
             if (startLoading) {
                 // Notify start loading
                 listener?.operationsLoading(true)
-                val dateStarted = ZonedDateTime.now()
                 operationApi.list(object : IApiCallResponseListener<OperationListResponse> {
                     override fun onSuccess(result: OperationListResponse) {
-                        processServerTime(result, dateStarted)
                         processOperationsListResult(Result.success(result.responseObject))
                     }
                     override fun onFailure(error: ApiError) {
@@ -200,43 +204,6 @@ class OperationsService: IOperationsService {
         }
     }
 
-    private fun processServerTime(response: OperationListResponse, requestStarted: ZonedDateTime) {
-
-        // server does not support this feature
-        if (response.currentTimestamp == null) {
-            return
-        }
-
-        val now = ZonedDateTime.now()
-        val requestDelayMilliseconds = now.toInstant().toEpochMilli() - requestStarted.toInstant().toEpochMilli()
-
-        // We're adding half of the time that the request took to compensate for the network delay
-        val serverTime = response.currentTimestamp.plus((requestDelayMilliseconds / 2), ChronoUnit.MILLIS)
-
-        // Already calculated server time
-        val currentServerDate = currentServerDate()
-
-        // If this is not a first calculation, do some adjustments
-        if (currentServerDate != null) {
-
-            // Difference between already calculated server time and the new server time
-            val timeChangeMilliseconds = abs((currentServerDate.toInstant().toEpochMilli() - serverTime.toInstant().toEpochMilli()))
-
-            // If the change is under the limit, we ignore the new value to avoid unnecessary changes that might be due to network delay.
-            if (timeChangeMilliseconds < MIN_SERVER_TIME_CHANGE_MS) {
-                return
-            }
-
-            // Reject small change if the network connection took long time
-            // This is to avoid volatility of the value
-            if (requestDelayMilliseconds > SERVER_TIME_DELAY_THRESHOLD_MS && timeChangeMilliseconds < FORCED_SERVER_TIME_CHANGE_MS) {
-                return
-            }
-        }
-
-        serverDateShiftInMilliSeconds = serverTime.toInstant().toEpochMilli() - now.toInstant().toEpochMilli()
-    }
-
     override fun getHistory(authentication: PowerAuthAuthentication, callback: (result: Result<List<OperationHistoryEntry>>) -> Unit) {
         operationApi.history(
             authentication,
@@ -254,7 +221,7 @@ class OperationsService: IOperationsService {
 
     override fun authorizeOperation(operation: IOperation, authentication: PowerAuthAuthentication, callback: (result: Result<Unit>) -> Unit) {
 
-        val currentDate = currentServerDate() ?: ZonedDateTime.now()
+        val currentDate = currentDate()
         val authorizeRequest = AuthorizeRequest(AuthorizeRequestObject(operation, currentDate))
         operationApi.authorize(
             authorizeRequest,

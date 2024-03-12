@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.10.0 
+- Removed currentServerTime() method [(#139)](https://github.com/wultra/mtoken-sdk-android/pull/139)
+- Improved operations handling [(#138)](https://github.com/wultra/mtoken-sdk-android/pull/138)
+- Added Huawei notification support [(#136)](https://github.com/wultra/mtoken-sdk-android/pull/136)
+
 ## 1.9.0 (Jan 25, 2024)
 
 - Added possibility for custom reject reason [(#130)](https://github.com/wultra/mtoken-sdk-android/pull/130)

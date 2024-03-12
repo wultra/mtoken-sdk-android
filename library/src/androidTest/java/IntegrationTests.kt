@@ -29,6 +29,8 @@ import com.wultra.android.powerauth.networking.error.ApiError
 import io.getlime.security.powerauth.sdk.PowerAuthAuthentication
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
 import org.junit.*
+import org.threeten.bp.Instant
+import org.threeten.bp.ZoneId
 import org.threeten.bp.ZonedDateTime
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
@@ -78,30 +80,18 @@ class IntegrationTests {
         Assert.assertNotNull(oplist)
     }
 
+    /** currentServerDate was removed in favour of PowerAuthSDK timeSynchronizationService */
     @Test
     fun testServerTime() {
-        val future = CompletableFuture<ZonedDateTime>()
-        Assert.assertNull(ops.currentServerDate())
-        ops.getOperations { result ->
-            result
-                .onSuccess {
-                    future.complete(ops.currentServerDate())
-                }
-                .onFailure {
-                    future.completeExceptionally(it)
-                }
+        var currentTime: ZonedDateTime? = null
+
+        val timeService = pa.timeSynchronizationService
+        if (timeService.isTimeSynchronized) {
+            val instant = Instant.ofEpochMilli(timeService.currentTime)
+            val zoneId = ZoneId.systemDefault()
+            currentTime = ZonedDateTime.ofInstant(instant, zoneId)
         }
-        val date = future.get(20, TimeUnit.SECONDS)
-        Assert.assertNotNull(date)
-
-        // Sometimes the CI or the emulator on the CI are behind with time because emulator boot takes some time.
-        // To verify that the time makes sense (the diff is not like hours or days) we accept 10 minus window.
-        val maxDiffSeconds = 60 * 10
-
-        val secDiff = kotlin.math.abs(date.toEpochSecond() - ZonedDateTime.now().toEpochSecond())
-        // If the difference between the server and the device is more than the limit, there is something wrong with the server
-        // or there is a bug. Both cases need a fix.
-        Assert.assertTrue("Difference is $secDiff seconds, but max $maxDiffSeconds seconds is allowed", secDiff < maxDiffSeconds)
+        Assert.assertNotNull(currentTime)
     }
 
     // 1FA test are temporally disabled
