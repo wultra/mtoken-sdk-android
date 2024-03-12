@@ -215,9 +215,12 @@ class IntegrationTests {
                     }
                 }
             }
-            override fun operationsLoaded(operations: List<UserOperation>) {
+            override fun operationsChanged(
+                operations: List<UserOperation>,
+                removed: List<UserOperation>,
+                added: List<UserOperation>
+            ) {
             }
-
             override fun operationsFailed(error: ApiError) {
             }
         }
