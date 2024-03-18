@@ -209,7 +209,7 @@ class IntegrationTests {
             override fun operationsLoading(loading: Boolean) {
                 if (loading) {
                     loadingCount += 1
-                    if (loadingCount == 4) {
+                    if (loadingCount == 3) {
                         ops.stopPollingOperations()
                         future.complete(null)
                     }
@@ -224,8 +224,8 @@ class IntegrationTests {
             override fun operationsFailed(error: ApiError) {
             }
         }
-        ops.startPollingOperations(1_000, true)
-        Assert.assertNull(future.get(20, TimeUnit.SECONDS))
+        ops.startPollingOperations()
+        Assert.assertNull(future.get(30, TimeUnit.SECONDS))
         ops.stopPollingOperations()
         Assert.assertFalse(ops.isPollingOperations())
     }
