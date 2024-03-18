@@ -104,9 +104,10 @@ interface IOperationsService {
      * and the polling interval won't be changed.
      *
      * @param pollingInterval Polling interval in milliseconds, default value is 7s and minimum is 5s
-     * @param delayStart When true, polling starts after the first [pollingInterval] time passes
+     * @param delayStart When true, polling starts after the first [pollingInterval] passes
+     *                   - By default it is set to false and polling starts immediately.
      */
-    fun startPollingOperations(pollingInterval: Long = 7_000, delayStart: Boolean = true)
+    fun startPollingOperations(pollingInterval: Long = 7_000, delayStart: Boolean = false)
 
     /**
      * Stops operation polling
