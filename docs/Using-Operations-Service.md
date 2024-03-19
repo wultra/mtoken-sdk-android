@@ -98,6 +98,12 @@ if (!operationsService.isPollingOperations()) {
 }
 ```
 
+### Default and Minimum TimeInterval Enforcement
+
+For convenience, there is a default implementation where you can omit the polling interval and it is automatically set to 7 seconds. If you specify an interval below 5 seconds, it will be automatically adjusted to 5 seconds to prevent server overload.
+
+### Setting up a listener
+
 To receive the result of the polling, set up a listener.
 
 <!-- begin box warning -->
@@ -119,6 +125,10 @@ operationsService.listener = object: IOperationsServiceListener {
     }
 }
 ```
+
+### Best Practices and Recommendations
+
+For optimal server performance, consider adjusting polling intervals based on your application's requirements. For instance, when push notifications are enabled, it's advisable to double the polling interval to minimize server load.
 
 ## Approve an Operation
 

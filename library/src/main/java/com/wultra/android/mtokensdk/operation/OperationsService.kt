@@ -109,6 +109,7 @@ class OperationsService: IOperationsService {
     private val powerAuthSDK: PowerAuthSDK
     private val appContext: Context
     private var timer: Timer? = null
+    private val minimumTimePollingInterval: Long = 5_000
 
     override val lastFetchResult: Result<List<UserOperation>>?
         get() = synchronized(mutex) { lastFetchOperationsResult }
@@ -310,6 +311,14 @@ class OperationsService: IOperationsService {
         } else {
             0
         }
+
+        val adjustedInterval = if (pollingInterval < minimumTimePollingInterval) {
+            Logger.w("Operations polling interval: $pollingInterval, must not be set below $minimumTimePollingInterval to prevent server overload.")
+            minimumTimePollingInterval
+        } else {
+            pollingInterval
+        }
+
         val t = Timer("OperationsServiceTimer")
         t.scheduleAtFixedRate(
             object : TimerTask() {
@@ -318,7 +327,7 @@ class OperationsService: IOperationsService {
                 }
             },
             delay,
-            pollingInterval
+            adjustedInterval
         )
         timer = t
         Logger.d("Polling started with $pollingInterval milliseconds interval")
