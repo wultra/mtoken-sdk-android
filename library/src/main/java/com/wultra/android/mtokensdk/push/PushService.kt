@@ -42,6 +42,7 @@ import okhttp3.OkHttpClient
  * @param okHttpClient HTTP client instance for networking
  */
 fun PowerAuthSDK.createPushService(appContext: Context, baseURL: String, okHttpClient: OkHttpClient, userAgent: UserAgent? = null): IPushService {
+    Logger.configure(okHttpClient)
     return PushService(okHttpClient, baseURL, this, appContext, null, userAgent)
 }
 

@@ -18,6 +18,7 @@ package com.wultra.android.mtokensdk.common
 
 import android.util.Log
 import okhttp3.Headers
+import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Response
 import okio.Buffer
@@ -39,6 +40,8 @@ class Logger {
         ERROR,
         /** Errors and warnings will be printed into the log. */
         WARNING,
+        /** Info logs, errors and warnings will be printed into the log. */
+        INFO,
         /** All messages will be printed into the log. */
         DEBUG
     }
@@ -75,6 +78,18 @@ class Logger {
             }
         }
 
+        internal fun i(message: String) {
+            if (verboseLevel.ordinal >= VerboseLevel.INFO.ordinal) {
+                Log.i(tag, message)
+            }
+        }
+
+        internal fun i(fn: () -> String) {
+            if (verboseLevel.ordinal >= VerboseLevel.INFO.ordinal) {
+                Log.i(tag, fn())
+            }
+        }
+
         internal fun e(message: String, t: Throwable? = null) {
             if (verboseLevel.ordinal >= VerboseLevel.ERROR.ordinal) {
                 Log.e(tag, message, t)
@@ -87,23 +102,33 @@ class Logger {
             }
         }
 
-        internal fun configure(builder: OkHttpClient.Builder) {
-            builder.addInterceptor { chain ->
-                val request = chain.request()
-                d {
-                    var body = ""
-                    try {
-                        val buffer = Buffer()
-                        request.newBuilder().build().body()?.writeTo(buffer)
-                        body = buffer.readUtf8()
-                    } catch (e: Throwable) {
-                        e("Failed to parse request body")
-                    }
+        internal fun configure(client: OkHttpClient) {
+            client.interceptors().add(createInterceptor())
+        }
 
+        internal fun configure(builder: OkHttpClient.Builder) {
+            builder.addInterceptor(createInterceptor())
+        }
+
+        private fun createInterceptor(): Interceptor {
+            return Interceptor {
+                    chain ->
+                val request = chain.request()
+
+                i {
                     "\n--- WMT REQUEST ---" +
                     "\n- URL: ${request.method()} - ${request.url()}" +
-                    "\n- Headers: ${request.headers().forLog()}" +
-                    "\n- Body: $body"
+                    "\n- Headers: ${request.headers().forLog()}"
+                }
+
+                try {
+                    d {
+                        val buffer = Buffer()
+                        request.newBuilder().build().body()?.writeTo(buffer)
+                        "- Body: $${buffer.readUtf8()}"
+                    }
+                } catch (e: Throwable) {
+                    e("- Failed to parse request body: ${e.message}")
                 }
 
                 val response: Response
@@ -111,7 +136,7 @@ class Logger {
                 try {
                     response = chain.proceed(request)
                 } catch (e: Throwable) {
-                    d {
+                    e {
                         "\n--- WMT REQUEST FAILED ---" +
                         "\n- URL: ${request.method()} - ${request.url()}" +
                         "\n- Error: $e"
@@ -119,12 +144,19 @@ class Logger {
                     throw e
                 }
 
-                d {
+                i {
                     "\n--- WMT RESPONSE ---" +
-                    "\n- URL: ${response.request().method()} - ${response.request().url()}" +
-                    "\n- Status code: ${response.code()}" +
-                    "\n- Headers: ${response.headers().forLog()}" +
-                    "\n- Body: ${response.peekBody(10_000).string()}" // allow max 10 KB of text
+                            "\n- URL: ${response.request().method()} - ${response.request().url()}" +
+                            "\n- Status code: ${response.code()}" +
+                            "\n- Headers: ${response.headers().forLog()}"
+                }
+
+                try {
+                    d {
+                        "Body: ${response.peekBody(10_000).string()}" // allow max 10 KB of text
+                    }
+                } catch (e: Throwable) {
+                    e("- Failed to parse response body: ${e.message}")
                 }
 
                 response

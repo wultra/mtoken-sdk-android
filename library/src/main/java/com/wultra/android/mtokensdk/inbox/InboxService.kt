@@ -35,6 +35,7 @@ import io.getlime.security.powerauth.sdk.PowerAuthSDK
 import okhttp3.OkHttpClient
 
 fun PowerAuthSDK.createInboxService(appContext: Context, baseURL: String, okHttpClient: OkHttpClient, userAgent: UserAgent? = null): IInboxService {
+    Logger.configure(okHttpClient)
     return InboxService(okHttpClient, baseURL, this, appContext, null, userAgent)
 }
 

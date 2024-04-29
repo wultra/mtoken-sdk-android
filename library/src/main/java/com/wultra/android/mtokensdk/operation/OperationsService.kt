@@ -50,6 +50,7 @@ import java.util.*
  * deserialization logic, we recommend adding to the instance obtained from the OperationsUtils.defaultGsonBuilder().
  */
 fun PowerAuthSDK.createOperationsService(appContext: Context, baseURL: String, httpClient: OkHttpClient, userAgent: UserAgent? = null, gsonBuilder: GsonBuilder? = null): IOperationsService {
+    Logger.configure(httpClient)
     return OperationsService(this, appContext, httpClient, baseURL, null, userAgent, gsonBuilder)
 }
 
@@ -179,7 +180,7 @@ class OperationsService: IOperationsService {
                     }
                 })
             } else {
-                Logger.d("getOperation requested, but another request already running")
+                Logger.w("getOperation requested, but another request already running")
             }
         }
     }
@@ -330,13 +331,13 @@ class OperationsService: IOperationsService {
             adjustedInterval
         )
         timer = t
-        Logger.d("Polling started with $pollingInterval milliseconds interval")
+        Logger.i("Polling started with $pollingInterval milliseconds interval")
     }
 
     override fun stopPollingOperations() {
         timer?.cancel()
         timer = null
-        Logger.d("Operation polling stopped")
+        Logger.i("Operation polling stopped")
     }
 }
 

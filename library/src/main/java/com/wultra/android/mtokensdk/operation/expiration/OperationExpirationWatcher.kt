@@ -112,7 +112,7 @@ class OperationExpirationWatcher {
             if (opsToWatch.isEmpty()) {
                 Logger.w("OperationExpirationWatcher: All operations are already watched")
             } else {
-                Logger.d("OperationExpirationWatcher: Adding ${opsToWatch.count()} operation to watch.")
+                Logger.i("OperationExpirationWatcher: Adding ${opsToWatch.count()} operation to watch.")
                 operationsToWatch.addAll(opsToWatch)
                 prepareTimer()
             }
@@ -156,10 +156,10 @@ class OperationExpirationWatcher {
                 // when nil is provided, we consider it as "stop all"
                 if (operations != null) {
                     operationsToWatch.removeAll { current -> operations.any { toRemove -> toRemove.equals(current) } }
-                    Logger.d("OperationExpirationWatcher: Stopped watching ${operations.count()} operations.")
+                    Logger.i("OperationExpirationWatcher: Stopped watching ${operations.count()} operations.")
                 } else {
                     operationsToWatch.clear()
-                    Logger.d("OperationExpirationWatcher: Stopped watching all operations.")
+                    Logger.i("OperationExpirationWatcher: Stopped watching all operations.")
                 }
                 prepareTimer()
             }
@@ -207,7 +207,7 @@ class OperationExpirationWatcher {
                             operationsToWatch.removeAll { it.isExpired(currentDate) }
                             prepareTimer()
                             Handler(Looper.getMainLooper()).post {
-                                Logger.d("OperationExpirationWatcher: Reporting ${expiredOps.count()} expired operations.")
+                                Logger.i("OperationExpirationWatcher: Reporting ${expiredOps.count()} expired operations.")
                                 listener?.operationsExpired(expiredOps)
                             }
                         }
