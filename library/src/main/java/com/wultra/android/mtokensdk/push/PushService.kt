@@ -42,7 +42,6 @@ import okhttp3.OkHttpClient
  * @param okHttpClient HTTP client instance for networking
  */
 fun PowerAuthSDK.createPushService(appContext: Context, baseURL: String, okHttpClient: OkHttpClient, userAgent: UserAgent? = null): IPushService {
-    Logger.configure(okHttpClient)
     return PushService(okHttpClient, baseURL, this, appContext, null, userAgent)
 }
 
@@ -57,7 +56,6 @@ fun PowerAuthSDK.createPushService(appContext: Context, baseURL: String, okHttpC
 fun PowerAuthSDK.createPushService(appContext: Context, baseURL: String, strategy: SSLValidationStrategy, userAgent: UserAgent? = null): IPushService {
     val builder = OkHttpClient.Builder()
     strategy.configure(builder)
-    Logger.configure(builder)
     return createPushService(appContext, baseURL, builder.build(), userAgent)
 }
 

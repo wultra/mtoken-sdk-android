@@ -50,7 +50,6 @@ import java.util.*
  * deserialization logic, we recommend adding to the instance obtained from the OperationsUtils.defaultGsonBuilder().
  */
 fun PowerAuthSDK.createOperationsService(appContext: Context, baseURL: String, httpClient: OkHttpClient, userAgent: UserAgent? = null, gsonBuilder: GsonBuilder? = null): IOperationsService {
-    Logger.configure(httpClient)
     return OperationsService(this, appContext, httpClient, baseURL, null, userAgent, gsonBuilder)
 }
 
@@ -65,11 +64,10 @@ fun PowerAuthSDK.createOperationsService(appContext: Context, baseURL: String, h
  * @param gsonBuilder Custom GSON builder for deserialization of request. If you want to provide or own
  * deserialization logic, we recommend adding to the instance obtained from the OperationsUtils.defaultGsonBuilder().
  */
-fun PowerAuthSDK.createOperationsService(appContext: Context, baseURL: String, strategy: SSLValidationStrategy, userAgent: UserAgent? = null, gsonBuilder: GsonBuilder? = null): IOperationsService {
+fun PowerAuthSDK.createOperationsService(appContext: Context, baseURL: String, strategy: SSLValidationStrategy = SSLValidationStrategy.default(), userAgent: UserAgent? = null, gsonBuilder: GsonBuilder? = null): IOperationsService {
     val builder = OkHttpClient.Builder()
     strategy.configure(builder)
-    Logger.configure(builder)
-    return createOperationsService(appContext, baseURL, builder.build(), userAgent, gsonBuilder)
+    return OperationsService(this, appContext, builder.build(), baseURL, null, userAgent, gsonBuilder)
 }
 
 private typealias GetOperationsCallback = (result: Result<List<UserOperation>>) -> Unit

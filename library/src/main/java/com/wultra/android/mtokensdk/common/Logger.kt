@@ -17,12 +17,6 @@
 package com.wultra.android.mtokensdk.common
 
 import android.util.Log
-import okhttp3.Headers
-import okhttp3.Interceptor
-import okhttp3.OkHttpClient
-import okhttp3.Response
-import okio.Buffer
-import java.lang.StringBuilder
 
 /* ktlint-disable indent */
 
@@ -31,6 +25,7 @@ import java.lang.StringBuilder
  *
  * Logs are written with "WMT" tag to standard [android.util.Log] logger.
  */
+@Suppress("MemberVisibilityCanBePrivate")
 class Logger {
 
     enum class VerboseLevel {
@@ -52,123 +47,50 @@ class Logger {
         @JvmStatic
         var verboseLevel = VerboseLevel.WARNING
 
+        /** Listener that can tap into the log stream and process it on it's own. */
+        var logListener: WMTLogListener? = null
+
         private val tag = "WMT"
 
-        internal fun d(message: String) {
-            if (verboseLevel.ordinal >= VerboseLevel.DEBUG.ordinal) {
-                Log.d(tag, message)
+        private fun log(valueFn: () -> String, allowedLevel: VerboseLevel, logFn: (String?, String) -> Unit, listenerFn: ((String) -> Unit)?) {
+            val shouldProcess = verboseLevel.ordinal >= allowedLevel.ordinal
+            val log = if (shouldProcess || logListener?.followVerboseLevel == false) valueFn() else return
+            if (shouldProcess) {
+                logFn(tag, log)
             }
+            listenerFn?.invoke(log)
+        }
+
+        internal fun d(message: String) {
+            d { message }
         }
 
         internal fun d(fn: () -> String) {
-            if (verboseLevel.ordinal >= VerboseLevel.DEBUG.ordinal) {
-                Log.d(tag, fn())
-            }
+            log(fn, VerboseLevel.DEBUG, Log::d, logListener?.let { it::debug })
         }
 
         internal fun w(message: String) {
-            if (verboseLevel.ordinal >= VerboseLevel.WARNING.ordinal) {
-                Log.w(tag, message)
-            }
+            w { message }
         }
 
         internal fun w(fn: () -> String) {
-            if (verboseLevel.ordinal >= VerboseLevel.WARNING.ordinal) {
-                Log.w(tag, fn())
-            }
+            log(fn, VerboseLevel.WARNING, Log::w, logListener?.let { it::warning })
         }
 
         internal fun i(message: String) {
-            if (verboseLevel.ordinal >= VerboseLevel.INFO.ordinal) {
-                Log.i(tag, message)
-            }
+            i { message }
         }
 
         internal fun i(fn: () -> String) {
-            if (verboseLevel.ordinal >= VerboseLevel.INFO.ordinal) {
-                Log.i(tag, fn())
-            }
+            log(fn, VerboseLevel.INFO, Log::i, logListener?.let { it::info })
         }
 
-        internal fun e(message: String, t: Throwable? = null) {
-            if (verboseLevel.ordinal >= VerboseLevel.ERROR.ordinal) {
-                Log.e(tag, message, t)
-            }
+        internal fun e(message: String) {
+            e { message }
         }
 
         internal fun e(fn: () -> String) {
-            if (verboseLevel.ordinal >= VerboseLevel.ERROR.ordinal) {
-                Log.e(tag, fn())
-            }
-        }
-
-        internal fun configure(client: OkHttpClient) {
-            client.interceptors().add(createInterceptor())
-        }
-
-        internal fun configure(builder: OkHttpClient.Builder) {
-            builder.addInterceptor(createInterceptor())
-        }
-
-        private fun createInterceptor(): Interceptor {
-            return Interceptor {
-                    chain ->
-                val request = chain.request()
-
-                i {
-                    "\n--- WMT REQUEST ---" +
-                    "\n- URL: ${request.method()} - ${request.url()}" +
-                    "\n- Headers: ${request.headers().forLog()}"
-                }
-
-                try {
-                    d {
-                        val buffer = Buffer()
-                        request.newBuilder().build().body()?.writeTo(buffer)
-                        "- Body: $${buffer.readUtf8()}"
-                    }
-                } catch (e: Throwable) {
-                    e("- Failed to parse request body: ${e.message}")
-                }
-
-                val response: Response
-
-                try {
-                    response = chain.proceed(request)
-                } catch (e: Throwable) {
-                    e {
-                        "\n--- WMT REQUEST FAILED ---" +
-                        "\n- URL: ${request.method()} - ${request.url()}" +
-                        "\n- Error: $e"
-                    }
-                    throw e
-                }
-
-                i {
-                    "\n--- WMT RESPONSE ---" +
-                            "\n- URL: ${response.request().method()} - ${response.request().url()}" +
-                            "\n- Status code: ${response.code()}" +
-                            "\n- Headers: ${response.headers().forLog()}"
-                }
-
-                try {
-                    d {
-                        "Body: ${response.peekBody(10_000).string()}" // allow max 10 KB of text
-                    }
-                } catch (e: Throwable) {
-                    e("- Failed to parse response body: ${e.message}")
-                }
-
-                response
-            }
+            log(fn, VerboseLevel.ERROR, Log::e, logListener?.let { it::error })
         }
     }
-}
-
-private fun Headers.forLog(): String {
-    val result = StringBuilder()
-    for (i in 0 until size()) {
-        result.append("\n  - ").append(name(i)).append(": ").append(value(i))
-    }
-    return result.toString()
 }

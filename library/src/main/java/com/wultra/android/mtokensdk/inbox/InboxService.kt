@@ -17,11 +17,16 @@
 package com.wultra.android.mtokensdk.inbox
 
 import android.content.Context
-import com.wultra.android.mtokensdk.api.inbox.*
+import com.wultra.android.mtokensdk.api.inbox.InboxApi
+import com.wultra.android.mtokensdk.api.inbox.InboxCountResponse
+import com.wultra.android.mtokensdk.api.inbox.InboxGetListRequest
+import com.wultra.android.mtokensdk.api.inbox.InboxGetListResponse
+import com.wultra.android.mtokensdk.api.inbox.InboxGetMessageDetailRequest
+import com.wultra.android.mtokensdk.api.inbox.InboxGetMessageDetailResponse
+import com.wultra.android.mtokensdk.api.inbox.InboxSetMessageReadRequest
 import com.wultra.android.mtokensdk.api.inbox.model.GetList
 import com.wultra.android.mtokensdk.api.inbox.model.GetMessageDetail
 import com.wultra.android.mtokensdk.api.inbox.model.SetMessageRead
-import com.wultra.android.mtokensdk.common.Logger
 import com.wultra.android.mtokensdk.operation.OperationsUtils
 import com.wultra.android.powerauth.networking.IApiCallResponseListener
 import com.wultra.android.powerauth.networking.OkHttpBuilderInterceptor
@@ -35,15 +40,13 @@ import io.getlime.security.powerauth.sdk.PowerAuthSDK
 import okhttp3.OkHttpClient
 
 fun PowerAuthSDK.createInboxService(appContext: Context, baseURL: String, okHttpClient: OkHttpClient, userAgent: UserAgent? = null): IInboxService {
-    Logger.configure(okHttpClient)
     return InboxService(okHttpClient, baseURL, this, appContext, null, userAgent)
 }
 
 fun PowerAuthSDK.createInboxService(appContext: Context, baseURL: String, strategy: SSLValidationStrategy, userAgent: UserAgent? = null): IInboxService {
     val builder = OkHttpClient.Builder()
     strategy.configure(builder)
-    Logger.configure(builder)
-    return createInboxService(appContext, baseURL, builder.build(), userAgent)
+    return InboxService(builder.build(), baseURL, this, appContext, null, userAgent)
 }
 
 class InboxService(
