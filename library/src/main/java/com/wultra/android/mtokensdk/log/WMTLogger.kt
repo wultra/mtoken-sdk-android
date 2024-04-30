@@ -14,11 +14,9 @@
  * and limitations under the License.
  */
 
-package com.wultra.android.mtokensdk.common
+package com.wultra.android.mtokensdk.log
 
 import android.util.Log
-
-/* ktlint-disable indent */
 
 /**
  * Logger provides simple logging facility.
@@ -26,7 +24,7 @@ import android.util.Log
  * Logs are written with "WMT" tag to standard [android.util.Log] logger.
  */
 @Suppress("MemberVisibilityCanBePrivate")
-class Logger {
+class WMTLogger {
 
     enum class VerboseLevel {
         /** Silences all messages. */

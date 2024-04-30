@@ -17,7 +17,7 @@
 package com.wultra.android.mtokensdk.operation.expiration
 
 import com.wultra.android.mtokensdk.api.operation.model.IOperation
-import com.wultra.android.mtokensdk.common.Logger
+import com.wultra.android.mtokensdk.log.WMTLogger
 import org.threeten.bp.ZonedDateTime
 
 /**
@@ -37,7 +37,7 @@ interface ExpirableOperation {
         return if (this is IOperation && other is IOperation) {
             id == other.id && data == other.data && expires == other.expires
         } else {
-            Logger.w("ExpirableOperation: Fallbacked to comparing `WMTExpirableOperation`s by reference.")
+            WMTLogger.w("ExpirableOperation: Fallbacked to comparing `WMTExpirableOperation`s by reference.")
             this === other
         }
     }

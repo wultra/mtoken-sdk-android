@@ -18,7 +18,7 @@ package com.wultra.android.mtokensdk.api.operation.model
 
 import android.annotation.SuppressLint
 import android.util.Base64
-import com.wultra.android.mtokensdk.common.Logger
+import com.wultra.android.mtokensdk.log.WMTLogger
 import java.math.BigDecimal
 import java.text.SimpleDateFormat
 
@@ -96,7 +96,7 @@ class QROperationParser {
 
                 return QROperation(operationId, title, message, formData, nonce, flags, totp, signedData, signature, isNewerFormat)
             } catch (e: IllegalArgumentException) {
-                Logger.e(e.message ?: "Payload is not a valid QR operation")
+                WMTLogger.e(e.message ?: "Payload is not a valid QR operation")
                 throw e
             }
         }

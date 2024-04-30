@@ -21,7 +21,7 @@ import com.google.gson.GsonBuilder
 import com.wultra.android.mtokensdk.api.apiErrorForListener
 import com.wultra.android.mtokensdk.api.operation.*
 import com.wultra.android.mtokensdk.api.operation.model.*
-import com.wultra.android.mtokensdk.common.Logger
+import com.wultra.android.mtokensdk.log.WMTLogger
 import com.wultra.android.powerauth.networking.IApiCallResponseListener
 import com.wultra.android.powerauth.networking.OkHttpBuilderInterceptor
 import com.wultra.android.powerauth.networking.UserAgent
@@ -178,7 +178,7 @@ class OperationsService: IOperationsService {
                     }
                 })
             } else {
-                Logger.w("getOperation requested, but another request already running")
+                WMTLogger.w("getOperation requested, but another request already running")
             }
         }
     }
@@ -301,7 +301,7 @@ class OperationsService: IOperationsService {
     @Synchronized
     override fun startPollingOperations(pollingInterval: Long, delayStart: Boolean) {
         if (timer != null) {
-            Logger.w("Polling already in progress")
+            WMTLogger.w("Polling already in progress")
             return
         }
 
@@ -312,7 +312,7 @@ class OperationsService: IOperationsService {
         }
 
         val adjustedInterval = if (pollingInterval < minimumTimePollingInterval) {
-            Logger.w("Operations polling interval: $pollingInterval, must not be set below $minimumTimePollingInterval to prevent server overload.")
+            WMTLogger.w("Operations polling interval: $pollingInterval, must not be set below $minimumTimePollingInterval to prevent server overload.")
             minimumTimePollingInterval
         } else {
             pollingInterval
@@ -329,13 +329,13 @@ class OperationsService: IOperationsService {
             adjustedInterval
         )
         timer = t
-        Logger.i("Polling started with $pollingInterval milliseconds interval")
+        WMTLogger.i("Polling started with $pollingInterval milliseconds interval")
     }
 
     override fun stopPollingOperations() {
         timer?.cancel()
         timer = null
-        Logger.i("Operation polling stopped")
+        WMTLogger.i("Operation polling stopped")
     }
 }
 

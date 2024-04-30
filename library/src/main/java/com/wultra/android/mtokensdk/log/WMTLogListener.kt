@@ -9,15 +9,15 @@
  * before the Municipal Court of Prague.
  */
 
-package com.wultra.android.mtokensdk.common
+package com.wultra.android.mtokensdk.log
 
 /** Log listener receives logs from the library logger for further processing. */
 interface WMTLogListener {
     /**
      * If the listener should follow selected verbosity level.
      *
-     * When set to true, then when [Logger.VerboseLevel.ERROR] is selected as a [Logger.verboseLevel], only [error] methods will be called.
-     * When set to false, all methods might be called no matter the selected [Logger.verboseLevel].
+     * When set to true, then when [WMTLogger.VerboseLevel.ERROR] is selected as a [WMTLogger.verboseLevel], only [error] methods will be called.
+     * When set to false, all methods might be called no matter the selected [WMTLogger.verboseLevel].
      */
     val followVerboseLevel: Boolean
 
