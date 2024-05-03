@@ -22,10 +22,12 @@ import android.util.Log
  * Logger provides simple logging facility.
  *
  * Logs are written with "WMT" tag to standard [android.util.Log] logger.
+ * You can set [logListener] to start listening on the
  */
 @Suppress("MemberVisibilityCanBePrivate")
 class WMTLogger {
 
+    /** Level of the log which should be effectively logged. */
     enum class VerboseLevel {
         /** Silences all messages. */
         OFF,
@@ -42,11 +44,10 @@ class WMTLogger {
     companion object {
 
         /** Current verbose level. */
-        @JvmStatic
-        var verboseLevel = VerboseLevel.WARNING
+        @JvmStatic var verboseLevel = VerboseLevel.WARNING
 
         /** Listener that can tap into the log stream and process it on it's own. */
-        var logListener: WMTLogListener? = null
+        @JvmStatic var logListener: WMTLogListener? = null
 
         private val tag = "WMT"
 

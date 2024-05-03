@@ -16,7 +16,7 @@ interface WMTLogListener {
     /**
      * If the listener should follow selected verbosity level.
      *
-     * When set to true, then when [WMTLogger.VerboseLevel.ERROR] is selected as a [WMTLogger.verboseLevel], only [error] methods will be called.
+     * When set to true, then (for example) if [WMTLogger.VerboseLevel.ERROR] is selected as a [WMTLogger.verboseLevel], only [error] methods will be called.
      * When set to false, all methods might be called no matter the selected [WMTLogger.verboseLevel].
      */
     val followVerboseLevel: Boolean

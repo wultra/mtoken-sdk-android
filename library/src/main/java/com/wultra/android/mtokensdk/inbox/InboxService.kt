@@ -17,13 +17,7 @@
 package com.wultra.android.mtokensdk.inbox
 
 import android.content.Context
-import com.wultra.android.mtokensdk.api.inbox.InboxApi
-import com.wultra.android.mtokensdk.api.inbox.InboxCountResponse
-import com.wultra.android.mtokensdk.api.inbox.InboxGetListRequest
-import com.wultra.android.mtokensdk.api.inbox.InboxGetListResponse
-import com.wultra.android.mtokensdk.api.inbox.InboxGetMessageDetailRequest
-import com.wultra.android.mtokensdk.api.inbox.InboxGetMessageDetailResponse
-import com.wultra.android.mtokensdk.api.inbox.InboxSetMessageReadRequest
+import com.wultra.android.mtokensdk.api.inbox.*
 import com.wultra.android.mtokensdk.api.inbox.model.GetList
 import com.wultra.android.mtokensdk.api.inbox.model.GetMessageDetail
 import com.wultra.android.mtokensdk.api.inbox.model.SetMessageRead
