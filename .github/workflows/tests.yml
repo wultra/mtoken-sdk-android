@@ -36,5 +36,6 @@ jobs:
       - name: Test the app (integration tests)
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 29
+          api-level: 34
+          arch: arm64-v8a
           script: ./gradlew clean connectedAndroidTest --info
