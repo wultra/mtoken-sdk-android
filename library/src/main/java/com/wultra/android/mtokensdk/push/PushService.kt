@@ -21,7 +21,7 @@ import com.wultra.android.mtokensdk.api.push.PushApi
 import com.wultra.android.mtokensdk.api.push.PushRegistrationRequest
 import com.wultra.android.mtokensdk.api.push.model.Platform
 import com.wultra.android.mtokensdk.api.push.model.PushRegistrationRequestObject
-import com.wultra.android.mtokensdk.common.Logger
+import com.wultra.android.mtokensdk.log.WMTLogger
 import com.wultra.android.powerauth.networking.IApiCallResponseListener
 import com.wultra.android.powerauth.networking.OkHttpBuilderInterceptor
 import com.wultra.android.powerauth.networking.UserAgent
@@ -56,7 +56,6 @@ fun PowerAuthSDK.createPushService(appContext: Context, baseURL: String, okHttpC
 fun PowerAuthSDK.createPushService(appContext: Context, baseURL: String, strategy: SSLValidationStrategy, userAgent: UserAgent? = null): IPushService {
     val builder = OkHttpClient.Builder()
     strategy.configure(builder)
-    Logger.configure(builder)
     return createPushService(appContext, baseURL, builder.build(), userAgent)
 }
 
@@ -85,7 +84,7 @@ class PushService(okHttpClient: OkHttpClient, baseURL: String, powerAuthSDK: Pow
                 }
 
                 override fun onFailure(error: ApiError) {
-                    Logger.e("Failed to register fcm token for WMT push notifications.")
+                    WMTLogger.e("Failed to register fcm token for WMT push notifications.")
                     callback(Result.failure(ApiErrorException(error)))
                 }
             }
@@ -101,7 +100,7 @@ class PushService(okHttpClient: OkHttpClient, baseURL: String, powerAuthSDK: Pow
                 }
 
                 override fun onFailure(error: ApiError) {
-                    Logger.e("Failed to register hms token for WMT push notifications.")
+                    WMTLogger.e("Failed to register hms token for WMT push notifications.")
                     callback(Result.failure(ApiErrorException(error)))
                 }
             }

@@ -21,7 +21,7 @@ import com.google.gson.GsonBuilder
 import com.wultra.android.mtokensdk.api.apiErrorForListener
 import com.wultra.android.mtokensdk.api.operation.*
 import com.wultra.android.mtokensdk.api.operation.model.*
-import com.wultra.android.mtokensdk.common.Logger
+import com.wultra.android.mtokensdk.log.WMTLogger
 import com.wultra.android.powerauth.networking.IApiCallResponseListener
 import com.wultra.android.powerauth.networking.OkHttpBuilderInterceptor
 import com.wultra.android.powerauth.networking.UserAgent
@@ -64,11 +64,10 @@ fun PowerAuthSDK.createOperationsService(appContext: Context, baseURL: String, h
  * @param gsonBuilder Custom GSON builder for deserialization of request. If you want to provide or own
  * deserialization logic, we recommend adding to the instance obtained from the OperationsUtils.defaultGsonBuilder().
  */
-fun PowerAuthSDK.createOperationsService(appContext: Context, baseURL: String, strategy: SSLValidationStrategy, userAgent: UserAgent? = null, gsonBuilder: GsonBuilder? = null): IOperationsService {
+fun PowerAuthSDK.createOperationsService(appContext: Context, baseURL: String, strategy: SSLValidationStrategy = SSLValidationStrategy.default(), userAgent: UserAgent? = null, gsonBuilder: GsonBuilder? = null): IOperationsService {
     val builder = OkHttpClient.Builder()
     strategy.configure(builder)
-    Logger.configure(builder)
-    return createOperationsService(appContext, baseURL, builder.build(), userAgent, gsonBuilder)
+    return OperationsService(this, appContext, builder.build(), baseURL, null, userAgent, gsonBuilder)
 }
 
 private typealias GetOperationsCallback = (result: Result<List<UserOperation>>) -> Unit
@@ -179,7 +178,7 @@ class OperationsService: IOperationsService {
                     }
                 })
             } else {
-                Logger.d("getOperation requested, but another request already running")
+                WMTLogger.w("getOperation requested, but another request already running")
             }
         }
     }
@@ -302,7 +301,7 @@ class OperationsService: IOperationsService {
     @Synchronized
     override fun startPollingOperations(pollingInterval: Long, delayStart: Boolean) {
         if (timer != null) {
-            Logger.w("Polling already in progress")
+            WMTLogger.w("Polling already in progress")
             return
         }
 
@@ -313,7 +312,7 @@ class OperationsService: IOperationsService {
         }
 
         val adjustedInterval = if (pollingInterval < minimumTimePollingInterval) {
-            Logger.w("Operations polling interval: $pollingInterval, must not be set below $minimumTimePollingInterval to prevent server overload.")
+            WMTLogger.w("Operations polling interval: $pollingInterval, must not be set below $minimumTimePollingInterval to prevent server overload.")
             minimumTimePollingInterval
         } else {
             pollingInterval
@@ -330,13 +329,13 @@ class OperationsService: IOperationsService {
             adjustedInterval
         )
         timer = t
-        Logger.d("Polling started with $pollingInterval milliseconds interval")
+        WMTLogger.i("Polling started with $pollingInterval milliseconds interval")
     }
 
     override fun stopPollingOperations() {
         timer?.cancel()
         timer = null
-        Logger.d("Operation polling stopped")
+        WMTLogger.i("Operation polling stopped")
     }
 }
 

@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.11.0 (May, 2024)
+
+- Changed name of the log class to the `WMTLogger`
+- Added listener to the log class
+
 ## 1.10.0 
 - Removed currentServerTime() method [(#139)](https://github.com/wultra/mtoken-sdk-android/pull/139)
 - Improved operations handling [(#138)](https://github.com/wultra/mtoken-sdk-android/pull/138)

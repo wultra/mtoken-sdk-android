@@ -20,7 +20,7 @@ import android.net.Uri
 import android.util.Base64
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
-import com.wultra.android.mtokensdk.common.Logger
+import com.wultra.android.mtokensdk.log.WMTLogger
 
 /**
  * Utility class used for handling Proximity Anti-fraud Checks
@@ -48,7 +48,7 @@ class PACUtils {
                 // Deeplink can have two query items with operationId & optional totp or single query item with JWT value
                 uri.getQueryParameter("oid")?.let { operationId ->
                     if (uri.query?.contains(operationId) == false) {
-                        Logger.e("Operation could not be resolved - probably contains invalid characters - please, encode the URL first")
+                        WMTLogger.e("Operation could not be resolved - probably contains invalid characters - please, encode the URL first")
                         return null
                     }
                     val totp = uri.getQueryParameter("totp") ?: uri.getQueryParameter("potp")
@@ -56,11 +56,11 @@ class PACUtils {
                 } ?: uri.queryParameterNames.firstOrNull()?.let {
                     return parseJWT(uri.getQueryParameter(it) ?: "")
                 } ?: run {
-                    Logger.e("Failed to parse deeplink. Valid keys not found in Uri: $uri")
+                    WMTLogger.e("Failed to parse deeplink. Valid keys not found in Uri: $uri")
                     return null
                 }
             } catch (t: Throwable) {
-                Logger.e("Failed to parse deeplink - $t")
+                WMTLogger.e("Failed to parse deeplink - $t")
                 return null
             }
         }
@@ -88,16 +88,16 @@ class PACUtils {
                         val json = String(dataPayload, Charsets.UTF_8)
                         Gson().fromJson(json, PACData::class.java)
                     } catch (e: Exception) {
-                        Logger.e("Failed to decode QR JWT from: $code")
-                        Logger.e("With error: ${e.message}")
+                        WMTLogger.e("Failed to decode QR JWT from: $code")
+                        WMTLogger.e("With error: ${e.message}")
                         null
                     }
                 } else {
-                    Logger.e("JWT Payload is empty, jwtParts contain: $jwtParts")
+                    WMTLogger.e("JWT Payload is empty, jwtParts contain: $jwtParts")
                 }
             }
 
-            Logger.e("Failed to decode QR JWT from: $jwtParts")
+            WMTLogger.e("Failed to decode QR JWT from: $jwtParts")
             return null
         }
     }

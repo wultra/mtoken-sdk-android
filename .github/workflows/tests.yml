@@ -10,7 +10,7 @@ on:
 jobs:
   tests:
     name: Tests
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout the repo
         uses: actions/checkout@v2
@@ -33,6 +33,11 @@ jobs:
           OP_URL: ${{ secrets.TESTS_OP_URL }}
           IN_URL: ${{ secrets.TESTS_IN_URL }}
         run: echo -e tests.sdk.cloudServerUrl="$CL_URL"\\ntests.sdk.cloudServerLogin="$CL_LGN"\\ntests.sdk.cloudServerPassword="$CL_PWD"\\ntests.sdk.cloudApplicationId="$CL_AID"\\ntests.sdk.enrollmentServerUrl="$ER_URL"\\ntests.sdk.operationsServerUrl="$OP_URL"\\ntests.sdk.inboxServerUrl="$IN_URL"\\ntests.sdk.sdkConfig="$SDK_CONFIG" > configs/integration-tests.properties
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
       - name: Test the app (integration tests)
         uses: reactivecircus/android-emulator-runner@v2
         with:

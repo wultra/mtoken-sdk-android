@@ -21,7 +21,7 @@ package com.wultra.android.mtokensdk.operation.expiration
 import android.os.Handler
 import android.os.Looper
 import androidx.annotation.MainThread
-import com.wultra.android.mtokensdk.common.Logger
+import com.wultra.android.mtokensdk.log.WMTLogger
 import java.util.*
 import kotlin.math.max
 
@@ -90,12 +90,12 @@ class OperationExpirationWatcher {
                 // Operation can expire during the networking communication. Such operation
                 // would be lost and never reported as expired.
                 if (op.isExpired(currentDate)) {
-                    Logger.w("OperationExpirationWatcher: You're adding an expired operation to watch.")
+                    WMTLogger.w("OperationExpirationWatcher: You're adding an expired operation to watch.")
                 }
             }
 
             if (operations.isEmpty()) {
-                Logger.w("OperationExpirationWatcher: Cannot watch empty array of operations")
+                WMTLogger.w("OperationExpirationWatcher: Cannot watch empty array of operations")
                 return@synchronized operationsToWatch
             }
 
@@ -103,16 +103,16 @@ class OperationExpirationWatcher {
             for (op in operations) {
                 // filter already added operations
                 if (operationsToWatch.any { it.equals(op) }) {
-                    Logger.w("OperationExpirationWatcher: Operation cannot be watched - already there.")
+                    WMTLogger.w("OperationExpirationWatcher: Operation cannot be watched - already there.")
                 } else {
                     opsToWatch.add(op)
                 }
             }
 
             if (opsToWatch.isEmpty()) {
-                Logger.w("OperationExpirationWatcher: All operations are already watched")
+                WMTLogger.w("OperationExpirationWatcher: All operations are already watched")
             } else {
-                Logger.d("OperationExpirationWatcher: Adding ${opsToWatch.count()} operation to watch.")
+                WMTLogger.i("OperationExpirationWatcher: Adding ${opsToWatch.count()} operation to watch.")
                 operationsToWatch.addAll(opsToWatch)
                 prepareTimer()
             }
@@ -156,10 +156,10 @@ class OperationExpirationWatcher {
                 // when nil is provided, we consider it as "stop all"
                 if (operations != null) {
                     operationsToWatch.removeAll { current -> operations.any { toRemove -> toRemove.equals(current) } }
-                    Logger.d("OperationExpirationWatcher: Stopped watching ${operations.count()} operations.")
+                    WMTLogger.i("OperationExpirationWatcher: Stopped watching ${operations.count()} operations.")
                 } else {
                     operationsToWatch.clear()
-                    Logger.d("OperationExpirationWatcher: Stopped watching all operations.")
+                    WMTLogger.i("OperationExpirationWatcher: Stopped watching all operations.")
                 }
                 prepareTimer()
             }
@@ -175,7 +175,7 @@ class OperationExpirationWatcher {
         timer = null
 
         if (operationsToWatch.isEmpty()) {
-            Logger.d("OperationExpirationWatcher: No operations to watch.")
+            WMTLogger.d("OperationExpirationWatcher: No operations to watch.")
             return
         }
 
@@ -190,7 +190,7 @@ class OperationExpirationWatcher {
             // This leads to a minimal "expire report time" of 5 seconds.
             val interval = max(5, firstOp.expires.toEpochSecond() - currentDateProvider.getCurrentDate().toEpochSecond())
 
-            Logger.d("OperationExpirationWatcher: Scheduling operation expire check in ${interval.toInt()} seconds.")
+            WMTLogger.d("OperationExpirationWatcher: Scheduling operation expire check in ${interval.toInt()} seconds.")
 
             val t = Timer("OperationsExpirationWatcherTimer", false)
             t.schedule(
@@ -207,7 +207,7 @@ class OperationExpirationWatcher {
                             operationsToWatch.removeAll { it.isExpired(currentDate) }
                             prepareTimer()
                             Handler(Looper.getMainLooper()).post {
-                                Logger.d("OperationExpirationWatcher: Reporting ${expiredOps.count()} expired operations.")
+                                WMTLogger.i("OperationExpirationWatcher: Reporting ${expiredOps.count()} expired operations.")
                                 listener?.operationsExpired(expiredOps)
                             }
                         }
