@@ -470,6 +470,14 @@ class UserOperation: IOperation {
     
     /** Proximity Check Data to be passed when OTP is handed to the app */
     var proximityCheck: ProximityCheck? = null
+
+
+    /**
+     *  Enum-like reason why the status has changed.
+     *
+     *  Max 32 characters are expected. Possible values depend on the backend implementation and configuration.
+     */
+    val statusReason: String?
 }
 ```
 

@@ -324,4 +324,30 @@ class IntegrationTests {
         }
         Assert.assertNull(authorizedFuture2.get(20, TimeUnit.SECONDS))
     }
+
+    @Test
+    fun testOperationCanceledWithReason() {
+        // create regular operation
+        val op = IntegrationUtils.createOperation(IntegrationUtils.Companion.Factors.F_2FA)
+        val cancelReason = "PREARRANGED_REASON"
+        // cancel the operation
+        IntegrationUtils.cancelOperation(op.operationId, cancelReason)
+
+        val future = CompletableFuture<List<OperationHistoryEntry>?>()
+        val auth = PowerAuthAuthentication.possessionWithPassword(pin)
+        ops.getHistory(auth) { result ->
+            result.onSuccess { future.complete(it) }
+                .onFailure { future.completeExceptionally(it) }
+        }
+
+        val operations = future.get(20, TimeUnit.SECONDS)
+        Assert.assertNotNull("Operations not retrieved", operations)
+        if (operations == null) {
+            return
+        }
+
+        val opRecord = operations.firstOrNull { it.operation.id == op.operationId }
+        Assert.assertNotNull(opRecord)
+        Assert.assertTrue("${opRecord?.operation?.statusReason} should be PREARRANGED_REASON",opRecord?.operation?.statusReason == "PREARRANGED_REASON")
+    }
 }

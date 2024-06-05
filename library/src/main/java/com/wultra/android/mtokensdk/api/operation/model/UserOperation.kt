@@ -80,7 +80,15 @@ open class UserOperation(
      * Proximity Check Data to be passed when OTP is handed to the app
      */
     @SerializedName("proximityCheck")
-    override var proximityCheck: ProximityCheck? = null
+    override var proximityCheck: ProximityCheck? = null,
+
+    /**
+     *  Enum-like reason why the status has changed.
+     *
+     *  Max 32 characters are expected. Possible values depend on the backend implementation and configuration.
+     */
+    @SerializedName("statusReason")
+    val statusReason: String?
 ) : IOperation, ExpirableOperation
 
 /**

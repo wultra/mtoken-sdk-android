@@ -191,6 +191,11 @@ class IntegrationUtils {
         }
 
         @Throws
+        fun cancelOperation(operationId: String, reason: String): StatusResponse {
+            return makeCall("", "$cloudServerUrl/v2/operations/$operationId?statusReason=$reason", "DELETE")
+        }
+
+        @Throws
         fun createNonPersonalizedPACOperation(factors: Factors): NonPersonalisedTOTPOperationObject {
             val opBody = when (factors) {
                 Factors.F_2FA -> { """
