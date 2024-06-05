@@ -348,6 +348,6 @@ class IntegrationTests {
 
         val opRecord = operations.firstOrNull { it.operation.id == op.operationId }
         Assert.assertNotNull(opRecord)
-        Assert.assertTrue("${opRecord?.operation?.statusReason} should be PREARRANGED_REASON",opRecord?.operation?.statusReason == "PREARRANGED_REASON")
+        Assert.assertTrue("${opRecord?.operation?.statusReason} should be PREARRANGED_REASON", opRecord?.operation?.statusReason == "PREARRANGED_REASON")
     }
 }
