@@ -102,11 +102,17 @@ class PushTests {
         Assert.assertNull(makePush("mtoken.operationFinished", "1", null, "authentication.success"))
     }
 
-    private fun makePush(type: String?, id: String?, name: String?, opResult: String?): PushMessage? {
+    @Test
+    fun `test inbox new message`() {
+        Assert.assertNotNull(makePush("mtoken.inboxMessage.new", null, null, null, "666"))
+    }
+
+    private fun makePush(type: String?, id: String?, name: String?, opResult: String?, inboxId: String? = null): PushMessage? {
         val map = mutableMapOf<String, String>()
         type?.let { map["messageType"] = it }
         id?.let { map["operationId"] = it }
         name?.let { map["operationName"] = it }
+        inboxId?.let { map["inboxId"] = it }
         opResult?.let { map["mtokenOperationResult"] = it }
         return PushParser.parseNotification(map)
     }

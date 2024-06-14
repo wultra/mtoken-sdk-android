@@ -26,7 +26,7 @@ class PushParser {
         /**
          * When you receive a push notification, you can test it here if it's a "WMT" notification.
          *
-         * Return type can be [PushMessageOperationCreated] or [PushMessageOperationFinished]
+         * Return type can be [PushMessageOperationCreated], [PushMessageOperationFinished] or [PushMessageInboxReceived]
          *
          * @param notificationData: data of received notification.
          * @return parsed known [PushMessage] or null
@@ -34,21 +34,32 @@ class PushParser {
         @JvmStatic
         @JvmName("parseNotification")
         fun parseNotification(notificationData: Map<String, String>): PushMessage? {
+            return when (notificationData["messageType"]) {
+                "mtoken.operationInit" -> parseOperationCreated(notificationData)
+                "mtoken.operationFinished" -> parseOperationFinished(notificationData)
+                "mtoken.inboxMessage.new" -> parseInboxMessageReceived(notificationData)
+                else -> null
+            }
+        }
 
+        // Helper methods
+        private fun parseOperationCreated(notificationData: Map<String, String>): PushMessage? {
             val id = notificationData["operationId"] ?: return null
             val name = notificationData["operationName"] ?: return null
+            return PushMessageOperationCreated(id, name, notificationData)
+        }
 
-            return when (notificationData["messageType"]) {
-                "mtoken.operationInit" -> {
-                    PushMessageOperationCreated(id, name, notificationData)
-                }
-                "mtoken.operationFinished" -> {
-                    notificationData["mtokenOperationResult"]?.let { return PushMessageOperationFinished(id, name, PushMessageOperationFinished.parseResult(it), notificationData) }
-                }
-                else -> {
-                    null
-                }
-            }
+        private fun parseOperationFinished(notificationData: Map<String, String>): PushMessage? {
+            val id = notificationData["operationId"] ?: return null
+            val name = notificationData["operationName"] ?: return null
+            val result = notificationData["mtokenOperationResult"] ?: return null
+            val operationResult = PushMessageOperationFinished.parseResult(result)
+            return PushMessageOperationFinished(id, name, operationResult, notificationData)
+        }
+
+        private fun parseInboxMessageReceived(notificationData: Map<String, String>): PushMessage? {
+            val inboxId = notificationData["inboxId"] ?: return null
+            return PushMessageInboxReceived(inboxId, notificationData)
         }
     }
 }
@@ -129,3 +140,14 @@ class PushMessageOperationFinished(
         }
     }
 }
+
+/**
+ * Created when a new inbox message was triggered.
+ */
+class PushMessageInboxReceived(
+    /** Id of the inbox message. */
+    val id: String,
+
+    /** Original data on which was the push message constructed. */
+    originalData: Map<String, String>
+): PushMessage(originalData)
