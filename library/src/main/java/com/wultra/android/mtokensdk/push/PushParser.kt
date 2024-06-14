@@ -34,7 +34,9 @@ class PushParser {
         @JvmStatic
         @JvmName("parseNotification")
         fun parseNotification(notificationData: Map<String, String>): PushMessage? {
-            return when (notificationData["messageType"]) {
+            val messageType = notificationData["messageType"] ?: return null
+
+            return when (messageType) {
                 "mtoken.operationInit" -> parseOperationCreated(notificationData)
                 "mtoken.operationFinished" -> parseOperationFinished(notificationData)
                 "mtoken.inboxMessage.new" -> parseInboxMessageReceived(notificationData)
