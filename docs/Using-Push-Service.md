@@ -129,6 +129,9 @@ The `PushMessage` is an abstract class that is implemented by following classes 
   -  `name` of the operation
   -  `result` of the operation (for example that the operation was canceled by the user).
   -  `originalData` - data on which was the push message constructed
+- `PushMessageInboxReceived` - a new inbox message was triggered with the id
+  -  `id` of the message
+  -  `originalData` - data on which was the push message constructed
 
 
 Example push notification processing:
