@@ -157,6 +157,14 @@ data class FormData(
     val message: String,
 
     /**
+     * Texts for the result of the operation
+     *
+     * This includes messages for different outcomes of the operation such as success, rejection, and failure.
+     */
+    @SerializedName("resultTexts")
+    val resultTexts: ResultTexts?,
+
+    /**
      * Other attributes.
      *
      * Note that attributes can be presented with different classes (Starting with Attribute*) based on the attribute type.
