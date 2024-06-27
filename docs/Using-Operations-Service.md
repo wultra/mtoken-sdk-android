@@ -491,6 +491,13 @@ class FormData {
 
     /** Message for the user */
     val message: String
+    
+    /**
+     *   Texts for the result of the operation
+     *   
+     *   This includes messages for different outcomes of the operation such as success, rejection, and failure.
+     */
+    val resultTexts: ResultTexts?
 
     /**
      * Other attributes. 
@@ -500,6 +507,21 @@ class FormData {
      */
     val attributes: List<Attribute>
 }
+```
+
+Definition of `ResultTexts`:
+
+```kotlin
+class ResultTexts(
+    /** Optional message to be displayed when the approval of the operation is successful. */
+    val success: String?,
+
+    /** Optional message to be displayed when the operation approval or rejection fails. */
+    val failure: String?,
+
+    /** Optional message to be displayed when the operation is rejected. */
+    val reject: String?
+)
 ```
 
 Attributes types:  

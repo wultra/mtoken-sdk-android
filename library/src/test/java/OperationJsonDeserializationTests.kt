@@ -367,4 +367,31 @@ class OperationJsonDeserializationTests {
             assert(resp.responseObject.find { it.status == status } != null)
         }
     }
+
+    @Test
+    fun `test result texts`() {
+
+        val json = """
+        {"status":"OK", "currentTimestamp":"2023-02-10T12:30:42+0000", "responseObject":[{"id":"930febe7-f350-419a-8bc0-c8883e7f71e3", "name":"authorize_payment", "data":"A1*A100CZK*Q238400856/0300**D20170629*NUtility Bill Payment - 05/2017", "operationCreated":"2018-08-08T12:30:42+0000", "operationExpires":"2018-08-08T12:35:43+0000", "allowedSignatureType": {"type":"2FA", "variants": ["possession_knowledge", "possession_biometry"]}, "formData": {"title":"Potvrzení platby", "message":"Dobrý den,prosíme o potvrzení následující platby:", "attributes": [{"type":"AMOUNT", "id":"operation.amount", "label":"Částka", "currency":"CZK"}, { "type": "AMOUNT_CONVERSION", "id": "operation.conversion", "label": "Conversion", "dynamic": true, "sourceAmount": 1.26, "sourceCurrency": "ETC", "targetAmount": 1710.98, "targetCurrency": "USD"}]}}, {"id":"930febe7-f350-419a-8bc0-c8883e7f71e3", "name":"authorize_payment", "data":"A1*A100CZK*Q238400856/0300**D20170629*NUtility Bill Payment - 05/2017", "operationCreated":"2018-08-08T12:30:42+0000", "operationExpires":"2018-08-08T12:35:43+0000", "allowedSignatureType": {"type":"2FA", "variants": ["possession_knowledge", "possession_biometry"]}, "formData": {"title":"Potvrzení platby", "message":"Dobrý den,prosíme o potvrzení následující platby:", "resultTexts": {"success": "Payment of was confirmed"}, "attributes": [{"type":"AMOUNT", "id":"operation.amount", "label":"Částka", "currency":"CZK"}, { "type": "AMOUNT_CONVERSION", "id": "operation.conversion", "label": "Conversion", "dynamic": true, "sourceAmount": 1.26, "sourceCurrency": "ETC", "targetAmount": 1710.98, "targetCurrency": "USD"}]}}, {"id":"930febe7-f350-419a-8bc0-c8883e7f71e3", "name":"authorize_payment", "data":"A1*A100CZK*Q238400856/0300**D20170629*NUtility Bill Payment - 05/2017", "operationCreated":"2018-08-08T12:30:42+0000", "operationExpires":"2018-08-08T12:35:43+0000", "allowedSignatureType": {"type":"2FA", "variants": ["possession_knowledge", "possession_biometry"]}, "formData": {"title":"Potvrzení platby", "message":"Dobrý den,prosíme o potvrzení následující platby:", "resultTexts": {"success": "Payment of was confirmed", "reject": "Payment was rejected", "failure": "Payment approval failed"},"attributes": [{"type":"AMOUNT", "id":"operation.amount", "label":"Částka", "currency":"CZK"}, { "type": "AMOUNT_CONVERSION", "id": "operation.conversion", "label": "Conversion", "dynamic": true, "sourceAmount": 1.26, "sourceCurrency": "ETC", "targetAmount": 1710.98, "targetCurrency": "USD"}]}}]}
+        """
+        val response = typeAdapter.fromJson(json)
+        Assert.assertNotNull("Failed to parse JSON data", response)
+
+        val responseObject = response?.responseObject
+        Assert.assertNotNull("Response object is null", responseObject)
+
+        Assert.assertNull(responseObject?.get(0)?.formData?.resultTexts)
+
+        val resultTexts1 = responseObject?.get(1)?.formData?.resultTexts
+        Assert.assertNotNull("Failed to get resultTexts1", resultTexts1)
+        Assert.assertEquals("Payment of was confirmed", resultTexts1?.success)
+        Assert.assertNull(resultTexts1?.reject)
+        Assert.assertNull(resultTexts1?.failure)
+
+        val resultTexts2 = responseObject?.get(2)?.formData?.resultTexts
+        Assert.assertNotNull("Failed to get resultTexts2", resultTexts2)
+        Assert.assertEquals("Payment of was confirmed", resultTexts2?.success)
+        Assert.assertEquals("Payment was rejected", resultTexts2?.reject)
+        Assert.assertEquals("Payment approval failed", resultTexts2?.failure)
+    }
 }
