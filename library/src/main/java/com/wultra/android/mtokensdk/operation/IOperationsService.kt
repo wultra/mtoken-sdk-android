@@ -89,6 +89,22 @@ interface IOperationsService {
     fun getHistory(authentication: PowerAuthAuthentication, callback: (result: Result<List<OperationHistoryEntry>>) -> Unit)
 
     /**
+     * Retrieves operation detail based on operation ID
+     *
+     * @param operationId The identifier of the specific operation.
+     * @param callback Callback with result.
+     */
+    fun getDetail(operationId: String, callback: (Result<UserOperation>) -> Unit)
+
+    /**
+     * Claims the "non-personalized" operation and assigns it to the user.
+     *
+     * @param operationId Operation ID that will be claimed as belonging to the user.
+     * @param callback Callback with result.
+     */
+    fun claim(operationId: String, callback: (Result<UserOperation>) -> Unit)
+
+    /**
      * Returns if operation polling is running
      */
     fun isPollingOperations(): Boolean
