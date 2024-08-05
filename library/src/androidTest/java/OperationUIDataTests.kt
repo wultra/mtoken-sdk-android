@@ -21,6 +21,7 @@ import com.wultra.android.mtokensdk.api.operation.model.*
 import com.wultra.android.mtokensdk.operation.JSONValue
 import com.wultra.android.mtokensdk.operation.OperationsUtils
 import junit.framework.TestCase.assertEquals
+import junit.framework.TestCase.assertNull
 import junit.framework.TestCase.fail
 import org.junit.Test
 
@@ -209,10 +210,25 @@ class OperationUIDataTests {
     }
 
     @Test
+    fun testListTemplates() {
+        val uiResult = prepareUIData(templatesList)
+        if (uiResult == null) {
+            fail("Failed to parse JSON data")
+            return
+        }
+
+        assertEquals("POSITIVE", uiResult.templates?.list?.style)
+        assertEquals("$\\{operation.request_no} Withdrawal Initiation", uiResult.templates?.list?.header)
+        assertNull(uiResult.templates?.list?.title)
+        assertNull(uiResult.templates?.list?.message)
+        assertNull(uiResult.templates?.list?.image)
+    }
+
+    @Test
     fun testTemplates() {
         val uiResult = prepareUIData(uiDataWithTemplates)
         if (uiResult == null) {
-            assert(false) { "Failed to parse JSON data" }
+            fail("Failed to parse JSON data")
             return
         }
 
@@ -244,6 +260,11 @@ class OperationUIDataTests {
         assertEquals(true, uiResult.templates?.detail?.sections?.get(0)?.cells?.get(2)?.visibleTitle)
         assertEquals(false, uiResult.templates?.detail?.sections?.get(0)?.cells?.get(2)?.canCopy)
         assertEquals(Templates.DetailTemplate.Section.Cell.Collapsable.COLLAPSED, uiResult.templates?.detail?.sections?.get(0)?.cells?.get(2)?.collapsable)
+
+        assertEquals(3, uiResult.templates?.detail?.sections?.get(0)?.cells?.size)
+
+        assertNull(uiResult.templates?.detail?.sections?.get(1)?.cells)
+        assertNull(uiResult.templates?.detail?.sections?.get(2)?.cells)
     }
 
     /** Helpers */
@@ -498,8 +519,23 @@ class OperationUIDataTests {
     }
     """
 
-    private val uiDataWithTemplates: String = """
+    private val templatesList: String = """
         {
+            "flipButtons": false,
+            "blockApprovalOnCall": true,
+            "templates": {
+                "list": {
+                    "style": "POSITIVE",
+                    "header": "${'$'}\\{operation.request_no} Withdrawal Initiation",
+                    "message": null,
+                    "image": true
+                }
+            }
+        }
+    """
+
+    private val uiDataWithTemplates: String = """
+{
             "flipButtons": false,
             "blockApprovalOnCall": true,
             "templates": {
@@ -523,7 +559,8 @@ class OperationUIDataTests {
                                     "visibleTitle": false,
                                     "style": null,
                                     "canCopy": true,
-                                    "collapsable": "NO"
+                                    "collapsable": "NO",
+                                    "centered": true
                                 },
                                 {
                                     "style": "CONVERSION",
@@ -537,8 +574,28 @@ class OperationUIDataTests {
                                     "style": null,
                                     "canCopy": false,
                                     "collapsable": "COLLAPSED"
+                                },
+                                {
+                                    "visibleTitle": true
                                 }
                             ]
+                        },
+                        {
+                            "style": "FOOTER",
+                            "title": "operation.footer"
+                        },
+                        {
+                            "style": "FOOTER",
+                            "title": "operation.footer",
+                            "cells":
+                                {
+                                    "name": "operation.amount",
+                                    "visibleTitle": false,
+                                    "style": null,
+                                    "canCopy": true,
+                                    "collapsable": "NO",
+                                    "centered": true
+                                }
                         }
                     ]
                 }

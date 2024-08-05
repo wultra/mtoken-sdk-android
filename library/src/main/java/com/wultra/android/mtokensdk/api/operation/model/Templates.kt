@@ -16,19 +16,17 @@
 
 package com.wultra.android.mtokensdk.api.operation.model
 
-
 /**
- * This typealias specifies that attributes using it should refer to `OperationAttributes`.
- *
- * AttributeId is supposed to be `OperationAttribute.Label.id`
+ * Value of the `AttributeId` is referencing an existing `WMTOperationAttribute` by `WMTOperationAttribute.AttributeLabel.id`
  */
 typealias AttributeId = String
 
 /**
- * This typealias specifies that attributes using might refer to `OperationAttributes`
- * and additional characters and might require additional parsing .
+ * Value of the `AttributeFormatted` typealias contains placeholders for operation attributes,
+ * which are specified using the syntax `${operation.attribute}`.
  *
  * Example might be `"${operation.date} - ${operation.place}"`
+ * Placeholders in `AttributeFormatted` need to be parsed and replaced with actual attribute values.
  */
 typealias AttributeFormatted = String
 
@@ -38,7 +36,15 @@ typealias AttributeFormatted = String
  * Contains prearranged styles for the operation attributes for the app to display
  */
 data class Templates(
+
+    /**
+     * How the operation should look like in the list of operations
+     */
     val list: ListTemplate?,
+
+    /**
+     * How the operation detail should look like when viewed individually.
+     */
     val detail: DetailTemplate?
 ) {
 
@@ -48,10 +54,20 @@ data class Templates(
      * List cell usually contains header, title, message(subtitle) and image
      */
     data class ListTemplate(
+
+        /** Prearranged name which can be processed by the app */
         val style: String?,
+
+        /** Attribute which will be used for the header */
         val header: AttributeFormatted?,
+
+        /** Attribute which will be used for the title */
         val title: AttributeFormatted?,
+
+        /** Attribute which will be used for the message */
         val message: AttributeFormatted?,
+
+        /** Attribute which will be used for the image */
         val image: AttributeId?
     )
 
@@ -62,8 +78,14 @@ data class Templates(
      * Attributes not mentioned in the `DetailTemplate` should be displayed without custom styling.
      */
     data class DetailTemplate(
+
+        /** Predefined style name that can be processed by the app to customize the overall look of the operation. */
         val style: String?,
+
+        /** Indicates if the header should be created from form data (title, message, image) or customized for a specific operation */
         val showTitleAndMessage: Boolean?,
+
+        /** Sections of the operation data. */
         val sections: List<Section>?
     ) {
 
@@ -71,8 +93,14 @@ data class Templates(
          * Operation data can be divided into sections
          */
         data class Section(
+
+            /** Prearranged name which can be processed by the app to customize the section */
             val style: String?,
+
+            /** Attribute for section title */
             val title: AttributeId?,
+
+            /** Each section can have multiple cells of data */
             val cells: List<Cell>?
         ) {
 
@@ -80,16 +108,35 @@ data class Templates(
              * Each section can have multiple cells of data
              */
             data class Cell(
+
+                /** Which attribute shall be used */
                 val name: AttributeId,
+
+                /** Prearranged name which can be processed by the app to customize the cell */
                 val style: String?,
+
+                /** Should be the title visible or hidden */
                 val visibleTitle: Boolean?,
+
+                /** Should be the content copyable */
                 val canCopy: Boolean?,
-                val collapsable: Collapsable?
+
+                /** Define if the cell should be collapsable */
+                val collapsable: Collapsable?,
+
+                /** If value should be centered */
+                val centered: Boolean?
             ) {
 
                 enum class Collapsable {
+
+                    /** The cell should not be collapsable */
                     NO,
+
+                    /** The cell should be collapsable and in collapsed state */
                     COLLAPSED,
+
+                    /** The cell should be collapsable and in expanded state */
                     YES
                 }
             }
