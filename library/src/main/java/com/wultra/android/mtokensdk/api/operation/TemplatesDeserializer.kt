@@ -96,7 +96,6 @@ internal class SectionDeserializer : JsonDeserializer<Templates.DetailTemplate.S
         val style: String? = jsonObject.get("style")?.asStringWithLogging("ListTemplate.Section.style")
         val title: String? = jsonObject.get("title")?.asStringWithLogging("ListTemplate.Section.title")
 
-
         val cells: List<Templates.DetailTemplate.Section.Cell>? = jsonObject.get("cells")?.let { cellsElement ->
             try {
                 if (cellsElement.isJsonArray) {
@@ -120,7 +119,6 @@ internal class SectionDeserializer : JsonDeserializer<Templates.DetailTemplate.S
                 null
             }
         }
-
 
         return Templates.DetailTemplate.Section(style, title, cells)
     }
