@@ -14,6 +14,7 @@
 - [UserOperation](#useroperation)
 - [Creating a Custom Operation](#creating-a-custom-operation)
 - [ProximityCheck](#proximitycheck)
+- [Templates](#templates)
 
 ## Introduction
 <!-- end -->
@@ -553,6 +554,13 @@ class OperationUIData {
      * Type of PostApprovalScreen is presented with different classes (Starting with `PostApprovalScreen*`)
      */
     val postApprovalScreen: PostApprovalScreen?
+
+    /**
+     * Detailed information about displaying the operation data
+     *
+     * Contains prearranged structure of the operation attributes for the app to display
+     */
+    val templates: Templates?
 }
 ```
 
@@ -665,3 +673,195 @@ data class PACData(
 
 - Accepted formats:
   - notice that the totp key in JWT and in query shall be `potp`!
+
+## Templates
+
+`Templates` are part of `OperationUIData`.
+`Templates` class provides detailed information about displaying operation data within the application.
+
+
+`typealias AttributeName = String` is used across the `Templates`. It explicitly says that the Strings that will be assigned to properties is actually `OperationAttributes.AttributeLabel.id` and its **value** shall displayed.
+
+Definition of the `Templates `:
+
+```kotlin
+data class Templates(
+    /** How the operation should look like in the list of operations */
+    val list: ListTemplate?,
+
+    /** How the operation detail should look like when viewed individually. */
+    val detail: DetailTemplate?
+)
+```
+
+`ListTemplate` and `DetailTemplate` go as follows:
+
+```kotlin
+data class ListTemplate(
+    /** Prearranged name which can be processed by the app */
+    val style: String?,
+
+    /** Attribute which will be used for the header */
+    val header: AttributeFormatted?,
+
+    /** Attribute which will be used for the title */
+    val title: AttributeFormatted?,
+
+    /** Attribute which will be used for the message */
+    val message: AttributeFormatted?,
+
+    /** Attribute which will be used for the image */
+    val image: AttributeId?
+)
+
+data class DetailTemplate(
+        /** Predefined style name that can be processed by the app to customize the overall look of the operation. */
+        val style: String?,
+
+        /** Indicates if the header should be created from form data (title, message) or customized for a specific operation */
+        val showTitleAndMessage: Boolean?,
+
+        /** Sections of the operation data. */
+        val sections: List<Section>?
+    ) {
+
+    data class Section(
+        /** Prearranged name which can be processed by the app to customize the section */
+        val style: String?,
+
+        /** Attribute for section title */
+        val title: AttributeId?,
+
+        /** Each section can have multiple cells of data */
+        val cells: List<Cell>?
+    ) {
+
+        data class Cell(
+            /** Which attribute shall be used */
+            val name: AttributeId,
+
+            /** Prearranged name which can be processed by the app to customize the cell */
+            val style: String?,
+
+            /** Should be the title visible or hidden */
+            val visibleTitle: Boolean?,
+
+            /** Should be the content copyable */
+            val canCopy: Boolean?,
+
+            /** Define if the cell should be collapsable */
+            val collapsable: Collapsable?,
+
+            /** If value should be centered */
+            val centered: Boolean?
+        ) {
+
+            enum class Collapsable {
+
+                /** The cell should not be collapsable */
+                NO,
+
+                /** The cell should be collapsable and in collapsed state */
+                COLLAPSED,
+
+                /** The cell should be collapsable and in expanded state */
+                YES
+            }
+        }
+    }
+}
+
+```
+
+###Template Visual Parser
+
+For convenience we provide a utility class responsible for preparing visual representations of `UserOperation` from received `Templates`. The parser translates `AttributeNames` from templates and returnes usable Strings values instead. Parser also walways returns the source template from which the data was created.
+
+```kotlin
+class TemplateVisualParser {
+
+    companion object {
+    
+        /** Prepares the visual representation for the given `UserOperation` in a list view. */
+        fun prepareForList(operation: UserOperation): TemplateListVisual {
+            return operation.prepareVisualListDetail()
+        }
+
+        /** Prepares the visual representation for a detail view of the given `UserOperation`. */
+        fun prepareForDetail(operation: UserOperation): TemplateDetailVisual {
+            return operation.prepareVisualDetail()
+        }
+    }
+}
+
+```
+
+
+#### TemplateListVisual
+
+`TemplateListVisual` holds the visual data for displaying a `UserOperation` in a list view (RecyclerView/ListView/LazyColumn).
+
+```kotlin
+data class TemplateListVisual(
+    /** The header of the cell */
+    val header: String? = null,
+    /** The title of the cell */
+    val title: String? = null,
+    /** The message (subtitle) of the cell */
+    val message: String? = null,
+    /** Predefined style of the cell on which the implementation can react */
+    val style: String? = null,
+    /** URL of the cell thumbnail */
+    val thumbnailImageURL: String? = null,
+    /** Complete template from which the TemplateListVisual was created */
+    val template: Templates.ListTemplate? = null
+)
+```
+
+#### TemplateDetailVisual
+
+`TemplateDetailVisual` holds the visual data for displaying a detailed view of a `UserOperation`. It contains style to which the app can react and adjust the operation style. It also contains list of `UserOperationVisualSection `. 
+
+```kotlin
+data class TemplateDetailVisual(
+
+    /** Predefined style of the whole operation detail to which the app can react and adjust the operation visual */
+    val style: String?,
+
+    /** An array of `UserOperationVisualSection` defining the sections of the detailed view. */
+    val sections: List<UserOperationVisualSection>
+)
+```
+
+Sections contain style, title and cells properties.
+
+```kotlin
+data class UserOperationVisualSection(
+
+    /** Predefined style of the section to which the app can react and adjust the operation visual */
+    val style: String? = null,
+
+    /** The title value for the section */
+    val title: String? = null,
+
+    /** An array of cells with `FormData` header and message or visual cells based on `OperationAttributes` */
+    val cells: List<UserOperationVisualCell>
+)
+```
+
+`UserOperationVisualCell` is the basic building block of the UserOperation. We differentiate between 5 different cell types:
+<ol>
+  <li>`UserOperationHeaderVisualCell` - is a header in a user operation's detail header view.</li>
+  - it is created from UserOperation FormData title
+  <li>`UserOperationMessageVisualCell` - is a message cell in a user operation's header view.</li>
+  - it is created from UserOperation FormData message
+  <li>`UserOperationHeadingVisualCell` - is a heading ("section separator") cell in a user operation's detailed view.</li>
+  - it is created from `HEADING` FormData attribute
+  <li>`UserOperationImageVisualCell` -  is an image cell in a user operation's detailed view.</li>
+  - it is created from `IMAGE` FormData attribute
+  <li>`UserOperationValueAttributeVisualCell` - is value attribute cell in a user operation's detailed view.</li>
+  - it is created from the remaining (`AMOUNT`, `AMOUNT_CONVERSION `, `KEY_VALUE`, `NOTE`) FormData attribute
+</ol>
+
+> [!WARNING]
+> At this moment `PARTY_INFO` & `UNKNOWN` attributes are not supported at this moment

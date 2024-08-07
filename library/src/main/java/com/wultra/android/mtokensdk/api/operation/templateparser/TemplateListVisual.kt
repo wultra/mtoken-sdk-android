@@ -32,11 +32,17 @@ import java.net.URL
  * `TemplateListVisual` holds the visual data for displaying a user operation in a list view (RecyclerView/ListView).
  */
 data class TemplateListVisual(
+    /** The header of the cell */
     val header: String? = null,
+    /** The title of the cell */
     val title: String? = null,
+    /** The message (subtitle) of the cell */
     val message: String? = null,
+    /** Predefined style of the cell on which the implementation can react */
     val style: String? = null,
-    val thumbnailImageURL: URL? = null,
+    /** URL of the cell thumbnail */
+    val thumbnailImageURL: String? = null,
+    /** Complete template from which the TemplateListVisual was created */
     val template: Templates.ListTemplate? = null
 )
 
@@ -54,11 +60,11 @@ fun UserOperation.prepareVisualListDetail(): TemplateListVisual {
     val message: String? = listTemplate?.message?.replacePlaceholders(attributes)
         ?: if (this.formData.message.isNotEmpty()) this.formData.message else null
 
-    val imageUrl: URL? = listTemplate?.image?.let { imgAttr ->
+    val imageUrl: String? = listTemplate?.image?.let { imgAttr ->
         this.formData.attributes
             .filterIsInstance<ImageAttribute>()
             .firstOrNull { it.label.id == imgAttr }
-            ?.let { URL(it.thumbnailUrl) }
+            ?.thumbnailUrl
     }
 
     return TemplateListVisual(

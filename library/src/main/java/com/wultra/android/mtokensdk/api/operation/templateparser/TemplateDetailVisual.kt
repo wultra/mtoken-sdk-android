@@ -25,7 +25,6 @@ import com.wultra.android.mtokensdk.api.operation.model.NoteAttribute
 import com.wultra.android.mtokensdk.api.operation.model.Templates
 import com.wultra.android.mtokensdk.api.operation.model.UserOperation
 import com.wultra.android.mtokensdk.log.WMTLogger
-import java.net.URL
 
 /**
  * `TemplateDetailVisual` holds the visual data for displaying a detailed view of a user operation.
@@ -126,10 +125,10 @@ data class UserOperationValueAttributeVisualCell(
 data class UserOperationImageVisualCell(
 
     /** The URL of the thumbnail image */
-    val urlThumbnail: URL,
+    val urlThumbnail: String,
 
     /** The URL of the full size image */
-    val urlFull: URL? = null,
+    val urlFull: String? = null,
 
     /** Predefined style of the section cell, app shall react to it and should change the visual of the cell */
     val style: String? = null,
@@ -276,8 +275,8 @@ private fun createCell(
         Attribute.Type.IMAGE -> {
             val image = attr as? ImageAttribute ?: return null
             UserOperationImageVisualCell(
-                urlThumbnail = URL(image.thumbnailUrl),
-                urlFull = image.originalUrl?.let { URL(it) },
+                urlThumbnail = image.thumbnailUrl,
+                urlFull = image.originalUrl,
                 style = templateCell?.style,
                 attribute = image,
                 cellTemplate = templateCell
