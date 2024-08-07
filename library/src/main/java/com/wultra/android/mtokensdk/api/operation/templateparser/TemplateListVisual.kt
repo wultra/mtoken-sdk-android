@@ -26,7 +26,6 @@ import com.wultra.android.mtokensdk.api.operation.model.NoteAttribute
 import com.wultra.android.mtokensdk.api.operation.model.Templates
 import com.wultra.android.mtokensdk.api.operation.model.UserOperation
 import com.wultra.android.mtokensdk.log.WMTLogger
-import java.net.URL
 
 /**
  * `TemplateListVisual` holds the visual data for displaying a user operation in a list view (RecyclerView/ListView).
