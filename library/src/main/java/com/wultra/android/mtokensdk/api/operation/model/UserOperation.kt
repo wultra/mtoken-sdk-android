@@ -192,7 +192,15 @@ data class OperationUIData(
      * Type of PostApprovalScreen is presented with different classes (Starting with `PostApprovalScreen*`)
      */
     @SerializedName("postApprovalScreen")
-    val postApprovalScreen: PostApprovalScreen?
+    val postApprovalScreen: PostApprovalScreen?,
+
+    /**
+     * Detailed information about displaying the operation data
+     *
+     * Contains prearranged styles for the operation attributes for the app to display
+     */
+    @SerializedName("templates")
+    val templates: Templates? = null
 )
 
 /**
