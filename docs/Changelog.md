@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.12.0 (TBA)
+
+- Added resultTexts to UserOperation [(#152)](https://github.com/wultra/mtoken-sdk-ios/pull/152)
+- Extended PushParser to support parsing of inbox notifications [(#150)](https://github.com/wultra/mtoken-sdk-android/pull/150)
+- Added statusReason to UserOperation [(#148)](https://github.com/wultra/mtoken-sdk-android/pull/148)
+
 ## 1.11.0 (May, 2024)
 
 - Changed name of the log class to the `WMTLogger`

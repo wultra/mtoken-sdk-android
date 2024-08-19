@@ -470,6 +470,14 @@ class UserOperation: IOperation {
     
     /** Proximity Check Data to be passed when OTP is handed to the app */
     var proximityCheck: ProximityCheck? = null
+
+
+    /**
+     *  Enum-like reason why the status has changed.
+     *
+     *  Max 32 characters are expected. Possible values depend on the backend implementation and configuration.
+     */
+    val statusReason: String?
 }
 ```
 
@@ -483,6 +491,13 @@ class FormData {
 
     /** Message for the user */
     val message: String
+    
+    /**
+     *   Texts for the result of the operation
+     *   
+     *   This includes messages for different outcomes of the operation such as success, rejection, and failure.
+     */
+    val resultTexts: ResultTexts?
 
     /**
      * Other attributes. 
@@ -492,6 +507,21 @@ class FormData {
      */
     val attributes: List<Attribute>
 }
+```
+
+Definition of `ResultTexts`:
+
+```kotlin
+class ResultTexts(
+    /** Optional message to be displayed when the approval of the operation is successful. */
+    val success: String?,
+
+    /** Optional message to be displayed when the operation approval or rejection fails. */
+    val failure: String?,
+
+    /** Optional message to be displayed when the operation is rejected. */
+    val reject: String?
+)
 ```
 
 Attributes types:  
@@ -629,7 +659,7 @@ data class PACData(
 ```
 
 - two methods are provided:
-  - `parseDeeplink(uri: Uri): PACData?` - URI is expected to be in the format `"scheme://code=$JWT"` or `scheme://operation?oid=5b753d0d-d59a-49b7-bec4-eae258566dbb&potp=12345678}`
+  - `parseDeeplink(uri: Uri): PACData?` - URI is expected to be in the format `scheme://code=$JWT` or `scheme://operation?oid=5b753d0d-d59a-49b7-bec4-eae258566dbb&potp=12345678`
   - `parseQRCode(code: String): PACData?` - code is to be expected in the same format as deeplink formats or as a plain JWT
   - mentioned JWT should be in the format `{“typ”:”JWT”, “alg”:”none”}.{“oid”:”5b753d0d-d59a-49b7-bec4-eae258566dbb”, “potp”:”12345678”} `
 
