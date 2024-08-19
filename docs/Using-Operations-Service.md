@@ -773,7 +773,7 @@ data class DetailTemplate(
 
 ```
 
-###Template Visual Parser
+### Template Visual Parser
 
 For convenience we provide a utility class responsible for preparing visual representations of `UserOperation` from received `Templates`. The parser translates `AttributeNames` from templates and returnes usable Strings values instead. Parser also walways returns the source template from which the data was created.
 
@@ -864,4 +864,4 @@ data class UserOperationVisualSection(
 </ol>
 
 > [!WARNING]
-> At this moment `PARTY_INFO` & `UNKNOWN` attributes are not supported at this moment
+> At this moment `PARTY_INFO` & `UNKNOWN` attributes are not supported
