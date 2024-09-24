@@ -16,13 +16,12 @@
 
 package com.wultra.android.mtokensdk.test
 
-import com.wultra.android.mtokensdk.api.operation.model.OperationHistoryEntry
-import com.wultra.android.mtokensdk.api.operation.model.OperationHistoryEntryStatus
 import com.wultra.android.mtokensdk.api.operation.model.PreApprovalScreen
 import com.wultra.android.mtokensdk.api.operation.model.ProximityCheck
 import com.wultra.android.mtokensdk.api.operation.model.ProximityCheckType
 import com.wultra.android.mtokensdk.api.operation.model.QROperationParser
 import com.wultra.android.mtokensdk.api.operation.model.UserOperation
+import com.wultra.android.mtokensdk.api.operation.model.UserOperationStatus
 import com.wultra.android.mtokensdk.operation.*
 import com.wultra.android.mtokensdk.operation.RejectionData
 import com.wultra.android.powerauth.networking.error.ApiError
@@ -124,31 +123,6 @@ class IntegrationTests {
 //        Assert.assertNull(opFuture.get(20, TimeUnit.SECONDS))
 //    }
 //
-//    @Test
-//    fun testRejectLogin() {
-//        IntegrationUtils.createOperation(true)
-//        val future = CompletableFuture<List<UserOperation>>()
-//        ops.getOperations(object : IGetOperationListener {
-//            override fun onSuccess(operations: List<UserOperation>) {
-//                future.complete(operations)
-//            }
-//            override fun onError(error: ApiError) {
-//                future.completeExceptionally(error.e)
-//            }
-//        })
-//        val operations = future.get(20, TimeUnit.SECONDS)
-//        Assert.assertTrue("Missing operation", operations.count() == 1)
-//        val opFuture = CompletableFuture<Any?>()
-//        ops.rejectOperation(operations.first(), RejectionReason.UNEXPECTED_OPERATION, object : IRejectOperationListener {
-//            override fun onSuccess() {
-//                opFuture.complete(null)
-//            }
-//            override fun onError(error: ApiError) {
-//                opFuture.completeExceptionally(error.e)
-//            }
-//        })
-//        Assert.assertNull(opFuture.get(20, TimeUnit.SECONDS))
-//    }
 
     @Test
     fun testApprovePayment() {
@@ -235,7 +209,7 @@ class IntegrationTests {
         // lets create 1 operation and leave it in the state of "pending"
         val op = IntegrationUtils.createOperation(IntegrationUtils.Companion.Factors.F_2FA)
         val auth = PowerAuthAuthentication.possessionWithPassword(pin)
-        val future = CompletableFuture<List<OperationHistoryEntry>?>()
+        val future = CompletableFuture<List<UserOperation>?>()
         ops.getHistory(auth) { result ->
             result.onSuccess { future.complete(it) }
                 .onFailure { future.completeExceptionally(it) }
@@ -247,9 +221,9 @@ class IntegrationTests {
             return
         }
 
-        val opRecord = operations.firstOrNull { it.operation.id == op.operationId }
+        val opRecord = operations.firstOrNull { it.id == op.operationId }
         Assert.assertNotNull(opRecord)
-        Assert.assertTrue(opRecord?.status == OperationHistoryEntryStatus.PENDING)
+        Assert.assertTrue(opRecord?.status == UserOperationStatus.PENDING)
     }
 
     @Test
@@ -333,7 +307,7 @@ class IntegrationTests {
         // cancel the operation
         IntegrationUtils.cancelOperation(op.operationId, cancelReason)
 
-        val future = CompletableFuture<List<OperationHistoryEntry>?>()
+        val future = CompletableFuture<List<UserOperation>?>()
         val auth = PowerAuthAuthentication.possessionWithPassword(pin)
         ops.getHistory(auth) { result ->
             result.onSuccess { future.complete(it) }
@@ -346,8 +320,8 @@ class IntegrationTests {
             return
         }
 
-        val opRecord = operations.firstOrNull { it.operation.id == op.operationId }
+        val opRecord = operations.firstOrNull { it.id == op.operationId }
         Assert.assertNotNull(opRecord)
-        Assert.assertTrue("${opRecord?.operation?.statusReason} should be PREARRANGED_REASON", opRecord?.operation?.statusReason == "PREARRANGED_REASON")
+        Assert.assertTrue("${opRecord?.statusReason} should be PREARRANGED_REASON", opRecord?.statusReason == "PREARRANGED_REASON")
     }
 }

@@ -18,7 +18,6 @@ package com.wultra.android.mtokensdk.operation
 
 import com.wultra.android.mtokensdk.api.operation.OperationApi
 import com.wultra.android.mtokensdk.api.operation.model.IOperation
-import com.wultra.android.mtokensdk.api.operation.model.OperationHistoryEntry
 import com.wultra.android.mtokensdk.api.operation.model.QROperation
 import com.wultra.android.mtokensdk.api.operation.model.UserOperation
 import com.wultra.android.powerauth.networking.OkHttpBuilderInterceptor
@@ -74,7 +73,7 @@ interface IOperationsService {
      * @param authentication PowerAuth authentication object
      * @param callback Callback with result.
      */
-    fun getHistory(authentication: PowerAuthAuthentication, callback: (result: Result<List<OperationHistoryEntry>>) -> Unit)
+    fun getHistory(authentication: PowerAuthAuthentication, callback: (result: Result<List<UserOperation>>) -> Unit)
 
     /**
      * Retrieves operation detail based on operation ID
