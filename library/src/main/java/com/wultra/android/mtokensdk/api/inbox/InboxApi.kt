@@ -69,34 +69,34 @@ internal class InboxApi(
      * Get count of unread messages.
      */
     fun count(listener: IApiCallResponseListener<InboxCountResponse>) {
-        post(BaseRequest(), getMessageCount, null, null, okHttpInterceptor, listener)
+        post(BaseRequest(), getMessageCount, null, okHttpInterceptor, listener)
     }
 
     /**
      * Get paged message list.
      */
     fun list(request: InboxGetListRequest, listener: IApiCallResponseListener<InboxGetListResponse>) {
-        post(request, getMessageList, null, null, okHttpInterceptor, listener)
+        post(request, getMessageList, null, okHttpInterceptor, listener)
     }
 
     /**
      * Get message detail.
      */
     fun detail(request: InboxGetMessageDetailRequest, listener: IApiCallResponseListener<InboxGetMessageDetailResponse>) {
-        post(request, getMessageDetail, null, null, okHttpInterceptor, listener)
+        post(request, getMessageDetail, null, okHttpInterceptor, listener)
     }
 
     /**
      * Set message as read.
      */
     fun read(request: InboxSetMessageReadRequest, listener: IApiCallResponseListener<StatusResponse>) {
-        post(request, setMessageRead, null, null, okHttpInterceptor, listener)
+        post(request, setMessageRead, null, okHttpInterceptor, listener)
     }
 
     /**
      * Set all messages as read.
      */
     fun readAll(listener: IApiCallResponseListener<StatusResponse>) {
-        post(BaseRequest(), setMessageAllRead, null, null, okHttpInterceptor, listener)
+        post(BaseRequest(), setMessageAllRead, null, okHttpInterceptor, listener)
     }
 }

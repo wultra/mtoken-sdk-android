@@ -78,16 +78,14 @@ android {
 dependencies {
     // Bundled
     implementation("org.jetbrains.kotlin:kotlin-stdlib:${Constants.BuildScript.kotlinVersion}")
-    implementation("androidx.annotation:annotation:1.7.0")
-    implementation("com.google.code.gson:gson:2.10.1")
+    implementation("androidx.annotation:annotation:1.8.2")
+    implementation("com.google.code.gson:gson:2.11.0")
     implementation("com.jakewharton.threetenabp:threetenabp:1.1.1")
-    // DO NOT UPGRADE ABOVE 3.12.X! Version 3.12 is the last version supporting TLS 1 and 1.1
-    // If upgraded, the app will crash on android 4.4
-    implementation("com.squareup.okhttp3:okhttp:3.12.13")
-    implementation("com.wultra.android.powerauth:powerauth-networking:1.4.0")
+    implementation("com.squareup.okhttp3:okhttp:4.9.3")
+    implementation("com.wultra.android.powerauth:powerauth-networking:1.5.0-SNAPSHOT")
 
     // Dependencies
-    compileOnly("com.wultra.android.powerauth:powerauth-sdk:1.8.0")
+    compileOnly("com.wultra.android.powerauth:powerauth-sdk:1.9.1")
     compileOnly("io.getlime.core:rest-model-base:1.2.0")
 
     // TestDependencies
@@ -95,11 +93,11 @@ dependencies {
 
     // Android tests
     androidTestImplementation("com.jakewharton.threetenabp:threetenabp:1.1.1")
-    androidTestImplementation("com.wultra.android.powerauth:powerauth-sdk:1.8.0")
-    androidTestImplementation("com.wultra.android.powerauth:powerauth-networking:1.4.0")
-    androidTestImplementation("androidx.test:runner:1.5.2")
+    androidTestImplementation("com.wultra.android.powerauth:powerauth-sdk:1.9.1")
+    androidTestImplementation("com.wultra.android.powerauth:powerauth-networking:1.5.0-SNAPSHOT")
+    androidTestImplementation("androidx.test:runner:1.6.2")
     androidTestImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test:core:1.5.0")
+    androidTestImplementation("androidx.test:core:1.6.1")
     androidTestImplementation(platform("org.jetbrains.kotlin:kotlin-bom:${Constants.BuildScript.kotlinVersion}"))
 }
 
