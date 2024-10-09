@@ -20,7 +20,8 @@ import android.content.Context
 import android.util.Log
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
-import com.google.gson.*
+import com.google.gson.Gson
+import com.google.gson.TypeAdapter
 import com.google.gson.annotations.JsonAdapter
 import com.google.gson.reflect.TypeToken
 import com.google.gson.stream.JsonReader
@@ -37,12 +38,13 @@ import io.getlime.security.powerauth.networking.response.ICreateActivationListen
 import io.getlime.security.powerauth.sdk.PowerAuthClientConfiguration
 import io.getlime.security.powerauth.sdk.PowerAuthConfiguration
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
-import okhttp3.MediaType
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okhttp3.RequestBody
-import java.util.*
+import okhttp3.RequestBody.Companion.toRequestBody
 import java.util.Base64.getEncoder
+import java.util.Date
+import java.util.UUID
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
@@ -70,7 +72,7 @@ class IntegrationUtils {
         val context: Context = ApplicationProvider.getApplicationContext()
         private val client = OkHttpClient.Builder().build()
         private val gson = Gson()
-        private val jsonMediaType = MediaType.parse("application/json; charset=UTF-8")!!
+        private val jsonMediaType = "application/json; charset=UTF-8".toMediaType()
 
         private val cloudServerUrl = getInstrumentationParameter("cloudServerUrl")
         private val cloudServerLogin = getInstrumentationParameter("cloudServerLogin")
@@ -150,8 +152,8 @@ class IntegrationUtils {
 
             return Triple(
                 pa,
-                pa.createOperationsService(context, operationsUrl, SSLValidationStrategy.default()),
-                pa.createInboxService(context, inboxUrl, SSLValidationStrategy.default())
+                pa.createOperationsService(context, operationsUrl, SSLValidationStrategy.system()),
+                pa.createInboxService(context, inboxUrl, SSLValidationStrategy.system())
             )
         }
 
@@ -263,18 +265,14 @@ class IntegrationUtils {
             Log.d("make call payload", payload ?: "")
             Log.d("make call url", url)
             val creds = getEncoder().encodeToString("$cloudServerLogin:$cloudServerPassword".toByteArray())
-            val body = if (payload != null) {
-                RequestBody.create(jsonMediaType, payload.toByteArray())
-            } else {
-                null
-            }
+            val body = payload?.toByteArray()?.toRequestBody(jsonMediaType)
             val request = Request.Builder()
                 .header("authorization", "Basic $creds")
                 .url(url)
                 .method(method, body)
                 .build()
             val resp = client.newCall(request).execute()
-            val stringResp = resp.body()!!.string()
+            val stringResp = resp.body!!.string()
             Log.d("make call response", stringResp)
             return gson.fromJson(stringResp, object: TypeToken<T>() {}.type)
         }

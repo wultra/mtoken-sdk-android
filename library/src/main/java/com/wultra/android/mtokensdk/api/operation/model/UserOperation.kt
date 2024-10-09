@@ -100,15 +100,18 @@ data class AllowedSignatureType(
     @SerializedName("type")
     val type: Type,
 
-    /** What factors ("password" or/and "biometry") can be used for signing this operation. */
+    /** What factors ("password" or/and "biometrics") can be used for signing this operation. */
     @SerializedName("variants")
     val factors: List<Factor> = emptyList()
 ) {
 
-    /** Check if biometry factor is allowed for the signature type of an operation. */
-    fun isBiometryAllowed(): Boolean {
+    /** Check if biometric factor is allowed for the signature type of an operation. */
+    fun isBiometricsAllowed(): Boolean {
         return factors.contains(Factor.POSSESSION_BIOMETRY)
     }
+
+    @Deprecated(replaceWith = ReplaceWith("isBiometricsAllowed()"), message = "Use isBiometricsAllowed() instead")
+    fun isBiometryAllowed() = isBiometricsAllowed()
 
     /** Signature types. */
     enum class Type(val type: String) {

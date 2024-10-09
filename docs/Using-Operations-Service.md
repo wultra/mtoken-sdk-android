@@ -26,7 +26,7 @@ An operation can be anything you need to be approved or rejected by the user. It
 Note: Before using Operations Service, you need to have a `PowerAuthSDK` object available and initialized with a valid activation. Without a valid PowerAuth activation, all endpoints will return an error.
 <!-- end -->
 
-Operations Service communicates with a backend via [Mobile Token API endpoints](https://github.com/wultra/powerauth-webflow/blob/develop/docs/Mobile-Token-API.md).
+Operations Service communicates with the [Mobile Token API](https://developers.wultra.com/components/enrollment-server/develop/documentation/Mobile-Token-API).
 
 ## Creating an Instance
 
@@ -149,26 +149,26 @@ fun approve(operation: IOperation, password: String) {
 }
 ```
 
-To approve offline operations with biometry, your PowerAuth instance [needs to be configured with biometry factor](https://github.com/wultra/powerauth-mobile-sdk/blob/develop/docs/PowerAuth-SDK-for-Android.md#biometric-authentication-setup).
+To approve offline operations with biometrics, your PowerAuth instance [needs to be configured with biometric factor](https://github.com/wultra/powerauth-mobile-sdk/blob/develop/docs/PowerAuth-SDK-for-Android.md#biometric-authentication-setup).
 
 ```kotlin
-// Approve operation with biometry
-fun approveWithBiometry(operation: IOperation) {
+// Approve operation with biometrics
+fun approveWithBiometrics(operation: IOperation) {
 
-    // UserOperation contains information if biometry can be used
+    // UserOperation contains information if biometrics can be used
     if (operation is UserOperation) {
         if (!operation.allowedSignatureType.factors.contains(AllowedSignatureType.Factor.POSSESSION_BIOMETRY)) {
             return
         }
     }
 
-    this.powerAuthSDK.authenticateUsingBiometry(appContext, fragmentManager,
+    this.powerAuthSDK.authenticateUsingBiometrics(appContext, fragmentManager,
         "Operation approval",
-        "Use biometry to approve the operation",
+        "Use biometrics to approve the operation",
         object : IBiometricAuthenticationCallback {
 
             override fun onBiometricDialogSuccess(biometricKeyData: BiometricKeyData) {
-                val auth = PowerAuthAuthentication.possessionWithBiometry(biometricKeyData.derivedData)
+                val auth = PowerAuthAuthentication.possessionWithBiometrics(biometricKeyData.derivedData)
                 this.operationsService.authorizeOperation(operation, auth) {
                     it.onSuccess {
                         // show success UI
@@ -179,11 +179,11 @@ fun approveWithBiometry(operation: IOperation) {
             }
 
             override fun onBiometricDialogCancelled(userCancel: Boolean) {
-                // the biometry dialog was canceled
+                // the biometrics dialog was canceled
             }
 
             override fun onBiometricDialogFailed(error: PowerAuthErrorException) {
-                // biometry authentication failed
+                // biometrics authentication failed
             }
         }
     )
@@ -270,7 +270,7 @@ Note that the operation history availability depends on the backend implementati
 
 ## Off-line Authorization
 
-In case the user is not online, you can use off-line authorizations. In this operation mode, the user needs to scan a QR code, enter a PIN code, or use biometry, and rewrite the resulting code. Wultra provides a special format for [the operation QR codes](https://github.com/wultra/powerauth-webflow/blob/develop/docs/Off-line-Signatures-QR-Code.md), which are automatically processed with the SDK.
+In case the user is not online, you can use off-line authorizations. In this operation mode, the user needs to scan a QR code, enter a PIN code, or use biometrics, and rewrite the resulting code. Wultra provides a special format for [the operation QR codes](https://github.com/wultra/enrollment-server/blob/develop/docs/Offline-Signatures-QR-Code.md), which are automatically processed with the SDK.
 
 ### Processing Scanned QR Operation
 
@@ -291,7 +291,7 @@ fun onQROperationScanned(scannedCode: String): QROperation {
 ### Authorizing Scanned QR Operation
 
 <!-- begin box info -->
-An offline operation needs to be __always__ approved with __a 2-factor scheme__ (password or biometry).
+An offline operation needs to be __always__ approved with __a 2-factor scheme__ (password or biometrics).
 <!-- end -->
 
 <!-- begin box info -->
@@ -334,28 +334,28 @@ fun approveQROperation(operation: QROperation, password: String) {
 }
 ```
 
-#### With Biometry
+#### With Biometrics
 
-To approve offline operations with biometry, your PowerAuth instance [needs to be configured with biometry factor](https://github.com/wultra/powerauth-mobile-sdk/blob/develop/docs/PowerAuth-SDK-for-Android.md#biometric-authentication-setup).
+To approve offline operations with biometrics, your PowerAuth instance [needs to be configured with biometric factor](https://github.com/wultra/powerauth-mobile-sdk/blob/develop/docs/PowerAuth-SDK-for-Android.md#biometric-authentication-setup).
 
-To determine if biometry can be used for offline operation authorization, use `QROperation.flags.biometryAllowed`.
+To determine if biometrics can be used for offline operation authorization, use `QROperation.flags.biometricsAllowed`.
 
 ```kotlin
-// Approves QR operation with biometry
-fun approveQROperationWithBiometry(operation: QROperation, appContext: Context, fragmentManager: FragmentManager) {
+// Approves QR operation with biometrics
+fun approveQROperationWithBiometrics(operation: QROperation, appContext: Context, fragmentManager: FragmentManager) {
 
-    if (!operation.flags.biometryAllowed) {
-        // biometry usage is not allowed on this operation
+    if (!operation.flags.biometricsAllowed) {
+        // biometrics usage is not allowed on this operation
         return
     }
 
-    this.powerAuthSDK.authenticateUsingBiometry(appContext, fragmentManager,
+    this.powerAuthSDK.authenticateUsingBiometrics(appContext, fragmentManager,
         "Operation approval",
-        "Use biometry to approve the operation",
+        "Use biometrics to approve the operation",
         object : IBiometricAuthenticationCallback {
 
             override fun onBiometricDialogSuccess(biometricKeyData: BiometricKeyData) {
-                val auth = PowerAuthAuthentication.possessionWithBiometry(biometricKeyData.derivedData)
+                val auth = PowerAuthAuthentication.possessionWithBiometrics(biometricKeyData.derivedData)
                 try {
                     val offlineSignature = operationsService.authorizeOfflineOperation(operation, auth)
                     // Display the signature to the user so it can be manually rewritten.
@@ -365,11 +365,11 @@ fun approveQROperationWithBiometry(operation: QROperation, appContext: Context, 
             }
 
             override fun onBiometricDialogCancelled(userCancel: Boolean) {
-                // the biometry dialog was canceled
+                // the biometrics dialog was canceled
             }
 
             override fun onBiometricDialogFailed(error: PowerAuthErrorException) {
-                // biometry authentication failed
+                // biometrics authentication failed
             }
         }
     )
@@ -408,9 +408,6 @@ All available methods and attributes of `IOperationsService` API are:
   - `operation` - Offline operation retrieved via `QROperationParser.parse` method.
   - `authentication` - PowerAuth authentication object for operation signing.
   - `uriId` - Custom signature URI ID of the operation. Use the URI ID under which the operation was created on the server. The default value is `/operation/authorize/offline`.
-- `signOfflineOperationWithBiometry(biometry: ByteArray, offlineOperation: QROperation)` - Sign offline (QR) operation with biometry data.
-  - `biometry` - Biometry data retrieved from the `powerAuthSDK.authenticateUsingBiometry` call.
-  - `offlineOperation` - Offline operation retrieved via `processOfflineQrPayload` method.
 
 ## UserOperation
 
@@ -455,7 +452,7 @@ class UserOperation: IOperation {
      *
      * This hints if the operation needs a 2nd factor or can be approved simply by
      * tapping an approve button. If the operation requires 2FA, this value also hints if
-     * the user may use the biometry, or if a password is required.
+     * the user may use the biometrics, or if a password is required.
      */
     val allowedSignatureType: AllowedSignatureType
     
@@ -661,7 +658,7 @@ data class PACData(
 - two methods are provided:
   - `parseDeeplink(uri: Uri): PACData?` - URI is expected to be in the format `scheme://code=$JWT` or `scheme://operation?oid=5b753d0d-d59a-49b7-bec4-eae258566dbb&potp=12345678`
   - `parseQRCode(code: String): PACData?` - code is to be expected in the same format as deeplink formats or as a plain JWT
-  - mentioned JWT should be in the format `{“typ”:”JWT”, “alg”:”none”}.{“oid”:”5b753d0d-d59a-49b7-bec4-eae258566dbb”, “potp”:”12345678”} `
+  - mentioned JWT should be in the format `{"type":"JWT", "alg":"none"}.{"oid":"5b753d0d-d59a-49b7-bec4-eae258566dbb", "potp":"12345678"}`
 
 - Accepted formats:
   - notice that the totp key in JWT and in query shall be `potp`!

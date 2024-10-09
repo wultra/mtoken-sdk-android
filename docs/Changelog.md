@@ -1,6 +1,11 @@
 # Changelog
 
-## 1.12.0 (Aug, 2024)
+## 1.12.0 (Oct, 2024)
+
+- Upgraded to PowerAuth 1.9.x [(#165)](https://github.com/wultra/mtoken-sdk-ios/pull/165)
+- Document fixes and improvements
+
+## 1.11.1 (Aug, 2024)
 
 - Added resultTexts to UserOperation [(#152)](https://github.com/wultra/mtoken-sdk-ios/pull/152)
 - Extended PushParser to support parsing of inbox notifications [(#150)](https://github.com/wultra/mtoken-sdk-android/pull/150)
