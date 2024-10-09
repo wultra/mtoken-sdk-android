@@ -35,7 +35,7 @@ internal class OperationListResponse(
     responseObject: List<UserOperation>,
     status: Status
 ): ObjectResponse<List<UserOperation>>(responseObject, status)
-internal class OperationHistoryResponse(responseObject: List<OperationHistoryEntry>, status: Status): ObjectResponse<List<OperationHistoryEntry>>(responseObject, status)
+internal class OperationHistoryResponse(responseObject: List<UserOperation>, status: Status): ObjectResponse<List<UserOperation>>(responseObject, status)
 internal class AuthorizeRequest(requestObject: AuthorizeRequestObject): ObjectRequest<AuthorizeRequestObject>(requestObject)
 internal class RejectRequest(requestObject: RejectRequestObject): ObjectRequest<RejectRequestObject>(requestObject)
 internal class OperationClaimDetailRequest(requestObject: OperationClaimDetailData): ObjectRequest<OperationClaimDetailData>(requestObject)

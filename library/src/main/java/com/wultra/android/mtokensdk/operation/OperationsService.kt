@@ -204,7 +204,7 @@ class OperationsService: IOperationsService {
         }
     }
 
-    override fun getHistory(authentication: PowerAuthAuthentication, callback: (result: Result<List<OperationHistoryEntry>>) -> Unit) {
+    override fun getHistory(authentication: PowerAuthAuthentication, callback: (result: Result<List<UserOperation>>) -> Unit) {
         operationApi.history(
             authentication,
             object : IApiCallResponseListener<OperationHistoryResponse> {

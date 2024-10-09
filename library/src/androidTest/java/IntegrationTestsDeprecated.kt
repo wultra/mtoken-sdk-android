@@ -13,18 +13,12 @@
 
 package com.wultra.android.mtokensdk.test
 
-import com.wultra.android.mtokensdk.api.operation.model.OperationHistoryEntry
-import com.wultra.android.mtokensdk.api.operation.model.OperationHistoryEntryStatus
-import com.wultra.android.mtokensdk.api.operation.model.QROperationParser
 import com.wultra.android.mtokensdk.api.operation.model.UserOperation
 import com.wultra.android.mtokensdk.operation.*
-import com.wultra.android.mtokensdk.operation.RejectionReason
-import com.wultra.android.powerauth.networking.error.ApiError
 import io.getlime.security.powerauth.networking.response.IActivationRemoveListener
 import io.getlime.security.powerauth.sdk.PowerAuthAuthentication
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
 import org.junit.*
-import java.lang.Exception
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
@@ -73,136 +67,13 @@ class IntegrationTestsDeprecated {
     }
 
     @Test
-    fun testList() {
-        val future = CompletableFuture<List<UserOperation>>()
-        ops.getOperations(object : IGetOperationListener {
-            override fun onSuccess(operations: List<UserOperation>) {
-                future.complete(operations)
-            }
-            override fun onError(error: ApiError) {
-                future.completeExceptionally(error.e)
-            }
-        })
-        val oplist = future.get(20, TimeUnit.SECONDS)
-        Assert.assertNotNull(oplist)
-    }
-
-    // 1FA test are temporalily disabled
-
-//    @Test
-//    fun testApproveLogin() {
-//        IntegrationUtils.createOperation(true)
-//        val future = CompletableFuture<List<UserOperation>>()
-//        ops.getOperations(object : IGetOperationListener {
-//            override fun onSuccess(operations: List<UserOperation>) {
-//                future.complete(operations)
-//            }
-//            override fun onError(error: ApiError) {
-//                future.completeExceptionally(error.e)
-//            }
-//        })
-//        val operations = future.get(20, TimeUnit.SECONDS)
-//        Assert.assertTrue("Missing operation", operations.count() == 1)
-//        val auth = PowerAuthAuthentication()
-//        auth.usePossession = true
-//        val opFuture = CompletableFuture<Any?>()
-//        ops.authorizeOperation(operations.first(), auth, object : IAcceptOperationListener {
-//            override fun onSuccess() {
-//                opFuture.complete(null)
-//            }
-//            override fun onError(error: ApiError) {
-//                opFuture.completeExceptionally(error.e)
-//            }
-//        })
-//        Assert.assertNull(opFuture.get(20, TimeUnit.SECONDS))
-//    }
-//
-//    @Test
-//    fun testRejectLogin() {
-//        IntegrationUtils.createOperation(true)
-//        val future = CompletableFuture<List<UserOperation>>()
-//        ops.getOperations(object : IGetOperationListener {
-//            override fun onSuccess(operations: List<UserOperation>) {
-//                future.complete(operations)
-//            }
-//            override fun onError(error: ApiError) {
-//                future.completeExceptionally(error.e)
-//            }
-//        })
-//        val operations = future.get(20, TimeUnit.SECONDS)
-//        Assert.assertTrue("Missing operation", operations.count() == 1)
-//        val opFuture = CompletableFuture<Any?>()
-//        ops.rejectOperation(operations.first(), RejectionReason.UNEXPECTED_OPERATION, object : IRejectOperationListener {
-//            override fun onSuccess() {
-//                opFuture.complete(null)
-//            }
-//            override fun onError(error: ApiError) {
-//                opFuture.completeExceptionally(error.e)
-//            }
-//        })
-//        Assert.assertNull(opFuture.get(20, TimeUnit.SECONDS))
-//    }
-
-    @Test
-    fun testApprovePayment() {
-        IntegrationUtils.createOperation(IntegrationUtils.Companion.Factors.F_2FA)
-        val future = CompletableFuture<List<UserOperation>>()
-        ops.getOperations(object : IGetOperationListener {
-            override fun onSuccess(operations: List<UserOperation>) {
-                future.complete(operations)
-            }
-            override fun onError(error: ApiError) {
-                future.completeExceptionally(error.e)
-            }
-        })
-        val operations = future.get(20, TimeUnit.SECONDS)
-        Assert.assertEquals(1, operations.count())
-
-        var auth = PowerAuthAuthentication.possessionWithPassword("xxxx") // wrong password on purpose
-        val opFuture = CompletableFuture<Any?>()
-        ops.authorizeOperation(
-            operations.first(),
-            auth,
-            object : IAcceptOperationListener {
-                override fun onSuccess() {
-                    opFuture.completeExceptionally(Exception("Operation should not be authorized"))
-                }
-                override fun onError(error: ApiError) {
-                    opFuture.complete(null)
-                }
-            }
-        )
-        Assert.assertNull(opFuture.get(20, TimeUnit.SECONDS))
-
-        auth = PowerAuthAuthentication.possessionWithPassword(pin)
-        val opFuture2 = CompletableFuture<Any?>()
-        ops.authorizeOperation(
-            operations.first(),
-            auth,
-            object : IAcceptOperationListener {
-                override fun onSuccess() {
-                    opFuture2.complete(null)
-                }
-                override fun onError(error: ApiError) {
-                    opFuture2.completeExceptionally(error.e)
-                }
-            }
-        )
-        Assert.assertNull(opFuture2.get(20, TimeUnit.SECONDS))
-    }
-
-    @Test
     fun testRejectPayment() {
         val op = IntegrationUtils.createOperation(IntegrationUtils.Companion.Factors.F_2FA)
         val future = CompletableFuture<List<UserOperation>>()
-        ops.getOperations(object : IGetOperationListener {
-            override fun onSuccess(operations: List<UserOperation>) {
-                future.complete(operations)
-            }
-            override fun onError(error: ApiError) {
-                future.completeExceptionally(error.e)
-            }
-        })
+        ops.getOperations { result ->
+            result.onSuccess { future.complete(it) }
+                .onFailure { future.completeExceptionally(it) }
+        }
         val operations = future.get(20, TimeUnit.SECONDS)
         val opFromList = operations.firstOrNull { it.id == op.operationId }
         if (opFromList == null) {
@@ -210,99 +81,10 @@ class IntegrationTestsDeprecated {
             return
         }
         val opFuture = CompletableFuture<Any?>()
-        ops.rejectOperation(
-            opFromList,
-            RejectionReason.UNEXPECTED_OPERATION,
-            object : IRejectOperationListener {
-                override fun onSuccess() {
-                    opFuture.complete(null)
-                }
-                override fun onError(error: ApiError) {
-                    opFuture.completeExceptionally(error.e)
-                }
-            }
-        )
+        ops.rejectOperation(opFromList, RejectionReason.INCORRECT_DATA) { result ->
+            result.onSuccess { opFuture.complete(null) }
+                .onFailure { opFuture.completeExceptionally(it) }
+        }
         Assert.assertNull(opFuture.get(20, TimeUnit.SECONDS))
-    }
-
-    @Test
-    fun testOperationPolling() {
-        Assert.assertFalse(ops.isPollingOperations())
-        var loadingCount = 0
-        val future = CompletableFuture<Any?>()
-        ops.listener = object : IOperationsServiceListener {
-            override fun operationsLoading(loading: Boolean) {
-                if (loading) {
-                    loadingCount += 1
-                    if (loadingCount == 4) {
-                        ops.stopPollingOperations()
-                        future.complete(null)
-                    }
-                }
-            }
-            override fun operationsChanged(
-                operations: List<UserOperation>,
-                removed: List<UserOperation>,
-                added: List<UserOperation>
-            ) {
-            }
-            override fun operationsFailed(error: ApiError) {
-            }
-        }
-        ops.startPollingOperations(1_000, true)
-        Assert.assertNull(future.get(20, TimeUnit.SECONDS))
-        ops.stopPollingOperations()
-        Assert.assertFalse(ops.isPollingOperations())
-    }
-
-    @Test
-    fun testOperationHistory() {
-        // lets create 1 operation and leave it in the state of "pending"
-        val op = IntegrationUtils.createOperation(IntegrationUtils.Companion.Factors.F_2FA)
-        val auth = PowerAuthAuthentication.possessionWithPassword(pin)
-        val future = CompletableFuture<List<OperationHistoryEntry>?>()
-        ops.getHistory(
-            auth,
-            object : IGetHistoryListener {
-                override fun onSuccess(operations: List<OperationHistoryEntry>) {
-                    future.complete(operations)
-                }
-
-                override fun onError(error: ApiError) {
-                    future.complete(null)
-                }
-            }
-        )
-
-        val operations = future.get(20, TimeUnit.SECONDS)
-        Assert.assertNotNull("Operations not retrieved", operations)
-        if (operations == null) {
-            return
-        }
-
-        val opRecord = operations.firstOrNull { it.operation.id == op.operationId }
-        Assert.assertNotNull(opRecord)
-        Assert.assertTrue(opRecord?.status == OperationHistoryEntryStatus.PENDING)
-    }
-
-    @Test
-    fun testQROperation() {
-        // create regular operation
-        val op = IntegrationUtils.createOperation(IntegrationUtils.Companion.Factors.F_2FA)
-
-        // get QR data of the operation
-        val qrData = IntegrationUtils.getQROperation(op)
-
-        // parse the data
-        val qrOperation = QROperationParser.parse(qrData.operationQrCodeData)
-
-        // get the OTP with the "offline" signing
-        val auth = PowerAuthAuthentication.possessionWithPassword(pin)
-        val otp = ops.authorizeOfflineOperation(qrOperation, auth)
-
-        // verify the operation on the backend with the OTP
-        val verifiedResult = IntegrationUtils.verifyQROperation(op, qrData, otp)
-
-        Assert.assertTrue(verifiedResult.otpValid)
     }
 }

@@ -19,10 +19,8 @@ package com.wultra.android.mtokensdk.operation
 import com.google.gson.GsonBuilder
 import com.wultra.android.mtokensdk.api.operation.*
 import com.wultra.android.mtokensdk.api.operation.AttributeTypeAdapter
-import com.wultra.android.mtokensdk.api.operation.OperationHistoryEntryDeserializer
 import com.wultra.android.mtokensdk.api.operation.ZonedDateTimeDeserializer
 import com.wultra.android.mtokensdk.api.operation.model.Attribute
-import com.wultra.android.mtokensdk.api.operation.model.OperationHistoryEntry
 import com.wultra.android.mtokensdk.api.operation.model.PostApprovalScreen
 import com.wultra.android.mtokensdk.api.operation.model.PreApprovalScreen
 import org.threeten.bp.ZonedDateTime
@@ -46,7 +44,6 @@ class OperationsUtils {
             val builder = GsonBuilder()
             builder.registerTypeHierarchyAdapter(Attribute::class.java, AttributeTypeAdapter())
             builder.registerTypeAdapter(ZonedDateTime::class.java, ZonedDateTimeDeserializer())
-            builder.registerTypeAdapter(OperationHistoryEntry::class.java, OperationHistoryEntryDeserializer())
             builder.registerTypeAdapter(PreApprovalScreen::class.java, PreApprovalScreenDeserializer())
             builder.registerTypeAdapter(PostApprovalScreen::class.java, PostApprovalScreenDeserializer())
             return builder

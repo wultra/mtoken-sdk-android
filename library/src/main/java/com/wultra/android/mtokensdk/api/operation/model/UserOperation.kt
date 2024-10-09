@@ -88,7 +88,13 @@ open class UserOperation(
      *  Max 32 characters are expected. Possible values depend on the backend implementation and configuration.
      */
     @SerializedName("statusReason")
-    val statusReason: String?
+    val statusReason: String?,
+
+    /**
+     * Processing status of the operation
+     */
+    @SerializedName("status")
+    val status: UserOperationStatus,
 ) : IOperation, ExpirableOperation
 
 /**
@@ -221,4 +227,20 @@ data class ProximityCheck(
 enum class ProximityCheckType(val value: String) {
     QR_CODE("QR_CODE"),
     DEEPLINK("DEEPLINK")
+}
+
+/** Processing status of the operation */
+enum class UserOperationStatus {
+    /** Operation was approved */
+    APPROVED,
+    /** Operation was rejected */
+    REJECTED,
+    /** Operation is pending its resolution */
+    PENDING,
+    /** Operation was canceled */
+    CANCELED,
+    /** Operation expired */
+    EXPIRED,
+    /** Operation failed */
+    FAILED
 }
