@@ -19,6 +19,8 @@ Inbox Service is responsible for managing messages in the Inbox. The inbox is a 
 Note: Before using Inbox Service, you need to have a `PowerAuthSDK` object available and initialized with a valid activation. Without a valid PowerAuth activation, the service will return an error.
 <!-- end -->
 
+Inbox Service communicates with the [Mobile Token API](https://developers.wultra.com/components/enrollment-server/develop/documentation/Mobile-Token-API).
+
 ## Creating an Instance
 
 ### Factory Extension With SSL Validation Strategy

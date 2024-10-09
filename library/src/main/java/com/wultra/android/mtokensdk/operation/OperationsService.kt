@@ -64,7 +64,7 @@ fun PowerAuthSDK.createOperationsService(appContext: Context, baseURL: String, h
  * @param gsonBuilder Custom GSON builder for deserialization of request. If you want to provide or own
  * deserialization logic, we recommend adding to the instance obtained from the OperationsUtils.defaultGsonBuilder().
  */
-fun PowerAuthSDK.createOperationsService(appContext: Context, baseURL: String, strategy: SSLValidationStrategy = SSLValidationStrategy.default(), userAgent: UserAgent? = null, gsonBuilder: GsonBuilder? = null): IOperationsService {
+fun PowerAuthSDK.createOperationsService(appContext: Context, baseURL: String, strategy: SSLValidationStrategy = SSLValidationStrategy.system(), userAgent: UserAgent? = null, gsonBuilder: GsonBuilder? = null): IOperationsService {
     val builder = OkHttpClient.Builder()
     strategy.configure(builder)
     return OperationsService(this, appContext, builder.build(), baseURL, null, userAgent, gsonBuilder)
@@ -319,7 +319,7 @@ class OperationsService: IOperationsService {
         }
 
         val t = Timer("OperationsServiceTimer")
-        t.scheduleAtFixedRate(
+        t.schedule(
             object : TimerTask() {
                 override fun run() {
                     fetchOperations()

@@ -70,32 +70,32 @@ internal class OperationApi(
 
     /** List pending operations. */
     fun list(listener: IApiCallResponseListener<OperationListResponse>) {
-        post(EmptyRequest, listEndpoint, null, null, okHttpInterceptor, listener)
+        post(EmptyRequest, listEndpoint, null, okHttpInterceptor, listener)
     }
 
     /** Retrieves operation history */
     fun history(authentication: PowerAuthAuthentication, listener: IApiCallResponseListener<OperationHistoryResponse>) {
-        post(EmptyRequest, historyEndpoint, authentication, null, null, okHttpInterceptor, listener)
+        post(EmptyRequest, historyEndpoint, authentication, null, okHttpInterceptor, listener)
     }
 
     /** Reject an operation. */
     fun reject(rejectRequest: RejectRequest, listener: IApiCallResponseListener<StatusResponse>) {
         val authentication = PowerAuthAuthentication.possession()
-        post(rejectRequest, rejectEndpoint, authentication, null, null, okHttpInterceptor, listener)
+        post(rejectRequest, rejectEndpoint, authentication, null, okHttpInterceptor, listener)
     }
 
     /** Authorize an operation. */
     fun authorize(authorizeRequest: AuthorizeRequest, authentication: PowerAuthAuthentication, listener: IApiCallResponseListener<StatusResponse>) {
-        post(authorizeRequest, authorizeEndpoint, authentication, null, null, okHttpInterceptor, listener)
+        post(authorizeRequest, authorizeEndpoint, authentication, null, okHttpInterceptor, listener)
     }
 
     /** Get an operation detail. */
     fun getDetail(claimRequest: OperationClaimDetailRequest, listener: IApiCallResponseListener<OperationClaimDetailResponse>) {
-        post(data = claimRequest, endpoint = detailEndpoint, headers = null, encryptor = null, okHttpInterceptor = okHttpInterceptor, listener = listener)
+        post(data = claimRequest, endpoint = detailEndpoint, headers = null, okHttpInterceptor = okHttpInterceptor, listener = listener)
     }
 
     /** Claim an operation. */
     fun claim(claimRequest: OperationClaimDetailRequest, listener: IApiCallResponseListener<OperationClaimDetailResponse>) {
-        post(data = claimRequest, endpoint = claimEndpoint, headers = null, encryptor = null, okHttpInterceptor = okHttpInterceptor, listener = listener)
+        post(data = claimRequest, endpoint = claimEndpoint, headers = null, okHttpInterceptor = okHttpInterceptor, listener = listener)
     }
 }

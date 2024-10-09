@@ -66,8 +66,8 @@ data class QROperation(
  * Flags associated with the operation
  */
 data class QROperationFlags(
-    /** If true, then 2FA signature with biometry factor can be used for operation confirmation.*/
-    val biometryAllowed: Boolean,
+    /** If true, then 2FA signature with biometric factor can be used for operation confirmation.*/
+    val biometricsAllowed: Boolean,
 
     /** If confirm/reject buttons should be flipped in the UI. This can be useful to test users attention. */
     val flipButtons: Boolean,
@@ -77,7 +77,10 @@ data class QROperationFlags(
 
     /** Block confirmation when call is active. */
     val blockWhenOnCall: Boolean
-)
+) {
+    @Deprecated(replaceWith = ReplaceWith("biometricsAllowed"), message = "Use biometricsAllowed instead")
+    val biometryAllowed = biometricsAllowed
+}
 
 /**
  * defines operation data in QR operation
