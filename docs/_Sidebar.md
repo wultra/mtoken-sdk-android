@@ -10,3 +10,4 @@
 **Other**
 
 - [Changelog](./Changelog.md)
+- [Migration Guides](./README.md#migration-guides)
