@@ -21,7 +21,7 @@ If you need to upgrade the Wultra Mobile Token SDK for Android to a newer versio
 
 - [Migration from version `1.4.x` to `1.5.x`](Migration-1.5.md)
 - [Migration from version `1.9.x` to `1.10.x`](Migration-1.10.md)
-
+- [Migration from version `1.11.x` to `1.12.x`](Migration-1.12.md)
 
 <!-- begin remove -->
 ## Integration Tutorials
