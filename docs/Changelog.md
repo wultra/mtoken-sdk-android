@@ -2,10 +2,11 @@
 
 ## 1.12.0 (Oct, 2024)
 
-- Upgraded to PowerAuth 1.9.x [(#165)](https://github.com/wultra/mtoken-sdk-ios/pull/165)
+- Upgraded to `PowerAuthSDK` `1.9.x` [(#165)](https://github.com/wultra/mtoken-sdk-ios/pull/165)
+- PowerAuth "server stack" `1.9+` is now required
 - Document fixes and improvements
 - Added status to `UserOperation` and removed redundant `OperationHistoryEntry` [(#171)](https://github.com/wultra/mtoken-sdk-ios/pull/171)
-- Removed deprecated `IOperationsService` methods in 1.5.0. [(#171)](https://github.com/wultra/mtoken-sdk-ios/pull/171)
+- Removed deprecated `IOperationsService` methods [(#171)](https://github.com/wultra/mtoken-sdk-ios/pull/171)
 
 ## 1.11.1 (Aug, 2024)
 
