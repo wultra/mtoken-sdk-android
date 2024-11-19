@@ -21,6 +21,8 @@ import com.google.gson.GsonBuilder
 import com.google.gson.TypeAdapter
 import com.google.gson.reflect.TypeToken
 import com.wultra.android.mtokensdk.api.operation.model.*
+import com.wultra.android.mtokensdk.api.push.PushRegistrationRequest
+import com.wultra.android.mtokensdk.api.push.model.PushRegistrationRequestObject
 import com.wultra.android.powerauth.networking.data.StatusResponse
 import org.junit.Assert
 import org.junit.Before
@@ -28,7 +30,7 @@ import org.junit.Test
 import org.threeten.bp.ZonedDateTime
 import java.math.BigDecimal
 
-class OperationJsonDeserializationTests {
+class JsonDeserializationTests {
 
     private lateinit var gson: Gson
     private lateinit var typeAdapter: TypeAdapter<OperationListResponse>
@@ -392,5 +394,45 @@ class OperationJsonDeserializationTests {
         Assert.assertEquals("Payment of was confirmed", resultTexts2?.success)
         Assert.assertEquals("Payment was rejected", resultTexts2?.reject)
         Assert.assertEquals("Payment approval failed", resultTexts2?.failure)
+    }
+
+    @Test
+    fun `test push legacy android notification`() {
+        val json = """
+                   {"requestObject":{"platform":"android","token":"testtoken"}}
+                   """
+        val o = gson.fromJson(json, PushRegistrationRequest::class.java)
+        Assert.assertEquals("testtoken", o.requestObject.token)
+        Assert.assertEquals(PushRegistrationRequestObject.Platform.ANDROID, o.requestObject.platform)
+    }
+
+    @Test
+    fun `test push legacy huawei notification`() {
+        val json = """
+                   {"requestObject":{"platform":"huawei","token":"testtoken"}}
+                   """
+        val o = gson.fromJson(json, PushRegistrationRequest::class.java)
+        Assert.assertEquals("testtoken", o.requestObject.token)
+        Assert.assertEquals(PushRegistrationRequestObject.Platform.HUAWEI, o.requestObject.platform)
+    }
+
+    @Test
+    fun `test push fcm notification`() {
+        val json = """
+                   {"requestObject":{"platform":"fcm","token":"testtoken"}}
+                   """
+        val o = gson.fromJson(json, PushRegistrationRequest::class.java)
+        Assert.assertEquals("testtoken", o.requestObject.token)
+        Assert.assertEquals(PushRegistrationRequestObject.Platform.FCM, o.requestObject.platform)
+    }
+
+    @Test
+    fun `test push hms notification`() {
+        val json = """
+                   {"requestObject":{"platform":"hms","token":"testtoken"}}
+                   """
+        val o = gson.fromJson(json, PushRegistrationRequest::class.java)
+        Assert.assertEquals("testtoken", o.requestObject.token)
+        Assert.assertEquals(PushRegistrationRequestObject.Platform.HMS, o.requestObject.platform)
     }
 }

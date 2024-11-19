@@ -1,5 +1,9 @@
 # Changelog
 
+## x.x.x (TBA)
+
+- New push registration API that is using `FCM` and `HMS` instead of `ANDROID` and `HUAWEI`
+
 ## 1.12.0 (Oct, 2024)
 
 - Upgraded to `PowerAuthSDK` `1.9.x` [(#165)](https://github.com/wultra/mtoken-sdk-ios/pull/165)
