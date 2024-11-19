@@ -69,6 +69,6 @@ interface IPushService {
      * @param hmsToken Huawei Push Token
      * @param callback Result listener
      */
-    @Deprecated("This method is deprecated since the server version 1.10.0. Use `register` with `data` parameter as a replacement") //deprecated in 1.13.0
+    @Deprecated("This method is deprecated since the server version 1.10.0. Use `register` with `data` parameter as a replacement") // deprecated in 1.13.0
     fun registerHuawei(hmsToken: String, callback: (result: Result<Unit>) -> Unit)
 }
