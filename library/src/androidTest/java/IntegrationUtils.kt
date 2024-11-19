@@ -31,6 +31,8 @@ import com.wultra.android.mtokensdk.inbox.IInboxService
 import com.wultra.android.mtokensdk.inbox.createInboxService
 import com.wultra.android.mtokensdk.operation.IOperationsService
 import com.wultra.android.mtokensdk.operation.createOperationsService
+import com.wultra.android.mtokensdk.push.IPushService
+import com.wultra.android.mtokensdk.push.createPushService
 import com.wultra.android.powerauth.networking.ssl.SSLValidationStrategy
 import io.getlime.security.powerauth.core.ActivationCodeUtil
 import io.getlime.security.powerauth.networking.response.CreateActivationResult
@@ -68,6 +70,8 @@ class TimestampAdapter: TypeAdapter<Date>() {
 
 class IntegrationUtils {
 
+    data class ActivationResult(val pa: PowerAuthSDK, val ops: IOperationsService, val inbox: IInboxService, val push: IPushService)
+
     companion object {
         val context: Context = ApplicationProvider.getApplicationContext()
         private val client = OkHttpClient.Builder().build()
@@ -81,12 +85,13 @@ class IntegrationUtils {
         private val enrollmentUrl = getInstrumentationParameter("enrollmentServerUrl")
         private val operationsUrl = getInstrumentationParameter("operationsServerUrl")
         private val inboxUrl = getInstrumentationParameter("inboxServerUrl")
+        private val pushUrl = getInstrumentationParameter("pushServerUrl")
         private val sdkConfig = getInstrumentationParameter("sdkConfig")
         private var activationName = "" // will be filled when activation is created
         private var registrationId = "" // will be filled when activation is created
 
         @Throws
-        fun prepareActivation(pin: String, userId: String? = null): Triple<PowerAuthSDK, IOperationsService, IInboxService> {
+        fun prepareActivation(pin: String, userId: String? = null): ActivationResult {
 
             // Be sure that each activation has its own user
             activationName = userId ?: UUID.randomUUID().toString()
@@ -150,10 +155,11 @@ class IntegrationUtils {
                 .trimIndent()
             makeCall<CommitObject>(bodyCommit, "$cloudServerUrl/v2/registrations/${resp.registrationId}/commit")
 
-            return Triple(
+            return ActivationResult(
                 pa,
                 pa.createOperationsService(context, operationsUrl, SSLValidationStrategy.system()),
-                pa.createInboxService(context, inboxUrl, SSLValidationStrategy.system())
+                pa.createInboxService(context, inboxUrl, SSLValidationStrategy.system()),
+                pa.createPushService(context, pushUrl, SSLValidationStrategy.system())
             )
         }
 
