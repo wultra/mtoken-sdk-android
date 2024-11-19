@@ -43,11 +43,12 @@ import java.util.*
  * from given PowerAuthSDK instance.
  *
  * @param appContext Application Context object.
- * @param baseURL Base URL where the operations endpoint rests.
+ * @param baseURL Base URL where the operations endpoint rests (ending with `/enrollment-server` in the default setup).
  * @param httpClient OkHttpClient for API communication.
  * @param userAgent Default user agent for each request.
  * @param gsonBuilder Custom GSON builder for deserialization of request. If you want to provide or own
  * deserialization logic, we recommend adding to the instance obtained from the OperationsUtils.defaultGsonBuilder().
+ * @return IOperationsService instance
  */
 fun PowerAuthSDK.createOperationsService(appContext: Context, baseURL: String, httpClient: OkHttpClient, userAgent: UserAgent? = null, gsonBuilder: GsonBuilder? = null): IOperationsService {
     return OperationsService(this, appContext, httpClient, baseURL, null, userAgent, gsonBuilder)
@@ -58,11 +59,12 @@ fun PowerAuthSDK.createOperationsService(appContext: Context, baseURL: String, h
  * from given PowerAuthSDK instance.
  *
  * @param appContext Application Context object.
- * @param baseURL Base URL where the operations endpoint rests.
+ * @param baseURL Base URL where the operations endpoint rests  (ending with `/enrollment-server` in the default setup).
  * @param strategy SSL validation strategy for networking.
  * @param userAgent Default user agent for each request.
  * @param gsonBuilder Custom GSON builder for deserialization of request. If you want to provide or own
  * deserialization logic, we recommend adding to the instance obtained from the OperationsUtils.defaultGsonBuilder().
+ * @return IOperationsService instance
  */
 fun PowerAuthSDK.createOperationsService(appContext: Context, baseURL: String, strategy: SSLValidationStrategy = SSLValidationStrategy.system(), userAgent: UserAgent? = null, gsonBuilder: GsonBuilder? = null): IOperationsService {
     val builder = OkHttpClient.Builder()

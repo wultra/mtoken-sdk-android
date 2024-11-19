@@ -33,10 +33,30 @@ import com.wultra.android.powerauth.networking.tokens.IPowerAuthTokenProvider
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
 import okhttp3.OkHttpClient
 
+/**
+ * Convenience factory method to create an IInboxService instance
+ * from given PowerAuthSDK instance.
+ *
+ * @param appContext Application Context
+ * @param baseURL Base URL for inbox request  (ending with `/enrollment-server` in the default setup)
+ * @param okHttpClient HTTP client instance for networking
+ * @param userAgent Default user agent for each request.
+ * @return IInboxService instance
+ */
 fun PowerAuthSDK.createInboxService(appContext: Context, baseURL: String, okHttpClient: OkHttpClient, userAgent: UserAgent? = null): IInboxService {
     return InboxService(okHttpClient, baseURL, this, appContext, null, userAgent)
 }
 
+/**
+ * Convenience factory method to create an IInboxService instance
+ * from given PowerAuthSDK instance.
+ *
+ * @param appContext Application Context
+ * @param baseURL Base URL for inbox request  (ending with `/enrollment-server` in the default setup)
+ * @param strategy SSL validation strategy for networking
+ * @param userAgent Default user agent for each request.
+ * @return IInboxService instance
+ */
 fun PowerAuthSDK.createInboxService(appContext: Context, baseURL: String, strategy: SSLValidationStrategy, userAgent: UserAgent? = null): IInboxService {
     val builder = OkHttpClient.Builder()
     strategy.configure(builder)
