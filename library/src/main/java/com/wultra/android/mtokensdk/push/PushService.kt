@@ -19,7 +19,6 @@ package com.wultra.android.mtokensdk.push
 import android.content.Context
 import com.wultra.android.mtokensdk.api.push.PushApi
 import com.wultra.android.mtokensdk.api.push.PushRegistrationRequest
-import com.wultra.android.mtokensdk.api.push.model.Platform
 import com.wultra.android.mtokensdk.api.push.model.PushRegistrationRequestObject
 import com.wultra.android.mtokensdk.log.WMTLogger
 import com.wultra.android.powerauth.networking.IApiCallResponseListener
@@ -79,9 +78,18 @@ class PushService(okHttpClient: OkHttpClient, baseURL: String, powerAuthSDK: Pow
 
     private val pushApi = PushApi(okHttpClient, baseURL, powerAuthSDK, appContext, tokenProvider, userAgent)
 
-    override fun register(fcmToken: String, callback: (Result<Unit>) -> Unit) {
+    override fun register(data: PushData, callback: (result: Result<Unit>) -> Unit) {
+        val platform = when (data.platform) {
+            PushPlatform.FCM -> PushRegistrationRequestObject.Platform.FCM
+            PushPlatform.HMS -> PushRegistrationRequestObject.Platform.HMS
+        }
+
+        register(data.token, platform, callback)
+    }
+
+    private fun register(token: String, platform: PushRegistrationRequestObject.Platform, callback: (Result<Unit>) -> Unit) {
         pushApi.registerToken(
-            PushRegistrationRequest(PushRegistrationRequestObject(fcmToken)),
+            PushRegistrationRequest(PushRegistrationRequestObject(token, platform)),
             object : IApiCallResponseListener<StatusResponse> {
                 override fun onSuccess(result: StatusResponse) {
                     callback(Result.success(Unit))
@@ -95,19 +103,15 @@ class PushService(okHttpClient: OkHttpClient, baseURL: String, powerAuthSDK: Pow
         )
     }
 
-    override fun registerHuawei(hmsToken: String, callback: (result: Result<Unit>) -> Unit) {
-        pushApi.registerToken(
-            PushRegistrationRequest(PushRegistrationRequestObject(hmsToken, Platform.HUAWEI)),
-            object : IApiCallResponseListener<StatusResponse> {
-                override fun onSuccess(result: StatusResponse) {
-                    callback(Result.success(Unit))
-                }
+    // deprecated API
 
-                override fun onFailure(error: ApiError) {
-                    WMTLogger.e("Failed to register hms token for WMT push notifications.")
-                    callback(Result.failure(ApiErrorException(error)))
-                }
-            }
-        )
+    @Deprecated("Use register function with `data` parameter as a replacement")
+    override fun register(fcmToken: String, callback: (Result<Unit>) -> Unit) {
+        register(fcmToken, PushRegistrationRequestObject.Platform.ANDROID, callback)
+    }
+
+    @Deprecated("Use register function with `data` parameter as a replacement")
+    override fun registerHuawei(hmsToken: String, callback: (result: Result<Unit>) -> Unit) {
+        register(hmsToken, PushRegistrationRequestObject.Platform.HUAWEI, callback)
     }
 }
