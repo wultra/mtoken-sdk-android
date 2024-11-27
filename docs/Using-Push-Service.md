@@ -101,6 +101,7 @@ try {
             }.onFailure {
                 // push notification registration failed
             }
+        }
     } else {
         // token retrieval failed
     }
