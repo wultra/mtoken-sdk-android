@@ -41,34 +41,16 @@ interface IPushService {
     var okHttpInterceptor: OkHttpBuilderInterceptor?
 
     /**
-     * Registers token on the PowerAuth backend to receive notifications about operations and inbox.
-     *
-     * @param data Token and push platform (Firebase Cloud Messaging or Huawei Push)
-     * @param callback Result callback
-     */
-    fun register(data: PushData, callback: (result: Result<Unit>) -> Unit)
-
-    // deprecated APIs
-
-    /**
-     * Registers FCM on backend to receive notifications about operations.
-     *
-     * This method is compatible with server stack `1.9.x`
-     *
+     * Registers FCM on backend to receive notifications about operations
      * @param fcmToken Firebase Cloud Messaging Token
      * @param callback Result listener
      */
-    @Deprecated("This method is deprecated since the server version 1.10.0. Use `register` with `data` parameter as a replacement") // deprecated in 1.13.0
     fun register(fcmToken: String, callback: (result: Result<Unit>) -> Unit)
 
     /**
      * Registers HMS on backend to receive notifications about operations
-     *
-     * This method is compatible with server stack `1.9.x`
-     *
      * @param hmsToken Huawei Push Token
      * @param callback Result listener
      */
-    @Deprecated("This method is deprecated since the server version 1.10.0. Use `register` with `data` parameter as a replacement") // deprecated in 1.13.0
     fun registerHuawei(hmsToken: String, callback: (result: Result<Unit>) -> Unit)
 }

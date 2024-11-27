@@ -56,20 +56,25 @@ __Optional parameters:__
 All available methods of the `IPushService` API are:
 
 - `acceptLanguage` - Language settings, that will be sent along with each request.
-- `register(data: PushData, callback: (result: Result<Unit>) -> Unit)` - Subscribes for WMT push notification on the server
+- `register(fcmToken: String, callback: (result: Result<Unit>) -> Unit)` - Registers Firebase Cloud Messaging token on the backend
+- `registerHuawei(hmsToken: String, callback: (result: Result<Unit>) -> Unit)` - Registers Huawei Mobile Services token on the backend
+
+Messaging token on the backend
+
+- `fcmToken` - Firebase Cloud Messaging token.
+- `hmsToken` - Huawei Mobile Services token
+- `callback` - Called when the request finishes.
 
 ## Registering to Push Notifications
-
+### Android (with Google Play Services)
 To register an app to push notifications, you can simply call the `register` method:
-
-### Firebase Cloud Messaging
 
 ```kotlin
 // first, retrieve Firebase token (do so in the background thread)
 FirebaseInstanceId.getInstance().instanceId.addOnCompleteListener { task ->
     if (task.isSuccessful) {
         task.result?.token?.let { token ->
-            pushService.register(PushData.fcm(token)) {
+            pushService.register(token) {
                 it.onSuccess {
                     // push notification registered
                 }.onFailure {
@@ -85,7 +90,7 @@ FirebaseInstanceId.getInstance().instanceId.addOnCompleteListener { task ->
 
 To be able to successfully process notifications, you need to register the app to receive push notifications in the first place. For more information visit [official documentation](https://firebase.google.com/docs/cloud-messaging/android/client).
 
-### Huawei Messaging Service (HarmonyOS / EMUI)
+### Huawei (HarmonyOS / EMUI)
 For Huawei devices, you can also register your app to receive push notifications using Huawei Push Kit. To integrate Huawei Push Kit into your app, please refer to the Huawei Push Kit documentation.
 
 ```kotlin
@@ -95,13 +100,12 @@ try {
     val token = HmsInstanceId.getInstance(appContext).getToken(appId, "HCM")
 
     if (token.isNotEmpty()) {
-        pushService.register(PushData.hms(token)) {
+        pushService.registerHuawei(token) {
             it.onSuccess {
                 // push notification registered
             }.onFailure {
-                // push notification registration failed
+                // push notification registration failed  
             }
-        }
     } else {
         // token retrieval failed
     }
@@ -110,7 +114,6 @@ try {
 }
 ```
 For more information visit [official documentation](https://developer.huawei.com/consumer/en/doc/hmscore-guides/android-client-dev-0000001050042041)
-
 ## Receiving WMT Push Notifications
 
 To process the raw notification obtained from the Firebase Cloud Messaging service (FCM) or from the HUAWEI Mobile Services (HMS), you can use the `PushParser` helper class that will parse the notification into a `PushMessage` result.

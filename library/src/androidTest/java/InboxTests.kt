@@ -19,9 +19,9 @@ class InboxTests {
     fun setup() {
         try {
             val result = IntegrationUtils.prepareActivation(pin)
-            pa = result.pa
-            ops = result.ops
-            inbox = result.inbox
+            pa = result.first
+            ops = result.second
+            inbox = result.third
         } catch (e: Throwable) {
             fail("Activation preparation failed: $e")
         }

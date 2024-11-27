@@ -46,7 +46,6 @@ fun loadInstrumentationTestConfigProperties(project: Project, defaultConfig: Def
         "tests.sdk.enrollmentServerUrl",
         "tests.sdk.operationsServerUrl",
         "tests.sdk.inboxServerUrl",
-        "tests.sdk.pushServerUrl",
         "tests.sdk.sdkConfig"
     )
 

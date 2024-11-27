@@ -26,24 +26,15 @@ internal data class PushRegistrationRequestObject(
     val token: String,
 
     @SerializedName("platform")
-    val platform: Platform
-) {
-    /**
-     * Enum representing the platform for push registration.
-     */
-    internal enum class Platform {
-        @SerializedName("fcm")
-        FCM,
+    val platform: Platform = Platform.ANDROID
+)
+/**
+ * Enum representing the platform for push registration.
+ */
+internal enum class Platform {
+    @SerializedName("android")
+    ANDROID,
 
-        @SerializedName("hms")
-        HMS,
-
-        // legacy support for Android
-        @SerializedName("android")
-        ANDROID,
-
-        // legacy support for Huawei
-        @SerializedName("huawei")
-        HUAWEI,
-    }
+    @SerializedName("huawei")
+    HUAWEI
 }

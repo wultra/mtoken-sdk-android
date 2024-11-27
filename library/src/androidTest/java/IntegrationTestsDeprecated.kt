@@ -38,8 +38,8 @@ class IntegrationTestsDeprecated {
         fun setup() {
             try {
                 val result = IntegrationUtils.prepareActivation(pin)
-                pa = result.pa
-                ops = result.ops
+                pa = result.first
+                ops = result.second
             } catch (e: Throwable) {
                 Assert.fail("Activation preparation failed: $e")
             }
