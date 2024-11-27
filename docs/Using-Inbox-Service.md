@@ -32,7 +32,7 @@ fun PowerAuthSDK.createInboxService(appContext: Context, baseURL: String, strate
 ```
 
 - `appContext` - application context
-- `baseURL` - address, where your operations server can be reached
+- `baseURL` - address, where your operations server can be reached (ending with `/enrollment-server` in the default setup)
 - `strategy` - a strategy used when validating HTTPS requests. The following strategies can be used:
     - `SSLValidationStrategy.default`
     - `SSLValidationStrategy.noValidation`
@@ -51,7 +51,7 @@ fun PowerAuthSDK.createInboxService(appContext: Context, baseURL: String, httpCl
 ```
 
 - `appContext` - application context
-- `baseURL`-  address, where your operations server can be reached
+- `baseURL`-  address, where your operations server can be reached (ending with `/enrollment-server` in the default setup)
 - `httpClient` - [`OkHttpClient`](https://square.github.io/okhttp/) instance used for API requests
 
 __Optional parameters:__

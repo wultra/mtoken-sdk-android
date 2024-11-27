@@ -19,7 +19,6 @@ package com.wultra.android.mtokensdk.push
 import android.content.Context
 import com.wultra.android.mtokensdk.api.push.PushApi
 import com.wultra.android.mtokensdk.api.push.PushRegistrationRequest
-import com.wultra.android.mtokensdk.api.push.model.Platform
 import com.wultra.android.mtokensdk.api.push.model.PushRegistrationRequestObject
 import com.wultra.android.mtokensdk.log.WMTLogger
 import com.wultra.android.powerauth.networking.IApiCallResponseListener
@@ -38,8 +37,10 @@ import okhttp3.OkHttpClient
  * from given PowerAuthSDK instance.
  *
  * @param appContext Application Context
- * @param baseURL Base URL for push request
+ * @param baseURL Base URL for push request  (ending with `/enrollment-server` in the default setup)
  * @param okHttpClient HTTP client instance for networking
+ * @param userAgent Default user agent for each request.
+ * @return IPushService instance
  */
 fun PowerAuthSDK.createPushService(appContext: Context, baseURL: String, okHttpClient: OkHttpClient, userAgent: UserAgent? = null): IPushService {
     return PushService(okHttpClient, baseURL, this, appContext, null, userAgent)
@@ -50,8 +51,10 @@ fun PowerAuthSDK.createPushService(appContext: Context, baseURL: String, okHttpC
  * from given PowerAuthSDK instance.
  *
  * @param appContext Application Context
- * @param baseURL Base URL for push request
+ * @param baseURL Base URL for push request  (ending with `/enrollment-server` in the default setup)
  * @param strategy SSL validation strategy for networking
+ * @param userAgent Default user agent for each request.
+ * @return IPushService instance
  */
 fun PowerAuthSDK.createPushService(appContext: Context, baseURL: String, strategy: SSLValidationStrategy, userAgent: UserAgent? = null): IPushService {
     val builder = OkHttpClient.Builder()
@@ -75,9 +78,18 @@ class PushService(okHttpClient: OkHttpClient, baseURL: String, powerAuthSDK: Pow
 
     private val pushApi = PushApi(okHttpClient, baseURL, powerAuthSDK, appContext, tokenProvider, userAgent)
 
-    override fun register(fcmToken: String, callback: (Result<Unit>) -> Unit) {
+    override fun register(data: PushData, callback: (result: Result<Unit>) -> Unit) {
+        val platform = when (data.platform) {
+            PushPlatform.FCM -> PushRegistrationRequestObject.Platform.FCM
+            PushPlatform.HMS -> PushRegistrationRequestObject.Platform.HMS
+        }
+
+        register(data.token, platform, callback)
+    }
+
+    private fun register(token: String, platform: PushRegistrationRequestObject.Platform, callback: (Result<Unit>) -> Unit) {
         pushApi.registerToken(
-            PushRegistrationRequest(PushRegistrationRequestObject(fcmToken)),
+            PushRegistrationRequest(PushRegistrationRequestObject(token, platform)),
             object : IApiCallResponseListener<StatusResponse> {
                 override fun onSuccess(result: StatusResponse) {
                     callback(Result.success(Unit))
@@ -91,19 +103,15 @@ class PushService(okHttpClient: OkHttpClient, baseURL: String, powerAuthSDK: Pow
         )
     }
 
-    override fun registerHuawei(hmsToken: String, callback: (result: Result<Unit>) -> Unit) {
-        pushApi.registerToken(
-            PushRegistrationRequest(PushRegistrationRequestObject(hmsToken, Platform.HUAWEI)),
-            object : IApiCallResponseListener<StatusResponse> {
-                override fun onSuccess(result: StatusResponse) {
-                    callback(Result.success(Unit))
-                }
+    // deprecated API
 
-                override fun onFailure(error: ApiError) {
-                    WMTLogger.e("Failed to register hms token for WMT push notifications.")
-                    callback(Result.failure(ApiErrorException(error)))
-                }
-            }
-        )
+    @Deprecated("Use register function with `data` parameter as a replacement")
+    override fun register(fcmToken: String, callback: (Result<Unit>) -> Unit) {
+        register(fcmToken, PushRegistrationRequestObject.Platform.ANDROID, callback)
+    }
+
+    @Deprecated("Use register function with `data` parameter as a replacement")
+    override fun registerHuawei(hmsToken: String, callback: (result: Result<Unit>) -> Unit) {
+        register(hmsToken, PushRegistrationRequestObject.Platform.HUAWEI, callback)
     }
 }

@@ -39,7 +39,7 @@ fun PowerAuthSDK.createOperationsService(appContext: Context, baseURL: String, s
 ```
 
 - `appContext` - application context
-- `baseURL` - address, where your operations server can be reached
+- `baseURL` - address, where your operations server can be reached (ending with `/enrollment-server` in the default setup)
 - `strategy` - a strategy used when validating HTTPS requests. The following strategies can be used:
     - `SSLValidationStrategy.default`
     - `SSLValidationStrategy.noValidation`
@@ -59,7 +59,7 @@ fun PowerAuthSDK.createOperationsService(appContext: Context, baseURL: String, h
 ```
 
 - `appContext` - application context
-- `baseURL`-  address, where your operations server can be reached
+- `baseURL`-  address, where your operations server can be reached (ending with `/enrollment-server` in the default setup)
 - `httpClient` - [`OkHttpClient`](https://square.github.io/okhttp/) instance used for API requests
 
 __Optional parameters:__
@@ -631,7 +631,7 @@ When the `UserOperation` contains a `PreApprovalScreen.QR_SCAN`, the app should 
 When the app is launched via a deeplink, preserve the data from the deeplink and extract the relevant data. When operations are loaded compare the operation ID from the deeplink data to the operations within the app to find a match.
 
 - Assign TOTP and Type to the Operation
-  Once the QR code is scanned or a match from the deeplink is found, create a `WMTProximityCheck` with:
+  Once the QR code is scanned or a match from the deeplink is found, create a `ProximityCheck` with:
   - `totp`: The actual Time-Based One-Time Password.
   - `type`: Set to `ProximityCheckType.QR_CODE` or `ProximityCheckType.DEEPLINK`.
   - `timestampReceived`: The timestamp when the QR code was scanned (by default, it is created as the current timestamp when the object is instantiated).
