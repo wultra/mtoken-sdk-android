@@ -5,4 +5,4 @@
   @com.google.gson.annotations.SerializedName <fields>;
 }
 
--keepclassmembers enum com.wultra.android.mtokensdk.api.*.** { *; }
+-keep, allowobfuscation class com.wultra.android.mtokensdk.api.** { *; }
