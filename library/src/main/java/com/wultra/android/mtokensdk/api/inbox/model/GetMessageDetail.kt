@@ -16,6 +16,8 @@
 
 package com.wultra.android.mtokensdk.api.inbox.model
 
+import com.google.gson.annotations.SerializedName
+
 /**
  * Request payload describing which message detail should be received.
  */
@@ -23,5 +25,6 @@ data class GetMessageDetail(
     /**
      * Message's identifier.
      */
+    @SerializedName("id")
     val id: String
 )

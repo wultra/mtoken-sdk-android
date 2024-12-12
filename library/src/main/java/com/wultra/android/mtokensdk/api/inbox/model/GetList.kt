@@ -16,6 +16,8 @@
 
 package com.wultra.android.mtokensdk.api.inbox.model
 
+import com.google.gson.annotations.SerializedName
+
 /**
  * Request payload describing which page in messages list should be received.
  */
@@ -23,13 +25,16 @@ data class GetList(
     /**
      * Page number.
      */
+    @SerializedName("page")
     val page: Int,
     /**
      * Page size.
      */
+    @SerializedName("size")
     val size: Int,
     /**
      * Specify whether only unread messages should be received.
      */
+    @SerializedName("onlyUnread")
     val onlyUnread: Boolean
 )
