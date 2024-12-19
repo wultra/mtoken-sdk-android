@@ -16,6 +16,7 @@
 
 package com.wultra.android.mtokensdk.inbox
 
+import com.google.gson.annotations.SerializedName
 import java.util.Date
 
 /**
@@ -23,20 +24,27 @@ import java.util.Date
  */
 data class InboxMessageDetail(
     /** Message's identifier. */
+    @SerializedName("id")
     val id: String,
     /** Message's subject. */
+    @SerializedName("subject")
     val subject: String,
     /**
      * Message's summary. It typically contains a reduced information from message's body,
      * with no additional formatting.
      */
+    @SerializedName("summary")
     val summary: String,
     /** Message's body. */
+    @SerializedName("body")
     val body: String,
     /** Message body's content type. */
+    @SerializedName("type")
     val type: InboxContentType,
     /** If `true`, then user already read the message. */
+    @SerializedName("read")
     val read: Boolean,
     /** Date and time when the message was created. */
+    @SerializedName("timestampCreated")
     val timestampCreated: Date
 )
