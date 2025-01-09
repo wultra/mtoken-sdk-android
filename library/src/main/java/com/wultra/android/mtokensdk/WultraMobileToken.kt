@@ -175,24 +175,3 @@ class WultraMobileToken(
         return inboxService
     }
 }
-
-/**
- * A configuration class for setting up networking parameters for SDK services.
- * This class encapsulates all the necessary components and parameters required for
- * API communication and service initialization.
- *
- * @property appContext The application context used for initializing services.
- * @property okHttpClient The `OkHttpClient` instance for making API requests.
- *                        Defaults to a client created by `WultraMobileToken.defaultOkHttpClientBuilder()`.
- * @property baseUrl (Optional) The base URL for API requests. If null, defaults to the `PowerAuthSDK` configuration.
- * @property tokenProvider (Optional) The token provider used for obtaining secure tokens for API requests.
- * @property userAgent The user agent string used in HTTP requests. Defaults to the library's standard user agent.
- *
- */
-data class NetworkingConfig(
-    val appContext: Context,
-    val baseUrl: String? = null,
-    val okHttpClient: OkHttpClient = WultraMobileToken.defaultOkHttpClient(),
-    val tokenProvider: IPowerAuthTokenProvider? = null,
-    val userAgent: UserAgent = UserAgent.libraryDefault(appContext)
-)
