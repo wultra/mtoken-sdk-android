@@ -48,7 +48,7 @@ class IntegrationTests {
         try {
             val result = IntegrationUtils.prepareActivation(pin)
             pa = result.first
-            ops = result.second.operationsService
+            ops = result.second.operations
         } catch (e: Throwable) {
             Assert.fail("Activation preparation failed: $e")
         }

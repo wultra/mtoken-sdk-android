@@ -20,7 +20,6 @@ import com.wultra.android.mtokensdk.operation.OperationsUtils
 import com.wultra.android.mtokensdk.push.PushService
 import com.wultra.android.powerauth.networking.UserAgent
 import com.wultra.android.powerauth.networking.ssl.SSLValidationStrategy
-import com.wultra.android.powerauth.networking.tokens.IPowerAuthTokenProvider
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
 import okhttp3.OkHttpClient
 
@@ -36,7 +35,6 @@ import okhttp3.OkHttpClient
  * deserialization logic, we recommend adding it to the instance obtained from the [OperationsUtils].defaultGsonBuilder().
  * @return WultraMobileToken instance
  */
-
 fun PowerAuthSDK.createWultraMobileToken(
     appContext: Context,
     okHttpClient: OkHttpClient = WultraMobileToken.defaultOkHttpClient(),
@@ -71,7 +69,6 @@ fun PowerAuthSDK.createWultraMobileToken(
  *
  * - **Extensible Configuration**: Supports custom `NetworkingConfig` for each service, enabling tailored setups.
  */
-
 class WultraMobileToken(
     private val appContext: Context,
     private val powerAuthSDK: PowerAuthSDK,
@@ -84,17 +81,17 @@ class WultraMobileToken(
     /**
      * Lazily initialized service for operations handling.
      */
-    val operationsService: OperationsService by lazy { createOperations() }
+    val operations: OperationsService by lazy { createOperations() }
 
     /**
      * Lazily initialized service for push notification registering
      */
-    val pushService: PushService by lazy { createPush() }
+    val push: PushService by lazy { createPush() }
 
     /**
      * Lazily initialized service for managing user's inbox
      */
-    val inboxService: InboxService by lazy { createInbox() }
+    val inbox: InboxService by lazy { createInbox() }
 
     /**
      * Default OkHttpClient
@@ -121,12 +118,13 @@ class WultraMobileToken(
      */
     fun setAcceptLanguage(lang: String) {
         acceptLanguage = lang
-        operationsService.acceptLanguage = lang
-        pushService.acceptLanguage = lang
-        inboxService.acceptLanguage = lang
+        operations.acceptLanguage = lang
+        push.acceptLanguage = lang
+        inbox.acceptLanguage = lang
         WMTLogger.i("Accept language set to $lang")
     }
 
+    // creates operations service
     private fun createOperations(): OperationsService {
         WMTLogger.d("Creating OperationsService in WultraMobileToken")
 
@@ -144,6 +142,7 @@ class WultraMobileToken(
         return operationService
     }
 
+    // creates push service
     private fun createPush(): PushService {
         WMTLogger.d("Creating Push Service in WultraMobileToken")
 
@@ -159,6 +158,7 @@ class WultraMobileToken(
         return pushService
     }
 
+    // creates inbox service
     private fun createInbox(): InboxService {
         WMTLogger.d("Creating Inbox Service in WultraMobileToken")
 
