@@ -39,7 +39,7 @@ import java.util.concurrent.TimeUnit
  */
 class IntegrationTests {
 
-    private lateinit var ops: IOperationsService
+    private lateinit var ops: OperationsService
     private lateinit var pa: PowerAuthSDK
     private val pin = "1234"
 
@@ -48,7 +48,7 @@ class IntegrationTests {
         try {
             val result = IntegrationUtils.prepareActivation(pin)
             pa = result.first
-            ops = result.second
+            ops = result.second.operationsService
         } catch (e: Throwable) {
             Assert.fail("Activation preparation failed: $e")
         }
