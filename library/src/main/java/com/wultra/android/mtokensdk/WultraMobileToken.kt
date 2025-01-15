@@ -15,6 +15,7 @@ import android.content.Context
 import com.google.gson.GsonBuilder
 import com.wultra.android.mtokensdk.inbox.InboxService
 import com.wultra.android.mtokensdk.log.WMTLogger
+import com.wultra.android.mtokensdk.oidc.OidcService
 import com.wultra.android.mtokensdk.operation.OperationsService
 import com.wultra.android.mtokensdk.operation.OperationsUtils
 import com.wultra.android.mtokensdk.push.PushService
@@ -32,7 +33,7 @@ import okhttp3.OkHttpClient
  * @param acceptLanguage The language code to set for the `Accept-Language` header.
  * @param userAgent Default user agent for each request.
  * @param gsonBuilder Custom GSON builder for deserialization of request. If you want to provide your own
- * deserialization logic, we recommend adding it to the instance obtained from the [OperationsUtils].defaultGsonBuilder().
+ * deserialization logic, we recommend adding it to the instance obtained from the [OperationsUtils.defaultGsonBuilder].
  * @return WultraMobileToken instance
  */
 fun PowerAuthSDK.createWultraMobileToken(
@@ -92,6 +93,11 @@ class WultraMobileToken(
      * Lazily initialized service for managing user's inbox
      */
     val inbox: InboxService by lazy { createInbox() }
+
+    /**
+     * Lazily initialized service for managing oidc flow preparation and activation
+     */
+    val oidc: OidcService by lazy { createOidc() }
 
     /**
      * Default OkHttpClient
@@ -173,5 +179,22 @@ class WultraMobileToken(
         )
         inboxService.acceptLanguage = acceptLanguage
         return inboxService
+    }
+
+    // creates inbox service
+    private fun createOidc(): OidcService {
+        WMTLogger.d("Creating Inbox Service in WultraMobileToken")
+
+        val oidcService = OidcService(
+            okHttpClient,
+            powerAuthSDK.configuration.baseEndpointUrl,
+            appContext,
+            powerAuthSDK,
+            null,
+            userAgent,
+            gsonBuilder
+        )
+        oidcService.acceptLanguage = acceptLanguage
+        return oidcService
     }
 }
