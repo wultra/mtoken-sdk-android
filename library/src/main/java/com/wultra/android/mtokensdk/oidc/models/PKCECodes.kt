@@ -9,11 +9,7 @@
  * before the Municipal Court of Prague.
  */
 
-package com.wultra.android.mtokensdk.oidc.utils
-
-import android.util.Base64
-import com.wultra.android.mtokensdk.log.WMTLogger
-import java.security.MessageDigest
+package com.wultra.android.mtokensdk.oidc.models
 
 /**
  * Represents PKCE (Proof Key for Code Exchange) codes used in OAuth 2.0 and OpenID Connect flows
@@ -33,34 +29,3 @@ data class PKCECodes(
     val codeChallenge: String,
     val codeMethod: String = "S256"
 )
-
-/**
- * Utility class for generating PKCE codes.
- */
-object PKCEUtils {
-
-    /**
-     * Creates PKCE codes, returning a Result wrapping the codes or an error.
-     */
-    fun create(enabled: Boolean?, dataLength: Int): Result<PKCECodes?> {
-        if (enabled != true) return Result.success(null)
-
-        return try {
-            val codeVerifier = RandomGeneratorUtils.getRandomBase64UrlSafe(dataLength)
-            val codeChallenge = generateCodeChallenge(codeVerifier)
-            Result.success(PKCECodes(codeVerifier, codeChallenge))
-        } catch (e: Exception) {
-            WMTLogger.e("OIDC PKCE: Error creating PKCE codes: ${e.message}")
-            Result.failure(e)
-        }
-    }
-
-    /**
-     * Generates a SHA-256-based code challenge from the given code verifier.
-     */
-    private fun generateCodeChallenge(verifier: String): String {
-        val digest = MessageDigest.getInstance("SHA-256")
-        val hash = digest.digest(verifier.toByteArray(Charsets.US_ASCII))
-        return Base64.encodeToString(hash, Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP)
-    }
-}

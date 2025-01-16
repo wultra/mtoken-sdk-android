@@ -12,19 +12,49 @@
 package com.wultra.android.mtokensdk.oidc.utils
 
 import android.net.Uri
-import com.wultra.android.mtokensdk.api.oidc.model.OidcConfigResponse
+import android.util.Base64
 import com.wultra.android.mtokensdk.log.WMTLogger
+import com.wultra.android.mtokensdk.oidc.models.OidcAuthorizationData
+import com.wultra.android.mtokensdk.oidc.models.OidcConfig
 import com.wultra.android.mtokensdk.oidc.models.OidcPowerAuthActivationAttributes
-import com.wultra.android.mtokensdk.oidc.models.OidcAuthorizationRequest
+import com.wultra.android.mtokensdk.oidc.models.PKCECodes
+import java.security.MessageDigest
+import java.security.SecureRandom
+import kotlin.math.ceil
 
-/**
- * Utility class for generating and processing URIs in the context of OIDC (OpenID Connect) flows.
- *
- * This utility provides methods to:
- * - Create an authorization URI for initiating the OIDC flow.
- * - Process a deeplink URI to extract and validate OIDC activation attributes.
- */
-object OidcUriUtils {
+object OidcUtils {
+
+    private const val CHARSET = "ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz0123456789"
+
+    /**
+     * Creates PKCE codes, returning a Result wrapping the codes.
+     * */
+    fun createPKCE(dataLength: Int): Result<PKCECodes> {
+        return try {
+            val codeVerifier = getRandomBase64UrlSafe(dataLength)
+            val codeChallenge = generateCodeChallenge(codeVerifier)
+            Result.success(PKCECodes(codeVerifier, codeChallenge))
+        } catch (e: Exception) {
+            WMTLogger.e("OIDC PKCE: Error creating PKCE codes: ${e.message}")
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Generates a random Base64 URL-safe string of the given length.
+     */
+    fun getRandomBase64UrlSafe(dataLength: Int): String {
+        return try {
+            val secureRandom = SecureRandom()
+            val randomBytes = ByteArray(dataLength)
+            secureRandom.nextBytes(randomBytes)
+            Base64.encodeToString(randomBytes, Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP)
+        } catch (e: Exception) {
+            WMTLogger.e("OIDC: Error generating random Base64 string: ${e.message}")
+            WMTLogger.i("OIDC: generating random fallback")
+            generateFallbackBase64(dataLength)
+        }
+    }
 
     /**
      * Creates an authorization URI based on the provided OIDC configuration, nonce, state, and PKCE codes.
@@ -32,7 +62,7 @@ object OidcUriUtils {
      * The authorization URI is used to redirect the user to the authentication provider's web interface
      * for initiating the OIDC authorization flow.
      *
-     * @param config The [OidcConfigResponse] containing information returned from backend to getConfig call.
+     * @param config The [OidcConfig] containing information returned from backend to getConfig call.
      * @param nonce A unique, randomly generated value to mitigate replay attacks.
      * @param state A unique, randomly generated value to maintain state between the request and callback.
      * @param pkceCodes The PKCE (Proof Key for Code Exchange) codes to include in the authorization request,
@@ -42,7 +72,7 @@ object OidcUriUtils {
      * - [Uri]: The successfully constructed authorization URI.
      * - [Throwable]: An error if the URI creation process fails (e.g., invalid input or malformed URI).
      */
-    fun createAuthorizationUri(config: OidcConfigResponse, nonce: String, state: String, pkceCodes: PKCECodes?): Result<Uri> {
+    fun createAuthorizationUri(config: OidcConfig, nonce: String, state: String, pkceCodes: PKCECodes?): Result<Uri> {
         return runCatching {
             Uri.parse(config.authorizeUri).buildUpon()
                 .appendQueryParameter("client_id", config.clientId)
@@ -64,9 +94,11 @@ object OidcUriUtils {
     }
 
     /**
+     *
+     * Uri Utils
      * Processes a deeplink URI to validate its state and extract OIDC activation attributes.
      *
-     * @param oidcAuthorizationRequest The [OIDCAuth] object containing the expected state and other necessary data
+     * @param oidcAuthorizationData The [OidcAuthorizationData] object containing the expected state and other necessary data
      *                 for the OIDC flow.
      * @param uriDeeplink The deeplink URI received from the OIDC provider during the authorization process.
      *
@@ -75,9 +107,9 @@ object OidcUriUtils {
      *
      * ### Validation Logic:
      * - Ensures the `code` parameter is present in the URI.
-     * - Ensures the `state` parameter is present and matches the expected value in [OIDCAuth].
+     * - Ensures the `state` parameter is present and matches the expected value in [OidcAuthorizationData].
      */
-    fun processDeeplinkOidc(oidcAuthorizationRequest: OidcAuthorizationRequest, uriDeeplink: Uri): OidcPowerAuthActivationAttributes? {
+    fun processDeeplink(oidcAuthorizationData: OidcAuthorizationData, uriDeeplink: Uri): OidcPowerAuthActivationAttributes? {
         val code = uriDeeplink.getQueryParameter("code")
         if (code == null) {
             WMTLogger.e("OIDC: Deeplink didn't contain a 'code' in URL: $uriDeeplink")
@@ -90,16 +122,36 @@ object OidcUriUtils {
             return null
         }
 
-        if (state != oidcAuthorizationRequest.state) {
+        if (state != oidcAuthorizationData.state) {
             WMTLogger.e("OIDC: Invalid 'state' in URL: $uriDeeplink")
             return null
         }
 
         return OidcPowerAuthActivationAttributes(
-            oidcAuthorizationRequest.providerId,
+            oidcAuthorizationData.providerId,
             code,
-            oidcAuthorizationRequest.nonce,
-            oidcAuthorizationRequest.codeVerifier
+            oidcAuthorizationData.nonce,
+            oidcAuthorizationData.codeVerifier
         )
+    }
+    
+    /** Random generator helpers */
+    // Generates a fallback random Base64 string when secure random generation fails.
+    private fun generateFallbackBase64(length: Int): String {
+        val base64Length = ceil(length * 8 / 6.0).toInt()
+        return Base64.encodeToString(generateRandomString(base64Length).toByteArray(), Base64.DEFAULT)
+    }
+
+    // Generates a random alphanumeric string of the specified length.
+    private fun generateRandomString(length: Int): String {
+        return (1..length).map { CHARSET.random() }.joinToString("")
+    }
+
+    /** PKCE helper */
+    // Generates a SHA-256-based code challenge from the given code verifier.
+    private fun generateCodeChallenge(verifier: String): String {
+        val digest = MessageDigest.getInstance("SHA-256")
+        val hash = digest.digest(verifier.toByteArray(Charsets.US_ASCII))
+        return Base64.encodeToString(hash, Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP)
     }
 }

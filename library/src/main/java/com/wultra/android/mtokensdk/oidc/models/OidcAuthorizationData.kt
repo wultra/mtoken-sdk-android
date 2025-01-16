@@ -21,7 +21,7 @@ import android.net.Uri
  * - Ensure the integrity and security of the flow using `nonce` and `state`.
  * - Optionally include PKCE (Proof Key for Code Exchange) support via `codeVerifier`.
  */
-data class OidcAuthorizationRequest(
+data class OidcAuthorizationData(
     /**
      * The URI to be opened in a browser for user authentication and authorization.
      */

@@ -186,10 +186,10 @@ class WultraMobileToken(
         WMTLogger.d("Creating Inbox Service in WultraMobileToken")
 
         val oidcService = OidcService(
+            powerAuthSDK,
+            appContext,
             okHttpClient,
             powerAuthSDK.configuration.baseEndpointUrl,
-            appContext,
-            powerAuthSDK,
             null,
             userAgent,
             gsonBuilder
