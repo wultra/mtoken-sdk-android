@@ -134,7 +134,7 @@ object OidcUtils {
             oidcAuthorizationData.codeVerifier
         )
     }
-    
+
     /** Random generator helpers */
     // Generates a fallback random Base64 string when secure random generation fails.
     private fun generateFallbackBase64(length: Int): String {
