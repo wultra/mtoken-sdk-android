@@ -29,6 +29,7 @@ import com.google.gson.stream.JsonToken
 import com.google.gson.stream.JsonWriter
 import com.wultra.android.mtokensdk.WultraMobileToken
 import com.wultra.android.mtokensdk.createWultraMobileToken
+import com.wultra.android.mtokensdk.oidc.OidcService
 import io.getlime.security.powerauth.core.ActivationCodeUtil
 import io.getlime.security.powerauth.networking.response.CreateActivationResult
 import io.getlime.security.powerauth.networking.response.ICreateActivationListener
@@ -81,6 +82,19 @@ class IntegrationUtils {
         private val sdkConfig = getInstrumentationParameter("sdkConfig")
         private var activationName = "" // will be filled when activation is created
         private var registrationId = "" // will be filled when activation is created
+        private val oidcProviderId = getInstrumentationParameter("oidcProviderId")
+        private val oidcProviderIdPKCE = getInstrumentationParameter("oidcProviderIdPKCE")
+
+        fun prepareForOidc(): Pair<PowerAuthSDK, OidcService> {
+
+            // CREATE PA INSTANCE
+            val cfg = PowerAuthConfiguration.Builder("tests", enrollmentUrl, sdkConfig).build()
+            val clientCfg = PowerAuthClientConfiguration.Builder().allowUnsecuredConnection(true).build()
+            val pa = PowerAuthSDK.Builder(cfg).clientConfiguration(clientCfg).build(context)
+
+            val wmt = pa.createWultraMobileToken(context)
+            return Pair(pa, wmt.oidc)
+        }
 
         @Throws
         fun prepareActivation(pin: String, userId: String? = null): Pair<PowerAuthSDK, WultraMobileToken> {
@@ -278,6 +292,10 @@ class IntegrationUtils {
         private fun getInstrumentationParameter(parameterName: String): String {
             return InstrumentationRegistry.getArguments().getString("tests.sdk.$parameterName") ?: throw Exception("Missing $parameterName in configuration.")
         }
+
+        fun getOidcProps(): OidcProperties {
+            return OidcProperties(oidcProviderId, oidcProviderIdPKCE)
+        }
     }
 }
 
@@ -338,3 +356,8 @@ data class NewInboxMessage(
 )
 
 data class StatusResponse(val status: String)
+
+data class OidcProperties(
+    val providerId: String,
+    val providerIdPkce: String
+)
