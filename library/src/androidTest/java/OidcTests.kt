@@ -157,8 +157,8 @@ class OidcTests {
      */
 //    @Test
 //    fun testOidcActivationFlow() {
-//        val username = "wultra.iphone@gmail.com"
-//        val password = "oKVZs9Q_BJTvbhe_fHhKxwPf"
+//        val username =
+//        val password =
 //        val props = IntegrationUtils.getOidcProps()
 //        val configFuture = CompletableFuture<OidcConfig>()
 //        oidc.getConfig(props.providerIdPkce) { result ->
