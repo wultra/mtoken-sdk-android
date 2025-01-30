@@ -110,7 +110,7 @@ Encapsulates the data required to initiate the OIDC authorization flow and also 
 ##### Example:
 
 ```kotlin
-oidcService.prepareOidcActivation("example_provider") { result ->
+oidcService.prepareOidcAuthorizationData("example_provider") { result ->
   result.onSuccess { oidcAuthRequest ->
     // Use oidcAuthRequest.authorizeUri to open the browser
   }.onFailure { error ->
