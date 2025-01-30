@@ -25,14 +25,17 @@ import io.getlime.security.powerauth.sdk.PowerAuthSDK
  *
  * @receiver PowerAuthSDK
  * @param attributes Data object containing the information required for the activation creation.
- *  - to create attributes see [UriUtils.processDeeplinkOidc]
+ *  - to create attributes see [OidcUtils.processDeeplink]
+ * @param activationName The activation's name parameter is optional, but recommended to set. You can use the
+ * value obtained from {@code Settings.System.getString(getContentResolver(), "device_name")} or let the user
+ * set the name.
  * @param listener A callback listener called when the process finishes - it contains an activation fingerprint in case of success or an error in case of failure.
  * @return ICancelable object associated with the running HTTP request.
  * @throws PowerAuthMissingConfigException – thrown in case configuration is not present.
  */
 @Throws(PowerAuthMissingConfigException::class)
-fun PowerAuthSDK.createOidcActivation(attributes: OidcPowerAuthActivationAttributes, listener: ICreateActivationListener): ICancelable? {
-    val activation =
+fun PowerAuthSDK.createOidcActivation(attributes: OidcPowerAuthActivationAttributes, activationName: String? = null, listener: ICreateActivationListener): ICancelable? {
+    val activationBuilder =
         PowerAuthActivation
             .Builder
             .oidcActivation(
@@ -41,7 +44,8 @@ fun PowerAuthSDK.createOidcActivation(attributes: OidcPowerAuthActivationAttribu
                 attributes.nonce,
                 attributes.codeVerifier
             )
-            .build()
+    activationName?.let { activationBuilder.setActivationName(it) }
+    val activation = activationBuilder.build()
     return createActivation(activation, listener)
 }
 

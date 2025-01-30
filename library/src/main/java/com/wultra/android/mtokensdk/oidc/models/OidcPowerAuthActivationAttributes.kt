@@ -15,7 +15,7 @@ package com.wultra.android.mtokensdk.oidc.models
  * Represents the attributes required to initiate a PowerAuth activation after completing an OIDC (OpenID Connect) flow.
  *
  * These attributes are extracted from the OIDC flow and are essential for securely starting the PowerAuth activation process.
- * The [UriUtils.processDeeplinkOidc] method is used to generate an instance of this class by processing
+ * The [OidcUtils.processDeeplink] method is used to generate an instance of this class by processing
  * the deeplink URI returned by the OIDC authorization flow.
  */
 data class OidcPowerAuthActivationAttributes(

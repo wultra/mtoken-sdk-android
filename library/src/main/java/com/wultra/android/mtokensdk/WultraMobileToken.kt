@@ -195,6 +195,15 @@ class WultraMobileToken(
             gsonBuilder
         )
         oidcService.acceptLanguage = acceptLanguage
+
+        oidcService.getConfig("ahoj") { result ->
+            result.onSuccess {
+
+            }.onFailure {
+
+            }
+        }
+
         return oidcService
     }
 }

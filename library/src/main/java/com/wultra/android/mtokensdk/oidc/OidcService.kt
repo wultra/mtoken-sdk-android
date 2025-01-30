@@ -108,34 +108,29 @@ class OidcService(
      *                 - On failure: Returns an appropriate [Throwable].
      */
     fun prepareOidcAuthorizationData(oidcConfig: OidcConfig, callback: (Result<OidcAuthorizationData>) -> Unit) {
-        // If pkceEnabled create PKCE Codes or continue with null
-        val resultPKCE = createPKCE(oidcConfig.pkceEnabled, 32)
-        resultPKCE.onSuccess { pkceCodes ->
+        try {
+            val pkceCodes = createPKCE(oidcConfig.pkceEnabled, 32)
             val nonce = OidcUtils.getRandomBase64UrlSafe(32)
             val state = OidcUtils.getRandomBase64UrlSafe(32)
 
-            // Finally create authorizeUri
             val authorizeUri = OidcUtils.createAuthorizationUri(oidcConfig, nonce, state, pkceCodes)
-            authorizeUri.onSuccess { authUri ->
 
-                // Callback with success
-                callback(Result.success(OidcAuthorizationData(authUri, oidcConfig.providerId, nonce, state, pkceCodes?.codeVerifier)))
-            }.onFailure { error ->
-                WMTLogger.e("OIDC: Failed to create authorization Uri: ${error.message}")
-                callback(Result.failure(error))
-            }
-        }.onFailure { error ->
-            WMTLogger.e("OIDC: Failed to create PKCE codes: ${error.message}")
-            callback(Result.failure(error))
+            callback(Result.success(OidcAuthorizationData(authorizeUri, oidcConfig.providerId, nonce, state, pkceCodes?.codeVerifier)))
+        } catch (e: Exception) {
+            WMTLogger.e("OIDC: Failed to prepare OIDC authorization data: ${e.message}")
+            callback(Result.failure(e))
         }
     }
 
-    // Helper method to return Result null if PKCE is not enabled
-    private fun createPKCE(enabled: Boolean, dataLength: Int): Result<PKCECodes?> {
-        return if (!enabled) {
-            Result.success(null)
-        } else {
-            OidcUtils.createPKCE(dataLength)
-        }
+    /**
+     * Creates PKCE codes if enabled.
+     *
+     * @param enabled Whether PKCE is enabled.
+     * @param dataLength The length of the PKCE verifier.
+     * @return A [PKCECodes] object if PKCE is enabled, or `null` otherwise.
+     * @throws Exception If PKCE generation fails.
+     */
+    private fun createPKCE(enabled: Boolean, dataLength: Int): PKCECodes? {
+        return if (!enabled) null else OidcUtils.createPKCE(dataLength)
     }
 }

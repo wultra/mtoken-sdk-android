@@ -180,7 +180,7 @@ class OidcTests {
 //            val redirectUri = loginWithAuth0Ktor(oidcAuthData.authorizeUri, username, password)
 //            Assert.assertNotNull(redirectUri)
 //
-//            val paActivationAttributes = OidcUtils.processDeeplink(oidcAuthData, redirectUri)
+//            val paActivationAttributes = OidcUtils.processDeeplink(redirectUri, oidcAuthData)
 //
 //            if (paActivationAttributes != null) {
 //                pa.createOidcActivation(

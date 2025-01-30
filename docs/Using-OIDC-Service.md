@@ -2,10 +2,11 @@
 
 - [Introduction](#introduction)
 - [Creating an Instance](#creating-an-instance)
-- [Preparing for OIDC Activation](#preparing-for-oidc-activation)
-- [Open authorize URI in a web browser](#open-authorize-uri-in-a-web-browser)
+- [Retrieving Configuration](#retrieving-configuration)
+- [Preparing OIDC Authorization Data](#preparing-oidc-authorization-data)
+- [Open authorize URL in a web browser](#open-authorize-url-in-a-web-browser)
 - [Processing a Deeplink and initializing PowerAuth activation flow](#processing-a-deeplink-and-initializing-powerAuth-activation-flow)
-- [OIDCUtils](#oidcutils)
+- [OidcUtils](#oidcutils)
 
 ## Introduction
 
@@ -60,25 +61,39 @@ For these, if null is provided, default internal implementation is provided.
 - `gsonBuilder` - Optional GSON builder for custom deserialization
 
 
-## Preparing for OIDC Activation
+## Retrieving Configuration
 
-To prepare for an OIDC activation, you have two main approaches depending on how much control you want over the process:
+The `getConfig` method retrieves the OIDC provider configuration based on a predefined `providerId`, returning a `OidcConfig` object with essential details about the provider, client, and PKCE settings.
 
-### a) OIDC service prepares it all with `prepareOidcActivation`
+### OidcConfig
 
-For a streamlined approach, use the `prepareOidcActivation` method. This method handles all the steps for you, including fetching the OIDC configuration, generating PKCE codes, creating `nonce` and `state`, and constructing the authorization URI.
+The `OidcConfig` structure contains essential OIDC configuration values for authentication.
+
+| Property        | Type    | Description                                                                                     |
+|-----------------|---------|------------------------------------------------------------------------------|
+| `providerId`    | `String`| The unique identifier for the OIDC provider.                                                   |
+| `clientId`      | `String`| The OAuth 2.0 client ID used to form the URL for the authorization request.                     |
+| `scopes`        | `String`| A space-delimited list of OAuth 2.0 scopes for the authorization request.                       |
+| `authorizeUri`  | `String`| The OAuth 2.0 authorization URI where the user is redirected for authentication.                |
+| `redirectUri`   | `String`| The OAuth 2.0 redirect URI where the server sends responses after authentication.               |
+| `pkceEnabled`   | `Bool`  | Indicates whether PKCE (Proof Key for Code Exchange) should be used in the authentication flow. |
 
 ##### Example:
 
 ```kotlin
-oidcService.prepareOidcActivation("example_provider") { result ->
-  result.onSuccess { oidcAuthRequest ->
-    // Use oidcAuthRequest.authorizeUri to open the browser
-  }.onFailure { error ->
-    // handle error
-  }
+oidcService.getConfig("example_provider") { result ->
+    result.onSuccess {
+        // OIDC configuration
+    }.onFailure {
+        // show error
+    }
 }
 ```
+
+## Preparing OIDC Authorization Data
+
+The `prepareOidcAuthorizationData` method generates the necessary data for initiating the OIDC authorization process from `OidcConfig`. `OidcConfig` can be obtained by calling `getConfig(providerId)` or instantiated directly.
+
 
 ##### OidcAuthorizationRequest
 
@@ -92,19 +107,17 @@ Encapsulates the data required to initiate the OIDC authorization flow and also 
 | `state`          | `String`  | Random value to maintain state between request/callback.|
 | `codeVerifier`   | `String?` | PKCE code verifier, if applicable.                      |
 
+##### Example:
 
-
-### b) Manual Configuration with `getConfig`
-
-In this approach, you fetch the OIDC configuration based on a predefined `providerId` and handle the rest of the activation preparation manually.
-
-##### Steps:
-1. Use the `getConfig` method to fetch the OIDC configuration.
-2. You can manually construct the authorization URI using the provided utility classes.
-  - `PKCEUtils.create` for generating PKCE codes.
-  - `RandomGeneratorUtils.getRandomBase64UrlSafe` for generating `nonce` and `state`.
-  - `UriUtils.createAuthorizationUri` for constructing the authorization URI.
-
+```kotlin
+oidcService.prepareOidcActivation("example_provider") { result ->
+  result.onSuccess { oidcAuthRequest ->
+    // Use oidcAuthRequest.authorizeUri to open the browser
+  }.onFailure { error ->
+    // handle error
+  }
+}
+```
 
 ## Open authorize URI in a web browser
 
@@ -141,14 +154,13 @@ fun isCustomTabsSupported(): Boolean {
 }
 ```
 
-
 ## Processing a Deeplink and initializing PowerAuth activation flow
 
 After the user completes the OIDC flow in the web browser, the returned deeplink can be processed to extract the necessary attributes.
 
 ### Processing a deeplink 
 
-The `UriUtils.processDeeplinkOidc` utility function extracts and validates the data needed to initiate PowerAuth activation from the OIDC flow's callback URI.
+The `OidcUtils.processDeeplink` utility function extracts and validates the data needed to initiate PowerAuth activation from the OIDC flow's callback URI.
 
 
 ##### PowerAuthActivationAttributes
@@ -169,19 +181,19 @@ The final step in the OIDC and PowerAuth integration is to use the `createOidcAc
 
 
 ```kotlin
-val attributes = UriUtils.processDeeplinkOidc(oidcAuth, deeplinkUri)
-if (attributes != null) {
-    powerAuthSDK.createOidcActivation(attributes, object : ICreateActivationListener {
-        override fun onActivationCreateSuccess(activationResult: CreateActivationResult) {
-            // Activation succeeded with activationResult
-        }
+try {
+  val attributes = UriUtils.processDeeplink(deeplinkUri, oidcAuth)
+  powerAuthSDK.createOidcActivation(attributes, "Petr's phone", object : ICreateActivationListener {
+    override fun onActivationCreateSuccess(activationResult: CreateActivationResult) {
+      // Activation succeeded with activationResult
+    }
 
-        override fun onActivationCreateFailed(error: Throwable) {
-            // Activation failed with error
-        }
-    })
-} else {
-    // Failed to process OIDC deeplink.
+    override fun onActivationCreateFailed(error: Throwable) {
+      // Activation failed with error
+    }
+  })
+} catch (e: Exception) {
+  // Handle OIDC deeplink processing failure
 }
 ```
 
@@ -194,11 +206,11 @@ Provides methods for generating PKCE codes.
 - **`createPKCE`**: Generates a code verifier and code challenge based on the length input.
 
 ```kotlin
-val pkceResult = OidcUtils.createPKCE(32)
-pkceResult.onSuccess { pkceCodes ->
-    // PKCE Codes created
-}.onFailure { error ->
-    // Error during generating PKCE codes
+try {
+    val pkceCodes = OidcUtils.createPKCE(32)
+    // PKCE Codes created successfully
+} catch (e: Exception) {
+    // Error generating PKCE codes
 }
 ```
 
@@ -209,7 +221,12 @@ Provides methods to generate random strings in Base64 URL-safe format, useful fo
 - **`getRandomBase64UrlSafe`**: Generates a code verifier and code challenge based on the length input.
 
 ```kotlin
-val nonce = OidcUtils.getRandomBase64UrlSafe(32)
+try {
+    val nonce = OidcUtils.getRandomBase64UrlSafe(32)
+    // Random string generated successfully
+} catch (e: Exception) {
+    // Error generating random string
+}
 ```
 
 #### UriUtils
@@ -219,21 +236,21 @@ Provides methods for handling URIs.
 - **`createAuthorizationUri`**: Constructs an authorization URI.
 
 ```kotlin
-val uriResult = UriUtils.createAuthorizationUri(config, nonce, state, pkceCodes)
-uriResult.onSuccess { uri ->
-    println("Authorization URI: $uri")
-}.onFailure { error ->
-    println("Error creating authorization URI: ${error.message}")
+try {
+    val authorizationUri = OidcUtils.createAuthorizationUri(config, nonce, state, pkceCodes)
+    println("Authorization URI: $authorizationUri")
+} catch (e: Exception) {
+    println("Error creating authorization URI: ${e.message}")
 }
 ```
 
 - **`processDeeplink`**: Processes a deeplink to extract activation attributes.
 
 ```kotlin
-val activationAttributes = UriUtils.processDeeplinkOidc(oidcAuth, deeplinkUri)
-if (activationAttributes != null) {
+try {
+    val activationAttributes = OidcUtils.processDeeplink(deeplinkUri, oidcAuth)
     println("Activation attributes ready: $activationAttributes")
-} else {
-    println("Failed to process deeplink URI.")
+} catch (e: Exception) {
+    println("Failed to process deeplink URI: ${e.message}")
 }
 ```
