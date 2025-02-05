@@ -29,7 +29,7 @@ import io.getlime.security.powerauth.sdk.PowerAuthSDK
 import okhttp3.OkHttpClient
 
 /**
- * Convenience factory method to create an WultraMobileToken instance
+ * Convenience factory method to create a WultraMobileToken instance
  * from given PowerAuthSDK instance from default values.
  *
  * @param appContext Application Context
@@ -152,10 +152,10 @@ class WultraMobileToken(
         WMTLogger.d("Creating Push Service in WultraMobileToken")
 
         val pushService = PushService(
-            okHttpClient,
-            powerAuthSDK.configuration.baseEndpointUrl,
             powerAuthSDK,
             appContext,
+            okHttpClient,
+            powerAuthSDK.configuration.baseEndpointUrl,
             null,
             userAgent
         )
@@ -168,10 +168,10 @@ class WultraMobileToken(
         WMTLogger.d("Creating Inbox Service in WultraMobileToken")
 
         val inboxService = InboxService(
-            okHttpClient,
-            powerAuthSDK.configuration.baseEndpointUrl,
             powerAuthSDK,
             appContext,
+            okHttpClient,
+            powerAuthSDK.configuration.baseEndpointUrl,
             null,
             userAgent,
             gsonBuilder

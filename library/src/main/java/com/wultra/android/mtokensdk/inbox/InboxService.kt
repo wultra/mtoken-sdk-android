@@ -37,10 +37,10 @@ import okhttp3.OkHttpClient
  * Service that communicates with Inbox API that is managing user's inbox.
  */
 class InboxService(
-    httpClient: OkHttpClient,
-    baseURL: String,
     powerAuthSDK: PowerAuthSDK,
     appContext: Context,
+    httpClient: OkHttpClient,
+    baseURL: String,
     tokenProvider: IPowerAuthTokenProvider? = null,
     userAgent: UserAgent? = null,
     gsonBuilder: GsonBuilder? = null

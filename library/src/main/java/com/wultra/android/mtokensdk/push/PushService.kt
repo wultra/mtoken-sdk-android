@@ -36,8 +36,7 @@ import okhttp3.OkHttpClient
  * Service, that communicates with Mobile Token API that handles registration for
  * push notifications.
  */
-class PushService(okHttpClient: OkHttpClient, baseURL: String, powerAuthSDK: PowerAuthSDK, appContext: Context, tokenProvider: IPowerAuthTokenProvider? = null, userAgent: UserAgent? = null) {
-
+class PushService(powerAuthSDK: PowerAuthSDK, appContext: Context, okHttpClient: OkHttpClient, baseURL: String, tokenProvider: IPowerAuthTokenProvider? = null, userAgent: UserAgent? = null) {
     /**
      * Accept language for the outgoing requests headers.
      * Default value is "en".
