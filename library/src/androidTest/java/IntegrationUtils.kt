@@ -82,8 +82,8 @@ class IntegrationUtils {
         private val sdkConfig = getInstrumentationParameter("sdkConfig")
         private var activationName = "" // will be filled when activation is created
         private var registrationId = "" // will be filled when activation is created
-        private val oidcProviderId = getInstrumentationParameter("oidcProviderId")
-        private val oidcProviderIdPKCE = getInstrumentationParameter("oidcProviderIdPKCE")
+        private val oidcProviderId = getOptionalInstrumentationParameter("oidcProviderId")
+        private val oidcProviderIdPKCE = getOptionalInstrumentationParameter("oidcProviderIdPKCE")
 
         fun prepareForOidc(): Pair<PowerAuthSDK, OidcService> {
 
@@ -291,6 +291,11 @@ class IntegrationUtils {
         @Throws
         private fun getInstrumentationParameter(parameterName: String): String {
             return InstrumentationRegistry.getArguments().getString("tests.sdk.$parameterName") ?: throw Exception("Missing $parameterName in configuration.")
+        }
+
+        @Throws
+        private fun getOptionalInstrumentationParameter(parameterName: String): String {
+            return InstrumentationRegistry.getArguments().getString("tests.sdk.$parameterName") ?: ""
         }
 
         fun getOidcProps(): OidcProperties {

@@ -11,6 +11,7 @@
 
 package com.wultra.android.mtokensdk.test
 
+import com.wultra.android.mtokensdk.log.WMTLogger
 import com.wultra.android.mtokensdk.oidc.OidcService
 import com.wultra.android.mtokensdk.oidc.models.OidcAuthorizationData
 import com.wultra.android.mtokensdk.oidc.models.OidcConfig
@@ -70,6 +71,11 @@ class OidcTests {
     fun testGetConfigSucceed() {
         val validProvider = IntegrationUtils.getOidcProps().providerId
 
+        if (validProvider == "") {
+            WMTLogger.w("If you want to test OIDC provide a valid providerId in the integration-tests.properties")
+            return
+        }
+
         val future = CompletableFuture<OidcConfig>()
         oidc.getConfig(validProvider) { result ->
             result
@@ -91,6 +97,11 @@ class OidcTests {
     fun testGetConfigPKCESucceed() {
         val validPKCEProvider = IntegrationUtils.getOidcProps().providerIdPkce
 
+        if (validPKCEProvider == "") {
+            WMTLogger.w("If you want to test OIDC provide a valid providerId in the integration-tests.properties")
+            return
+        }
+
         val future = CompletableFuture<OidcConfig>()
         oidc.getConfig(validPKCEProvider) { result ->
             result
@@ -106,6 +117,11 @@ class OidcTests {
     @Test
     fun testOidcPreparesAuthorizationData() {
         val props = IntegrationUtils.getOidcProps()
+
+        if (props.providerIdPkce == "") {
+            WMTLogger.w("If you want to test OIDC provide a valid providerId in the integration-tests.properties")
+            return
+        }
 
         val configFuture = CompletableFuture<OidcConfig>()
         oidc.getConfig(props.providerIdPkce) { result ->
@@ -160,6 +176,10 @@ class OidcTests {
 //        val username =
 //        val password =
 //        val props = IntegrationUtils.getOidcProps()
+//        if (props.providerIdPkce == "") {
+//            WMTLogger.w("If you want to test OIDC provide a valid providerId in the integration-tests.properties")
+//            return
+//        }
 //        val configFuture = CompletableFuture<OidcConfig>()
 //        oidc.getConfig(props.providerIdPkce) { result ->
 //            result
