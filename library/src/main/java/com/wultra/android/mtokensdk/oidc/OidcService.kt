@@ -22,7 +22,7 @@ import com.wultra.android.mtokensdk.api.oidc.ConfigResponse
 import com.wultra.android.mtokensdk.api.oidc.OidcApi
 import com.wultra.android.mtokensdk.api.oidc.model.OidcConfigRequest
 import com.wultra.android.mtokensdk.log.WMTLogger
-import com.wultra.android.mtokensdk.oidc.models.OidcAuthorizationData
+import com.wultra.android.mtokensdk.oidc.models.OidcAuthorizationRequest
 import com.wultra.android.mtokensdk.oidc.models.OidcConfig
 import com.wultra.android.mtokensdk.oidc.models.PKCECodes
 import com.wultra.android.mtokensdk.oidc.utils.OidcUtils
@@ -109,10 +109,10 @@ class OidcService(
      *
      * @param oidcConfig The OIDC configuration, either retrieved dynamically (e.g., using `getConfig`) or defined statically.
      * @param callback A callback that receives the result of the authorization data preparation.
-     *                 - On success: Returns [OidcAuthorizationData]
+     *                 - On success: Returns [OidcAuthorizationRequest]
      *                 - On failure: Returns an appropriate [Throwable].
      */
-    fun prepareOidcAuthorizationData(oidcConfig: OidcConfig, callback: (Result<OidcAuthorizationData>) -> Unit) {
+    fun prepareOidcAuthorizationData(oidcConfig: OidcConfig, callback: (Result<OidcAuthorizationRequest>) -> Unit) {
         try {
             val pkceCodes = createPKCE(oidcConfig.pkceEnabled, 32)
             val nonce = OidcUtils.getRandomBase64UrlSafe(32)
@@ -120,7 +120,7 @@ class OidcService(
 
             val authorizeUri = OidcUtils.createAuthorizationUri(oidcConfig, nonce, state, pkceCodes)
 
-            callback(Result.success(OidcAuthorizationData(authorizeUri, oidcConfig.providerId, nonce, state, pkceCodes?.codeVerifier)))
+            callback(Result.success(OidcAuthorizationRequest(authorizeUri, oidcConfig.providerId, nonce, state, pkceCodes?.codeVerifier)))
         } catch (e: Exception) {
             WMTLogger.e("OIDC: Failed to prepare OIDC authorization data: ${e.message}")
             callback(Result.failure(e))

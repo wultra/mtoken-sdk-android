@@ -293,7 +293,6 @@ class IntegrationUtils {
             return InstrumentationRegistry.getArguments().getString("tests.sdk.$parameterName") ?: throw Exception("Missing $parameterName in configuration.")
         }
 
-        @Throws
         private fun getOptionalInstrumentationParameter(parameterName: String): String {
             return InstrumentationRegistry.getArguments().getString("tests.sdk.$parameterName") ?: ""
         }

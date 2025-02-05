@@ -90,9 +90,9 @@ oidcService.getConfig("example_provider") { result ->
 }
 ```
 
-## Preparing OIDC Authorization Data
+## Preparing OIDC Authorization Request Data
 
-The `prepareOidcAuthorizationData` method generates the necessary data for initiating the OIDC authorization process from `OidcConfig`. `OidcConfig` can be obtained by calling `getConfig(providerId)` or instantiated directly.
+The `prepareOidcAuthorizationRequest` method generates the necessary data for initiating the OIDC authorization process from `OidcConfig`. `OidcConfig` can be obtained by calling `getConfig(providerId)` or instantiated directly.
 
 
 ##### OidcAuthorizationRequest

@@ -19,7 +19,7 @@ package com.wultra.android.mtokensdk.oidc.utils
 import android.net.Uri
 import android.util.Base64
 import com.wultra.android.mtokensdk.log.WMTLogger
-import com.wultra.android.mtokensdk.oidc.models.OidcAuthorizationData
+import com.wultra.android.mtokensdk.oidc.models.OidcAuthorizationRequest
 import com.wultra.android.mtokensdk.oidc.models.OidcConfig
 import com.wultra.android.mtokensdk.oidc.models.OidcPowerAuthActivationAttributes
 import com.wultra.android.mtokensdk.oidc.models.PKCECodes
@@ -102,26 +102,26 @@ object OidcUtils {
      * Processes a deeplink URI to extract and validate OIDC activation attributes.
      *
      * @param uriDeeplink The deeplink URI received from the OIDC provider.
-     * @param oidcAuthorizationData The expected authorization data (contains state and PKCE verifier).
+     * @param oidcAuthorizationRequest The expected authorization data (contains state and PKCE verifier).
      * @return The extracted [OidcPowerAuthActivationAttributes].
      * @throws IllegalArgumentException If the URI is invalid or missing required parameters.
      */
-    fun processDeeplink(uriDeeplink: Uri, oidcAuthorizationData: OidcAuthorizationData): OidcPowerAuthActivationAttributes {
+    fun processDeeplink(uriDeeplink: Uri, oidcAuthorizationRequest: OidcAuthorizationRequest): OidcPowerAuthActivationAttributes {
         val code = uriDeeplink.getQueryParameter("code")
             ?: throw IllegalArgumentException("OIDC: Missing 'code' parameter in deeplink: $uriDeeplink")
 
         val state = uriDeeplink.getQueryParameter("state")
             ?: throw IllegalArgumentException("OIDC: Missing 'state' parameter in deeplink: $uriDeeplink")
 
-        if (state != oidcAuthorizationData.state) {
+        if (state != oidcAuthorizationRequest.state) {
             throw IllegalArgumentException("OIDC: Invalid 'state' parameter in deeplink: $uriDeeplink")
         }
 
         return OidcPowerAuthActivationAttributes(
-            providerId = oidcAuthorizationData.providerId,
+            providerId = oidcAuthorizationRequest.providerId,
             code = code,
-            nonce = oidcAuthorizationData.nonce,
-            codeVerifier = oidcAuthorizationData.codeVerifier
+            nonce = oidcAuthorizationRequest.nonce,
+            codeVerifier = oidcAuthorizationRequest.codeVerifier
         )
     }
 

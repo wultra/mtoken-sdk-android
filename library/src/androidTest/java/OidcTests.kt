@@ -13,7 +13,7 @@ package com.wultra.android.mtokensdk.test
 
 import com.wultra.android.mtokensdk.log.WMTLogger
 import com.wultra.android.mtokensdk.oidc.OidcService
-import com.wultra.android.mtokensdk.oidc.models.OidcAuthorizationData
+import com.wultra.android.mtokensdk.oidc.models.OidcAuthorizationRequest
 import com.wultra.android.mtokensdk.oidc.models.OidcConfig
 import com.wultra.android.powerauth.networking.error.ApiErrorException
 import com.wultra.android.powerauth.networking.error.ApiHttpException
@@ -133,7 +133,7 @@ class OidcTests {
         val config = configFuture.get(20, TimeUnit.SECONDS)
         Assert.assertNotNull("Config should not be null", config)
 
-        val oidcAuthDataFuture = CompletableFuture<OidcAuthorizationData>()
+        val oidcAuthDataFuture = CompletableFuture<OidcAuthorizationRequest>()
         oidc.prepareOidcAuthorizationData(config) { data ->
             data
                 .onSuccess { oidcAuthDataFuture.complete(it) }
@@ -187,7 +187,7 @@ class OidcTests {
 //                .onFailure { configFuture.completeExceptionally(it) }
 //        }
 //        val config = configFuture.get(20, TimeUnit.SECONDS)
-//        val oidcAuthDataFuture = CompletableFuture<OidcAuthorizationData>()
+//        val oidcAuthDataFuture = CompletableFuture<OidcAuthorizationRequest>()
 //        oidc.prepareOidcAuthorizationData(config) { data ->
 //            data
 //                .onSuccess { oidcAuthDataFuture.complete(it) }
