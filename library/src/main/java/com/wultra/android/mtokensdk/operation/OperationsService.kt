@@ -69,6 +69,7 @@ class OperationsService {
     /**
      * Accept language for the outgoing requests headers.
      * Default value is "en".
+     * Changing this value updates the accept language of the underlying operationsApi.
      *
      * Standard RFC "Accept-Language" https://tools.ietf.org/html/rfc7231#section-5.3.5
      * Response texts are based on this setting. For example when "de" is set, server
@@ -138,17 +139,6 @@ class OperationsService {
         this.operationApi = OperationApi(httpClient, baseURL, appContext, powerAuthSDK, tokenProvider, userAgent, gsonBuilder)
     }
 
-    private fun currentDate(): ZonedDateTime = run {
-        val timeService = powerAuthSDK.timeSynchronizationService
-        if (timeService.isTimeSynchronized) {
-            val currentTimeInstant = Instant.ofEpochMilli(timeService.currentTime)
-            val defaultTimeZoneId = ZoneId.systemDefault()
-            return ZonedDateTime.ofInstant(currentTimeInstant, defaultTimeZoneId)
-        } else {
-            return ZonedDateTime.now()
-        }
-    }
-
     /**
      * If operations are loading.
      */
@@ -210,7 +200,7 @@ class OperationsService {
     /**
      * Retrieves the history of user operations with its current status.
      *
-     * @param authentication PowerAuth authentication object
+     * @param authentication A multi-factor authentication object for signing. 2FA should be used (password or biometrics).
      * @param callback Callback with result.
      */
     fun getHistory(authentication: PowerAuthAuthentication, callback: (result: Result<List<UserOperation>>) -> Unit) {
@@ -232,12 +222,16 @@ class OperationsService {
      * Authorises operation with provided authentication
      *
      * @param operation Operation for approval
-     * @param authentication PowerAuth authentication object
+     * @param authentication Multi-factor authentication object for signing, which depends on the operation type but usually 2FA (password or biometrics)
      * @param callback Callback with result.
      */
     fun authorizeOperation(operation: IOperation, authentication: PowerAuthAuthentication, callback: (result: Result<Unit>) -> Unit) {
 
-        val currentDate = currentDate()
+        val timeService = powerAuthSDK.timeSynchronizationService
+        val currentDate = if (timeService.isTimeSynchronized) {
+            ZonedDateTime.ofInstant(Instant.ofEpochMilli(timeService.currentTime), ZoneId.systemDefault())
+        } else ZonedDateTime.now()
+
         val authorizeRequest = AuthorizeRequest(AuthorizeRequestObject(operation, currentDate))
         operationApi.authorize(
             authorizeRequest,
@@ -283,7 +277,7 @@ class OperationsService {
      * Sign offline QR operation with provided authentication.
      *
      * @param operation Operation to approve
-     * @param authentication PowerAuth authentication object
+     * @param authentication Multi-factor authentication object for signing, which depends on the operation type but usually 2FA (password or biometrics)
      * @param uriId uriId: Custom signature URI ID of the operation. Use URI ID under which the operation was
      * created on the server. Default value is `/operation/authorize/offline`.
      *

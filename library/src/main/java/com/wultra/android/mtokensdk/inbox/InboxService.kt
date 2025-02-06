@@ -52,6 +52,7 @@ class InboxService(
     /**
      * Accept language for the outgoing requests headers.
      * Default value is "en".
+     * Changing this value updates the accept language of the underlying inboxApi.
      *
      * Standard RFC "Accept-Language" https://tools.ietf.org/html/rfc7231#section-5.3.5
      * Response texts are based on this setting. For example when "de" is set, server
