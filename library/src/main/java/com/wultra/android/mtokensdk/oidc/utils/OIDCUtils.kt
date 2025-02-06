@@ -42,6 +42,7 @@ object OIDCUtils {
      * @throws RuntimeException If secure random generation fails.
      * @see [RFC 7636](https://datatracker.ietf.org/doc/html/rfc7636) for details on the PKCE standard.
      */
+    @Throws
     fun createPKCE(dataLength: Int): PKCECodes {
         val length = if (dataLength in MIN_LENGTH..MAX_LENGTH) dataLength else MIN_LENGTH
 
@@ -61,6 +62,7 @@ object OIDCUtils {
      * @return A URL-safe Base64-encoded string without padding.
      * @throws RuntimeException If secure random generation fails.
      */
+    @Throws
     fun getRandomBase64UrlSafe(dataLength: Int): String {
         return try {
             val secureRandom = SecureRandom()
@@ -84,6 +86,7 @@ object OIDCUtils {
      * @return The constructed authorization URI with query parameters.
      * @throws IllegalArgumentException If the authorization URI is invalid.
      */
+    @Throws
     fun createAuthorizationUri(config: OIDCConfig, nonce: String, state: String, pkceCodes: PKCECodes?): Uri {
         return try {
             Uri.parse(config.authorizeUri).buildUpon()
@@ -114,6 +117,7 @@ object OIDCUtils {
      * @return The extracted [OIDCPowerAuthActivationAttributes].
      * @throws IllegalArgumentException If the URI is invalid or missing required parameters.
      */
+    @Throws
     fun processDeeplink(uriDeeplink: Uri, oidcAuthorizationRequest: OIDCAuthorizationRequest): OIDCPowerAuthActivationAttributes {
         val code = uriDeeplink.getQueryParameter("code")
             ?: throw IllegalArgumentException("OIDC: Missing 'code' parameter in deeplink: $uriDeeplink")
