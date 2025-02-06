@@ -294,7 +294,8 @@ class IntegrationUtils {
         }
 
         private fun getOptionalInstrumentationParameter(parameterName: String): String {
-            return InstrumentationRegistry.getArguments().getString("tests.sdk.$parameterName") ?: ""
+            val value = InstrumentationRegistry.getArguments().getString("tests.sdk.$parameterName")
+            return if (value == null || value == "null") "" else value
         }
 
         fun getOIDCProps(): OIDCProperties {
