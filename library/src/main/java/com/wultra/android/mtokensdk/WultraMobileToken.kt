@@ -25,6 +25,7 @@ import com.wultra.android.mtokensdk.operation.OperationsUtils
 import com.wultra.android.mtokensdk.push.PushService
 import com.wultra.android.powerauth.networking.UserAgent
 import com.wultra.android.powerauth.networking.ssl.SSLValidationStrategy
+import com.wultra.android.powerauth.networking.tokens.IPowerAuthTokenProvider
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
 import okhttp3.OkHttpClient
 
@@ -35,6 +36,7 @@ import okhttp3.OkHttpClient
  * @param appContext Application Context
  * @param okHttpClient HTTP client instance for networking
  * @param acceptLanguage The language code to set for the `Accept-Language` header.
+ * @param tokenProvider PowerAuthToken provider. If null is provided, default internal implementation is provided.
  * @param userAgent Default user agent for each request.
  * @param gsonBuilder Custom GSON builder for deserialization of request. If you want to provide your own
  * deserialization logic, we recommend adding it to the instance obtained from the [OperationsUtils].defaultGsonBuilder().
@@ -44,6 +46,7 @@ fun PowerAuthSDK.createWultraMobileToken(
     appContext: Context,
     okHttpClient: OkHttpClient? = null,
     acceptLanguage: String? = null,
+    tokeProvider: IPowerAuthTokenProvider? = null,
     userAgent: UserAgent? = null,
     gsonBuilder: GsonBuilder? = null
 ): WultraMobileToken {
@@ -52,6 +55,7 @@ fun PowerAuthSDK.createWultraMobileToken(
         appContext,
         okHttpClient,
         acceptLanguage,
+        tokeProvider,
         userAgent,
         gsonBuilder
     )
@@ -65,6 +69,7 @@ fun PowerAuthSDK.createWultraMobileToken(
  * @param appContext Application Context
  * @param okHttpClient OkHttpClient for API communication
  * @param acceptLanguage The language code to set for the `Accept-Language` header.
+ * @param tokenProvider PowerAuthToken provider. If null is provided, default internal implementation is provided.
  * @param userAgent Default user agent used for each request.
  * @param gsonBuilder GSON builder for deserialization of request.
  *
@@ -74,29 +79,15 @@ fun PowerAuthSDK.createWultraMobileToken(
  *
  * - **Extensible Configuration**: Supports custom `NetworkingConfig` for each service, enabling tailored setups.
  */
-class WultraMobileToken private constructor(
+class WultraMobileToken(
     private val powerAuthSDK: PowerAuthSDK,
     private val appContext: Context,
-    private val okHttpClient: OkHttpClient,
-    private var acceptLanguage: String,
-    private val userAgent: UserAgent,
-    private val gsonBuilder: GsonBuilder?
+    private val okHttpClient: OkHttpClient? = null,
+    private var acceptLanguage: String? = null,
+    private val tokenProvider: IPowerAuthTokenProvider? = null,
+    private val userAgent: UserAgent? = null,
+    private val gsonBuilder: GsonBuilder? = null
 ) {
-    constructor(
-        powerAuthSDK: PowerAuthSDK,
-        appContext: Context,
-        okHttpClient: OkHttpClient? = null,
-        acceptLanguage: String? = null,
-        userAgent: UserAgent? = null,
-        gsonBuilder: GsonBuilder? = null
-    ) : this(
-        powerAuthSDK,
-        appContext,
-        okHttpClient ?: defaultOkHttpClient(),
-        acceptLanguage ?: "en",
-        userAgent ?: UserAgent.libraryDefault(appContext),
-        gsonBuilder
-    )
 
     /**
      * Default OkHttpClient
@@ -116,13 +107,13 @@ class WultraMobileToken private constructor(
             OperationsService(
                 powerAuthSDK,
                 appContext,
-                okHttpClient,
+                okHttpClient ?: defaultOkHttpClient(),
                 powerAuthSDK.configuration.baseEndpointUrl,
-                null,
+                tokenProvider,
                 userAgent,
                 gsonBuilder
             ).apply {
-                acceptLanguage = this@WultraMobileToken.acceptLanguage
+                this@WultraMobileToken.acceptLanguage?.let { acceptLanguage = it }
             }
         }
     }
@@ -131,12 +122,12 @@ class WultraMobileToken private constructor(
             PushService(
                 powerAuthSDK,
                 appContext,
-                okHttpClient,
+                okHttpClient ?: defaultOkHttpClient(),
                 powerAuthSDK.configuration.baseEndpointUrl,
-                null,
+                tokenProvider,
                 userAgent
             ).apply {
-                acceptLanguage = this@WultraMobileToken.acceptLanguage
+                this@WultraMobileToken.acceptLanguage?.let { acceptLanguage = it }
             }
         }
     }
@@ -145,17 +136,16 @@ class WultraMobileToken private constructor(
             InboxService(
                 powerAuthSDK,
                 appContext,
-                okHttpClient,
+                okHttpClient ?: defaultOkHttpClient(),
                 powerAuthSDK.configuration.baseEndpointUrl,
-                null,
+                tokenProvider,
                 userAgent,
                 gsonBuilder
             ).apply {
-                acceptLanguage = this@WultraMobileToken.acceptLanguage
+                this@WultraMobileToken.acceptLanguage?.let { acceptLanguage = it }
             }
         }
     }
-
 
     /**
      * Operations manager. Use for fetching pending lists, approving operations, etc.
