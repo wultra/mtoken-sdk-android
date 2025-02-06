@@ -29,7 +29,7 @@ import com.google.gson.stream.JsonToken
 import com.google.gson.stream.JsonWriter
 import com.wultra.android.mtokensdk.WultraMobileToken
 import com.wultra.android.mtokensdk.createWultraMobileToken
-import com.wultra.android.mtokensdk.oidc.OidcService
+import com.wultra.android.mtokensdk.oidc.OIDCService
 import io.getlime.security.powerauth.core.ActivationCodeUtil
 import io.getlime.security.powerauth.networking.response.CreateActivationResult
 import io.getlime.security.powerauth.networking.response.ICreateActivationListener
@@ -85,7 +85,7 @@ class IntegrationUtils {
         private val oidcProviderId = getOptionalInstrumentationParameter("oidcProviderId")
         private val oidcProviderIdPKCE = getOptionalInstrumentationParameter("oidcProviderIdPKCE")
 
-        fun prepareForOidc(): Pair<PowerAuthSDK, OidcService> {
+        fun prepareForOIDC(): Pair<PowerAuthSDK, OIDCService> {
 
             // CREATE PA INSTANCE
             val cfg = PowerAuthConfiguration.Builder("tests", enrollmentUrl, sdkConfig).build()
@@ -297,8 +297,8 @@ class IntegrationUtils {
             return InstrumentationRegistry.getArguments().getString("tests.sdk.$parameterName") ?: ""
         }
 
-        fun getOidcProps(): OidcProperties {
-            return OidcProperties(oidcProviderId, oidcProviderIdPKCE)
+        fun getOIDCProps(): OIDCProperties {
+            return OIDCProperties(oidcProviderId, oidcProviderIdPKCE)
         }
     }
 }
@@ -361,7 +361,7 @@ data class NewInboxMessage(
 
 data class StatusResponse(val status: String)
 
-data class OidcProperties(
+data class OIDCProperties(
     val providerId: String,
     val providerIdPkce: String
 )

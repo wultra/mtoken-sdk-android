@@ -20,7 +20,7 @@ import android.content.Context
 import com.google.gson.GsonBuilder
 import com.wultra.android.mtokensdk.inbox.InboxService
 import com.wultra.android.mtokensdk.log.WMTLogger
-import com.wultra.android.mtokensdk.oidc.OidcService
+import com.wultra.android.mtokensdk.oidc.OIDCService
 import com.wultra.android.mtokensdk.operation.OperationsService
 import com.wultra.android.mtokensdk.operation.OperationsUtils
 import com.wultra.android.mtokensdk.push.PushService
@@ -91,11 +91,6 @@ class WultraMobileToken(
 ) {
 
     /**
-     * Lazily initialized service for managing oidc flow preparation and activation
-     */
-    val oidc: OidcService by lazy { createOidc() }
-
-    /**
      * Default OkHttpClient
      */
     companion object {
@@ -152,6 +147,21 @@ class WultraMobileToken(
             }
         }
     }
+    private val oidcBacking by lazy {
+        Lazy {
+            OIDCService(
+                powerAuthSDK,
+                appContext,
+                okHttpClient ?: defaultOkHttpClient(),
+                powerAuthSDK.configuration.baseEndpointUrl,
+                tokenProvider,
+                userAgent,
+                gsonBuilder
+            ).apply {
+                this@WultraMobileToken.acceptLanguage?.let { acceptLanguage = it }
+            }
+        }
+    }
 
     /**
      * Operations manager. Use for fetching pending lists, approving operations, etc.
@@ -169,6 +179,11 @@ class WultraMobileToken(
     val inbox: InboxService get() = inboxBacking.lazy
 
     /**
+     * OIDC manager - receive the config and help with OIDC activation preparation
+     */
+    val oidc: OIDCService get() = oidcBacking.lazy
+
+    /**
      * Sets the accept language for the outgoing request headers for `operations`, `push`, and `inbox` objects.
      * The value can be further modified in each object individually.
      *
@@ -184,6 +199,7 @@ class WultraMobileToken(
         operationsBacking.optional?.acceptLanguage = lang
         pushBacking.optional?.acceptLanguage = lang
         inboxBacking.optional?.acceptLanguage = lang
+        oidcBacking.optional?.acceptLanguage = lang
         WMTLogger.i("Accept language set to $lang")
     }
 }

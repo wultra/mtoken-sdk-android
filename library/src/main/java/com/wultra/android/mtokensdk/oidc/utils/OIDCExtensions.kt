@@ -16,9 +16,9 @@
 
 package com.wultra.android.mtokensdk.oidc.utils
 
-import com.wultra.android.mtokensdk.api.oidc.model.OidcConfigResponse
-import com.wultra.android.mtokensdk.oidc.models.OidcConfig
-import com.wultra.android.mtokensdk.oidc.models.OidcPowerAuthActivationAttributes
+import com.wultra.android.mtokensdk.api.oidc.model.OIDCConfigResponse
+import com.wultra.android.mtokensdk.oidc.models.OIDCConfig
+import com.wultra.android.mtokensdk.oidc.models.OIDCPowerAuthActivationAttributes
 import io.getlime.security.powerauth.exception.PowerAuthMissingConfigException
 import io.getlime.security.powerauth.networking.interfaces.ICancelable
 import io.getlime.security.powerauth.networking.response.ICreateActivationListener
@@ -30,7 +30,7 @@ import io.getlime.security.powerauth.sdk.PowerAuthSDK
  *
  * @receiver PowerAuthSDK
  * @param attributes Data object containing the information required for the activation creation.
- *  - to create attributes see [OidcUtils.processDeeplink]
+ *  - to create attributes see [OIDCUtils.processDeeplink]
  * @param activationName The activation's name parameter is optional, but recommended to set. You can use the
  * value obtained from {@code Settings.System.getString(getContentResolver(), "device_name")} or let the user
  * set the name.
@@ -39,7 +39,7 @@ import io.getlime.security.powerauth.sdk.PowerAuthSDK
  * @throws PowerAuthMissingConfigException – thrown in case configuration is not present.
  */
 @Throws(PowerAuthMissingConfigException::class)
-fun PowerAuthSDK.createOidcActivation(attributes: OidcPowerAuthActivationAttributes, activationName: String? = null, listener: ICreateActivationListener): ICancelable? {
+fun PowerAuthSDK.createOIDCActivation(attributes: OIDCPowerAuthActivationAttributes, activationName: String? = null, listener: ICreateActivationListener): ICancelable? {
     val activationBuilder =
         PowerAuthActivation
             .Builder
@@ -57,8 +57,8 @@ fun PowerAuthSDK.createOidcActivation(attributes: OidcPowerAuthActivationAttribu
 /**
  * Maps an `OidcConfigResponse` (network model) to an `OidcConfig` (domain model).
  */
-fun OidcConfigResponse.toOidcConfig(): OidcConfig {
-    return OidcConfig(
+fun OIDCConfigResponse.toOidcConfig(): OIDCConfig {
+    return OIDCConfig(
         providerId = this.providerId,
         clientId = this.clientId,
         scopes = this.scopes,

@@ -199,7 +199,7 @@ try {
 
 ## OIDCUtils
 
-#### PKCEUtils
+#### PKCE
 
 Provides methods for generating PKCE codes.
 
@@ -214,7 +214,7 @@ try {
 }
 ```
 
-#### RandomGeneratorUtils
+#### Random String Generating
 
 Provides methods to generate random strings in Base64 URL-safe format, useful for creating nonces and states.
 
@@ -229,7 +229,7 @@ try {
 }
 ```
 
-#### UriUtils
+#### Uri
 
 Provides methods for handling URIs.
 

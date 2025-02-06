@@ -19,13 +19,12 @@ package com.wultra.android.mtokensdk.oidc
 import android.content.Context
 import com.google.gson.GsonBuilder
 import com.wultra.android.mtokensdk.api.oidc.ConfigResponse
-import com.wultra.android.mtokensdk.api.oidc.OidcApi
+import com.wultra.android.mtokensdk.api.oidc.OIDCApi
 import com.wultra.android.mtokensdk.api.oidc.model.OidcConfigRequest
 import com.wultra.android.mtokensdk.log.WMTLogger
-import com.wultra.android.mtokensdk.oidc.models.OidcAuthorizationRequest
-import com.wultra.android.mtokensdk.oidc.models.OidcConfig
-import com.wultra.android.mtokensdk.oidc.models.PKCECodes
-import com.wultra.android.mtokensdk.oidc.utils.OidcUtils
+import com.wultra.android.mtokensdk.oidc.models.OIDCAuthorizationRequest
+import com.wultra.android.mtokensdk.oidc.models.OIDCConfig
+import com.wultra.android.mtokensdk.oidc.utils.OIDCUtils
 import com.wultra.android.mtokensdk.oidc.utils.toOidcConfig
 import com.wultra.android.powerauth.networking.IApiCallResponseListener
 import com.wultra.android.powerauth.networking.OkHttpBuilderInterceptor
@@ -36,7 +35,7 @@ import com.wultra.android.powerauth.networking.tokens.IPowerAuthTokenProvider
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
 import okhttp3.OkHttpClient
 
-class OidcService(
+class OIDCService(
     powerAuthSDK: PowerAuthSDK,
     appContext: Context,
     okHttpClient: OkHttpClient,
@@ -47,7 +46,7 @@ class OidcService(
 ) {
 
     // API class for communication.
-    private val oidcApi = OidcApi(okHttpClient, baseURL, appContext, powerAuthSDK, tokenProvider, userAgent, gsonBuilder)
+    private val oidcApi = OIDCApi(okHttpClient, baseURL, appContext, powerAuthSDK, tokenProvider, userAgent, gsonBuilder)
 
     /**
      * Accept language for the outgoing requests headers.
@@ -82,7 +81,7 @@ class OidcService(
      */
     fun getConfig(
         providerId: String,
-        callback: (Result<OidcConfig>) -> Unit
+        callback: (Result<OIDCConfig>) -> Unit
     ) {
         oidcApi.getConfig(
             OidcConfigRequest(providerId),
@@ -112,30 +111,20 @@ class OidcService(
      *                 - On success: Returns [OidcAuthorizationRequest]
      *                 - On failure: Returns an appropriate [Throwable].
      */
-    fun prepareOidcAuthorizationData(oidcConfig: OidcConfig, callback: (Result<OidcAuthorizationRequest>) -> Unit) {
+    fun prepareOidcAuthorizationData(oidcConfig: OIDCConfig, callback: (Result<OIDCAuthorizationRequest>) -> Unit) {
         try {
-            val pkceCodes = createPKCE(oidcConfig.pkceEnabled, 32)
-            val nonce = OidcUtils.getRandomBase64UrlSafe(32)
-            val state = OidcUtils.getRandomBase64UrlSafe(32)
+            // Using 32 bytes for PKCE code verifiers aligns with RFC 7636 (https://datatracker.ietf.org/doc/html/rfc7636).
+            // For nonce and state, OpenID Connect does not specify a strict length, but 32 bytes ensures strong randomness to prevent replay and CSRF attacks.
+            val pkceCodes = if (oidcConfig.pkceEnabled) OIDCUtils.createPKCE(32) else null
+            val nonce = OIDCUtils.getRandomBase64UrlSafe(32)
+            val state = OIDCUtils.getRandomBase64UrlSafe(32)
 
-            val authorizeUri = OidcUtils.createAuthorizationUri(oidcConfig, nonce, state, pkceCodes)
+            val authorizeUri = OIDCUtils.createAuthorizationUri(oidcConfig, nonce, state, pkceCodes)
 
-            callback(Result.success(OidcAuthorizationRequest(authorizeUri, oidcConfig.providerId, nonce, state, pkceCodes?.codeVerifier)))
+            callback(Result.success(OIDCAuthorizationRequest(authorizeUri, oidcConfig.providerId, nonce, state, pkceCodes?.codeVerifier)))
         } catch (e: Exception) {
             WMTLogger.e("OIDC: Failed to prepare OIDC authorization data: ${e.message}")
             callback(Result.failure(e))
         }
-    }
-
-    /**
-     * Creates PKCE codes if enabled.
-     *
-     * @param enabled Whether PKCE is enabled.
-     * @param dataLength The length of the PKCE verifier.
-     * @return A [PKCECodes] object if PKCE is enabled, or `null` otherwise.
-     * @throws Exception If PKCE generation fails.
-     */
-    private fun createPKCE(enabled: Boolean, dataLength: Int): PKCECodes? {
-        return if (!enabled) null else OidcUtils.createPKCE(dataLength)
     }
 }

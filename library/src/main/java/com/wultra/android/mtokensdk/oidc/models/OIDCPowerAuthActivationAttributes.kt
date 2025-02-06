@@ -22,7 +22,7 @@ package com.wultra.android.mtokensdk.oidc.models
  * The [OidcUtils.processDeeplink] method is used to generate an instance of this class by processing
  * the deeplink URI returned by the OIDC authorization flow.
  */
-data class OidcPowerAuthActivationAttributes(
+data class OIDCPowerAuthActivationAttributes(
     /**
      * The unique identifier for the OIDC provider configuration.
      */

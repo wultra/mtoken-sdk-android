@@ -54,3 +54,4 @@ For more examples see [IntegrationTests](https://github.com/wultra/mtoken-sdk-io
 - [Using Operations Service](./Using-Operations-Service.md)
 - [Using Push Service](./Using-Push-Service.md)
 - [Using Inbox Service](./Using-Inbox-Service.md)
+- [Using OIDC Service](./Using-OIDC-Service.md)

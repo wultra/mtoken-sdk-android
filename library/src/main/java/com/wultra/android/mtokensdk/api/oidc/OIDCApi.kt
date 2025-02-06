@@ -14,7 +14,7 @@ package com.wultra.android.mtokensdk.api.oidc
 import android.content.Context
 import com.google.gson.GsonBuilder
 import com.wultra.android.mtokensdk.api.oidc.model.OidcConfigRequest
-import com.wultra.android.mtokensdk.api.oidc.model.OidcConfigResponse
+import com.wultra.android.mtokensdk.api.oidc.model.OIDCConfigResponse
 import com.wultra.android.mtokensdk.operation.OperationsUtils
 import com.wultra.android.powerauth.networking.Api
 import com.wultra.android.powerauth.networking.E2EEConfiguration
@@ -27,12 +27,12 @@ import com.wultra.android.powerauth.networking.tokens.IPowerAuthTokenProvider
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
 import okhttp3.OkHttpClient
 
-internal class ConfigResponse(requestObject: OidcConfigResponse, status: Status): ObjectResponse<OidcConfigResponse>(requestObject, status)
+internal class ConfigResponse(requestObject: OIDCConfigResponse, status: Status): ObjectResponse<OIDCConfigResponse>(requestObject, status)
 
 /**
  * Api for OIDC
  */
-internal class OidcApi(
+internal class OIDCApi(
     okHttpClient: OkHttpClient,
     baseUrl: String,
     appContext: Context,

@@ -12,9 +12,9 @@
 package com.wultra.android.mtokensdk.test
 
 import com.wultra.android.mtokensdk.log.WMTLogger
-import com.wultra.android.mtokensdk.oidc.OidcService
-import com.wultra.android.mtokensdk.oidc.models.OidcAuthorizationRequest
-import com.wultra.android.mtokensdk.oidc.models.OidcConfig
+import com.wultra.android.mtokensdk.oidc.OIDCService
+import com.wultra.android.mtokensdk.oidc.models.OIDCAuthorizationRequest
+import com.wultra.android.mtokensdk.oidc.models.OIDCConfig
 import com.wultra.android.powerauth.networking.error.ApiErrorException
 import com.wultra.android.powerauth.networking.error.ApiHttpException
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
@@ -25,11 +25,11 @@ import java.util.concurrent.TimeUnit
 class OidcTests {
 
     private lateinit var pa: PowerAuthSDK
-    lateinit var oidc: OidcService
+    lateinit var oidc: OIDCService
 
     @Before
     fun setup() {
-        val result = IntegrationUtils.prepareForOidc()
+        val result = IntegrationUtils.prepareForOIDC()
         pa = result.first
         oidc = result.second
     }
@@ -69,14 +69,14 @@ class OidcTests {
 
     @Test
     fun testGetConfigSucceed() {
-        val validProvider = IntegrationUtils.getOidcProps().providerId
+        val validProvider = IntegrationUtils.getOIDCProps().providerId
 
         if (validProvider == "") {
             WMTLogger.w("If you want to test OIDC provide a valid providerId in the integration-tests.properties")
             return
         }
 
-        val future = CompletableFuture<OidcConfig>()
+        val future = CompletableFuture<OIDCConfig>()
         oidc.getConfig(validProvider) { result ->
             result
                 .onSuccess { future.complete(it) }
@@ -95,14 +95,14 @@ class OidcTests {
 
     @Test
     fun testGetConfigPKCESucceed() {
-        val validPKCEProvider = IntegrationUtils.getOidcProps().providerIdPkce
+        val validPKCEProvider = IntegrationUtils.getOIDCProps().providerIdPkce
 
         if (validPKCEProvider == "") {
             WMTLogger.w("If you want to test OIDC provide a valid providerId in the integration-tests.properties")
             return
         }
 
-        val future = CompletableFuture<OidcConfig>()
+        val future = CompletableFuture<OIDCConfig>()
         oidc.getConfig(validPKCEProvider) { result ->
             result
                 .onSuccess { future.complete(it) }
@@ -116,14 +116,14 @@ class OidcTests {
 
     @Test
     fun testOidcPreparesAuthorizationData() {
-        val props = IntegrationUtils.getOidcProps()
+        val props = IntegrationUtils.getOIDCProps()
 
         if (props.providerIdPkce == "") {
             WMTLogger.w("If you want to test OIDC provide a valid providerId in the integration-tests.properties")
             return
         }
 
-        val configFuture = CompletableFuture<OidcConfig>()
+        val configFuture = CompletableFuture<OIDCConfig>()
         oidc.getConfig(props.providerIdPkce) { result ->
             result
                 .onSuccess { configFuture.complete(it) }
@@ -133,7 +133,7 @@ class OidcTests {
         val config = configFuture.get(20, TimeUnit.SECONDS)
         Assert.assertNotNull("Config should not be null", config)
 
-        val oidcAuthDataFuture = CompletableFuture<OidcAuthorizationRequest>()
+        val oidcAuthDataFuture = CompletableFuture<OIDCAuthorizationRequest>()
         oidc.prepareOidcAuthorizationData(config) { data ->
             data
                 .onSuccess { oidcAuthDataFuture.complete(it) }
