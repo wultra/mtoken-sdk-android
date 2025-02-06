@@ -43,14 +43,14 @@ import okhttp3.OkHttpClient
  */
 fun PowerAuthSDK.createWultraMobileToken(
     appContext: Context,
-    okHttpClient: OkHttpClient = WultraMobileToken.defaultOkHttpClient(),
-    acceptLanguage: String = "en",
-    userAgent: UserAgent = UserAgent.libraryDefault(appContext),
+    okHttpClient: OkHttpClient? = null,
+    acceptLanguage: String? = null,
+    userAgent: UserAgent? = null,
     gsonBuilder: GsonBuilder? = null
 ): WultraMobileToken {
     return WultraMobileToken(
-        appContext,
         this,
+        appContext,
         okHttpClient,
         acceptLanguage,
         userAgent,
@@ -62,8 +62,8 @@ fun PowerAuthSDK.createWultraMobileToken(
  * WultraMobileToken is a centralized class responsible for initializing and providing access
  * to multiple SDK services. This class simplifies the setup and usage of the following components:
  *
+ *  * @param powerAuthSDK PowerAuth instance
  * @param appContext Application Context
- * @param powerAuthSDK PowerAuth instance
  * @param okHttpClient OkHttpClient for API communication
  * @param acceptLanguage The language code to set for the `Accept-Language` header.
  * @param userAgent Default user agent used for each request.
@@ -75,29 +75,29 @@ fun PowerAuthSDK.createWultraMobileToken(
  *
  * - **Extensible Configuration**: Supports custom `NetworkingConfig` for each service, enabling tailored setups.
  */
-class WultraMobileToken(
-    private val appContext: Context,
+class WultraMobileToken private constructor(
     private val powerAuthSDK: PowerAuthSDK,
-    private val okHttpClient: OkHttpClient = defaultOkHttpClient(),
-    private var acceptLanguage: String = "en",
-    private val userAgent: UserAgent = UserAgent.libraryDefault(appContext),
-    private val gsonBuilder: GsonBuilder? = null
+    private val appContext: Context,
+    private val okHttpClient: OkHttpClient,
+    private var acceptLanguage: String,
+    private val userAgent: UserAgent,
+    private val gsonBuilder: GsonBuilder?
 ) {
-
-    /**
-     * Lazily initialized service for operations handling.
-     */
-    val operations: OperationsService by lazy { createOperations() }
-
-    /**
-     * Lazily initialized service for push notification registering
-     */
-    val push: PushService by lazy { createPush() }
-
-    /**
-     * Lazily initialized service for managing user's inbox
-     */
-    val inbox: InboxService by lazy { createInbox() }
+    constructor(
+        powerAuthSDK: PowerAuthSDK,
+        appContext: Context,
+        okHttpClient: OkHttpClient? = null,
+        acceptLanguage: String? = null,
+        userAgent: UserAgent? = null,
+        gsonBuilder: GsonBuilder? = null
+    ) : this(
+        powerAuthSDK,
+        appContext,
+        okHttpClient ?: defaultOkHttpClient(),
+        acceptLanguage ?: "en",
+        userAgent ?: UserAgent.libraryDefault(appContext),
+        gsonBuilder
+    )
 
     /**
      * Lazily initialized service for managing oidc flow preparation and activation
@@ -116,6 +116,68 @@ class WultraMobileToken(
         }
     }
 
+    /** Lazy-loaded services backing fields */
+    private val operationsBacking by lazy {
+        Lazy {
+            OperationsService(
+                powerAuthSDK,
+                appContext,
+                okHttpClient,
+                powerAuthSDK.configuration.baseEndpointUrl,
+                null,
+                userAgent,
+                gsonBuilder
+            ).apply {
+                acceptLanguage = this@WultraMobileToken.acceptLanguage
+            }
+        }
+    }
+    private val pushBacking by lazy {
+        Lazy {
+            PushService(
+                powerAuthSDK,
+                appContext,
+                okHttpClient,
+                powerAuthSDK.configuration.baseEndpointUrl,
+                null,
+                userAgent
+            ).apply {
+                acceptLanguage = this@WultraMobileToken.acceptLanguage
+            }
+        }
+    }
+    private val inboxBacking by lazy {
+        Lazy {
+            InboxService(
+                powerAuthSDK,
+                appContext,
+                okHttpClient,
+                powerAuthSDK.configuration.baseEndpointUrl,
+                null,
+                userAgent,
+                gsonBuilder
+            ).apply {
+                acceptLanguage = this@WultraMobileToken.acceptLanguage
+            }
+        }
+    }
+
+
+    /**
+     * Operations manager. Use for fetching pending lists, approving operations, etc.
+     */
+    val operations: OperationsService get() = operationsBacking.lazy
+
+    /**
+     * Push manager for registering the device to receive PowerAuth push notifications for a given PowerAuth activation.
+     */
+    val push: PushService get() = pushBacking.lazy
+
+    /**
+     * Inbox manager - receives messages to communicate with the user.
+     */
+    val inbox: InboxService get() = inboxBacking.lazy
+
     /**
      * Sets the accept language for the outgoing request headers for `operations`, `push`, and `inbox` objects.
      * The value can be further modified in each object individually.
@@ -129,77 +191,9 @@ class WultraMobileToken(
      */
     fun setAcceptLanguage(lang: String) {
         acceptLanguage = lang
-        operations.acceptLanguage = lang
-        push.acceptLanguage = lang
-        inbox.acceptLanguage = lang
+        operationsBacking.optional?.acceptLanguage = lang
+        pushBacking.optional?.acceptLanguage = lang
+        inboxBacking.optional?.acceptLanguage = lang
         WMTLogger.i("Accept language set to $lang")
-    }
-
-    // creates operations service
-    private fun createOperations(): OperationsService {
-        WMTLogger.d("Creating OperationsService in WultraMobileToken")
-
-        val operationService = OperationsService(
-            powerAuthSDK,
-            appContext,
-            okHttpClient,
-            powerAuthSDK.configuration.baseEndpointUrl,
-            null,
-            userAgent,
-            gsonBuilder
-        )
-        operationService.acceptLanguage = acceptLanguage
-
-        return operationService
-    }
-
-    // creates push service
-    private fun createPush(): PushService {
-        WMTLogger.d("Creating Push Service in WultraMobileToken")
-
-        val pushService = PushService(
-            powerAuthSDK,
-            appContext,
-            okHttpClient,
-            powerAuthSDK.configuration.baseEndpointUrl,
-            null,
-            userAgent
-        )
-        pushService.acceptLanguage = acceptLanguage
-        return pushService
-    }
-
-    // creates inbox service
-    private fun createInbox(): InboxService {
-        WMTLogger.d("Creating Inbox Service in WultraMobileToken")
-
-        val inboxService = InboxService(
-            powerAuthSDK,
-            appContext,
-            okHttpClient,
-            powerAuthSDK.configuration.baseEndpointUrl,
-            null,
-            userAgent,
-            gsonBuilder
-        )
-        inboxService.acceptLanguage = acceptLanguage
-        return inboxService
-    }
-
-    // creates inbox service
-    private fun createOidc(): OidcService {
-        WMTLogger.d("Creating Inbox Service in WultraMobileToken")
-
-        val oidcService = OidcService(
-            powerAuthSDK,
-            appContext,
-            okHttpClient,
-            powerAuthSDK.configuration.baseEndpointUrl,
-            null,
-            userAgent,
-            gsonBuilder
-        )
-        oidcService.acceptLanguage = acceptLanguage
-        return oidcService
     }
 }

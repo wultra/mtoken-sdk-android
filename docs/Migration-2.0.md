@@ -23,8 +23,13 @@ fun createWultraTokenMobile(appContext: Context, powerAuth: PowerAuthSDK) {
 
 ### Removed Functionality
 
-**Removed Extension Methods**  
-   The following extension methods of `PowerAuthSDK` and `WPNNetworkingService` have been removed:
+1. **Removed interfaces**
+
+The interfaces `IOperationsService`, `IInboxService` and `IPushService` have been removed and concrete class implementations `OperationsService`, `InboxService` and `PushService`shall be used instead.
+
+2. **Removed Extension Methods**  
+   
+The following extension methods of `PowerAuthSDK` and `WPNNetworkingService` have been removed:
    
       -  `createWMTOperations()`
       -  `createWMTInbox()`
