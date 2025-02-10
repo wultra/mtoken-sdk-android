@@ -98,7 +98,7 @@ class OperationsService {
     private val minimumTimePollingInterval: Long = 5_000
 
     /**
-     * Last result of getOperations.
+     * Last result of getOperations. This value is not persistently cached.
      */
     val lastFetchResult: Result<List<UserOperation>>?
         get() = synchronized(mutex) { lastFetchOperationsResult }

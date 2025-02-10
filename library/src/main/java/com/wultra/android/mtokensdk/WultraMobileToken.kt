@@ -94,7 +94,7 @@ class WultraMobileToken(
      * Default OkHttpClient
      */
     companion object {
-        fun defaultOkHttpClient(): OkHttpClient {
+        private fun defaultOkHttpClient(): OkHttpClient {
             val builder = OkHttpClient.Builder()
             val strategy = SSLValidationStrategy.system()
             strategy.configure(builder)
