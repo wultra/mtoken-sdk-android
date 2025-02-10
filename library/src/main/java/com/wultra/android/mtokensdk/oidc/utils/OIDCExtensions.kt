@@ -55,9 +55,9 @@ fun PowerAuthSDK.createOIDCActivation(attributes: OIDCPowerAuthActivationAttribu
 }
 
 /**
- * Maps an `OidcConfigResponse` (network model) to an `OidcConfig` (domain model).
+ * Maps an `OIDCConfigResponse` (network model) to an `OIDCConfig` (domain model).
  */
-fun OIDCConfigResponse.toOidcConfig(): OIDCConfig {
+internal fun OIDCConfigResponse.toOidcConfig(): OIDCConfig {
     return OIDCConfig(
         providerId = this.providerId,
         clientId = this.clientId,

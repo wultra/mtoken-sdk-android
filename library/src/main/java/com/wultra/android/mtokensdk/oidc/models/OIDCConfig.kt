@@ -15,34 +15,26 @@
  */
 package com.wultra.android.mtokensdk.oidc.models
 
+/**
+ * Config data contains essential OIDC configuration values for authentication.
+ */
 data class OIDCConfig(
-    /**
-     * Provider's identifier.
-     */
+
+    /** Provider's identifier. */
     val providerId: String,
 
-    /**
-     * Identification of the OAuth 2.0 client, to form the URL for authorize request
-     */
+    /** Identification of the OAuth 2.0 client, to form the URL for authorize request */
     val clientId: String,
 
-    /**
-     * OAuth 2.0 scopes, to form the URL for authorize request
-     */
+    /** OAuth 2.0 scopes, to form the URL for authorize request */
     val scopes: String,
 
-    /**
-     * OAuth 2.0 authorize URI, to form the URL for authorize request
-     */
+    /** OAuth 2.0 authorize URI, to form the URL for authorize request */
     val authorizeUri: String,
 
-    /**
-     *  OAuth 2.0 redirect URI, the endpoint to which the OAuth 2.0 server can send responses.
-     */
+    /** OAuth 2.0 redirect URI, the endpoint to which the OAuth 2.0 server can send responses. */
     val redirectUri: String,
 
-    /**
-     * If PKCE(Proof Key for Code Exchange) extension should be used
-     */
+    /** If PKCE(Proof Key for Code Exchange) extension should be used */
     val pkceEnabled: Boolean
 )

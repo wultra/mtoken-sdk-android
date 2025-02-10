@@ -19,24 +19,20 @@ package com.wultra.android.mtokensdk.oidc.models
  * Represents the attributes required to initiate a PowerAuth activation after completing an OIDC (OpenID Connect) flow.
  *
  * These attributes are extracted from the OIDC flow and are essential for securely starting the PowerAuth activation process.
- * The [OidcUtils.processDeeplink] method is used to generate an instance of this class by processing
+ * The [OIDCUtils.processDeeplink] method is used to generate an instance of this class by processing
  * the deeplink URI returned by the OIDC authorization flow.
  */
 data class OIDCPowerAuthActivationAttributes(
-    /**
-     * The unique identifier for the OIDC provider configuration.
-     */
+
+    /** The unique identifier for the OIDC provider configuration. */
     val providerId: String,
-    /**
-     * The authorization code received from the OIDC flow.
-     */
+
+    /** The authorization code received from the OIDC flow. */
     val code: String,
-    /**
-     * The randomly generated value used to ensure the integrity of the OIDC flow.
-     */
+
+    /** The randomly generated value used to ensure the integrity of the OIDC flow. */
     val nonce: String,
-    /**
-     * The PKCE (Proof Key for Code Exchange) code verifier used during the OIDC flow, if applicable.
-     */
+
+    /** The PKCE (Proof Key for Code Exchange) code verifier used during the OIDC flow, if applicable. */
     val codeVerifier: String?
 )

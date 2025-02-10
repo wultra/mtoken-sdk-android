@@ -14,7 +14,12 @@ package com.wultra.android.mtokensdk.api.oidc.model
 import com.google.gson.annotations.SerializedName
 import com.wultra.android.powerauth.networking.data.BaseRequest
 
-data class OidcConfigRequest(
+/**
+ * Represents a request for fetching OIDC provider configuration.
+ */
+internal data class OIDCConfigRequest(
+
+    /** The identifier of the OIDC provider whose configuration is being requested. */
     @SerializedName("providerId")
     val providerId: String
 ): BaseRequest()

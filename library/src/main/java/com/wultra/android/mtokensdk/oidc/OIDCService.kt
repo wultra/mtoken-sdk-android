@@ -20,7 +20,7 @@ import android.content.Context
 import com.google.gson.GsonBuilder
 import com.wultra.android.mtokensdk.api.oidc.ConfigResponse
 import com.wultra.android.mtokensdk.api.oidc.OIDCApi
-import com.wultra.android.mtokensdk.api.oidc.model.OidcConfigRequest
+import com.wultra.android.mtokensdk.api.oidc.model.OIDCConfigRequest
 import com.wultra.android.mtokensdk.log.WMTLogger
 import com.wultra.android.mtokensdk.oidc.models.OIDCAuthorizationRequest
 import com.wultra.android.mtokensdk.oidc.models.OIDCConfig
@@ -35,6 +35,9 @@ import com.wultra.android.powerauth.networking.tokens.IPowerAuthTokenProvider
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
 import okhttp3.OkHttpClient
 
+/**
+ * Service that communicates with OIDC (OpenID Connect) API
+ */
 class OIDCService(
     powerAuthSDK: PowerAuthSDK,
     appContext: Context,
@@ -84,7 +87,7 @@ class OIDCService(
         callback: (Result<OIDCConfig>) -> Unit
     ) {
         oidcApi.getConfig(
-            OidcConfigRequest(providerId),
+            OIDCConfigRequest(providerId),
             object : IApiCallResponseListener<ConfigResponse> {
                 override fun onFailure(error: ApiError) {
                     WMTLogger.e("OIDC: Failed to get config: ${error.e.message}")
@@ -108,10 +111,10 @@ class OIDCService(
      *
      * @param oidcConfig The OIDC configuration, either retrieved dynamically (e.g., using `getConfig`) or defined statically.
      * @param callback A callback that receives the result of the authorization data preparation.
-     *                 - On success: Returns [OidcAuthorizationRequest]
+     *                 - On success: Returns [OIDCAuthorizationRequest]
      *                 - On failure: Returns an appropriate [Throwable].
      */
-    fun prepareOidcAuthorizationData(oidcConfig: OIDCConfig, callback: (Result<OIDCAuthorizationRequest>) -> Unit) {
+    fun prepareAuthorizationData(oidcConfig: OIDCConfig, callback: (Result<OIDCAuthorizationRequest>) -> Unit) {
         try {
             // Using 32 bytes for PKCE code verifiers aligns with RFC 7636 (https://datatracker.ietf.org/doc/html/rfc7636).
             // For nonce and state, OpenID Connect does not specify a strict length, but 32 bytes ensures strong randomness to prevent replay and CSRF attacks.

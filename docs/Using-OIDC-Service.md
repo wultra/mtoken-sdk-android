@@ -6,7 +6,7 @@
 - [Preparing OIDC Authorization Data](#preparing-oidc-authorization-data)
 - [Open authorize URL in a web browser](#open-authorize-url-in-a-web-browser)
 - [Processing a Deeplink and initializing PowerAuth activation flow](#processing-a-deeplink-and-initializing-powerAuth-activation-flow)
-- [OidcUtils](#oidcutils)
+- [OIDCUtils](#oidcutils)
 
 ## Introduction
 
@@ -32,7 +32,7 @@ See: [Example Usage](./Example-Usage)
 If you need to create a more customized instance, you can do so as follows.
 
 ```kotlin
-val oidcService = OidcService(
+val oidcService = OIDCService(
     powerAuthSDK,
     appContext,
     okHttpClient,
@@ -49,7 +49,7 @@ val oidcService = OidcService(
   - `SSLValidationStrategy.default`
   - `SSLValidationStrategy.noValidation`
   - `SSLValidationStrategy.sslPinning`
-- `baseURL` - address, where your oidc server can be reached (ending with `/enrollment-server` in the default setup)
+- `baseURL` - address, where your OIDC server can be reached (ending with `/enrollment-server` in the default setup)
 
 
 __Optional parameters:__
@@ -63,11 +63,11 @@ For these, if null is provided, default internal implementation is provided.
 
 ## Retrieving Configuration
 
-The `getConfig` method retrieves the OIDC provider configuration based on a predefined `providerId`, returning a `OidcConfig` object with essential details about the provider, client, and PKCE settings.
+The `getConfig` method retrieves the OIDC provider configuration based on a predefined `providerId`, returning a `OIDCConfig` object with essential details about the provider, client, and PKCE settings.
 
-### OidcConfig
+### OIDCConfig
 
-The `OidcConfig` structure contains essential OIDC configuration values for authentication.
+The `OIDCConfig` structure contains essential OIDC configuration values for authentication.
 
 | Property        | Type    | Description                                                                                     |
 |-----------------|---------|------------------------------------------------------------------------------|
@@ -92,10 +92,10 @@ oidcService.getConfig("example_provider") { result ->
 
 ## Preparing OIDC Authorization Request Data
 
-The `prepareOidcAuthorizationRequest` method generates the necessary data for initiating the OIDC authorization process from `OidcConfig`. `OidcConfig` can be obtained by calling `getConfig(providerId)` or instantiated directly.
+The `prepareAuthorizationData` method generates the necessary data for initiating the OIDC authorization process from `OIDCConfig`. `OIDCConfig` can be obtained by calling `getConfig(providerId)` or instantiated directly.
 
 
-##### OidcAuthorizationRequest
+##### OIDCAuthorizationRequest
 
 Encapsulates the data required to initiate the OIDC authorization flow and also other properties for PowerAuth Activation flow.
 
@@ -110,7 +110,7 @@ Encapsulates the data required to initiate the OIDC authorization flow and also 
 ##### Example:
 
 ```kotlin
-oidcService.prepareOidcAuthorizationData("example_provider") { result ->
+oidcService.prepareAuthorizationData("example_provider") { result ->
   result.onSuccess { oidcAuthRequest ->
     // Use oidcAuthRequest.authorizeUri to open the browser
   }.onFailure { error ->
@@ -160,7 +160,7 @@ After the user completes the OIDC flow in the web browser, the returned deeplink
 
 ### Processing a deeplink 
 
-The `OidcUtils.processDeeplink` utility function extracts and validates the data needed to initiate PowerAuth activation from the OIDC flow's callback URI.
+The `OIDCUtils.processDeeplink` utility function extracts and validates the data needed to initiate PowerAuth activation from the OIDC flow's callback URI.
 
 
 ##### PowerAuthActivationAttributes
@@ -177,13 +177,13 @@ Represents the attributes required to initiate a PowerAuth activation after comp
 
 ### Initiating PowerAuth Activation with OIDC
 
-The final step in the OIDC and PowerAuth integration is to use the `createOidcActivation` method. This extension function on `PowerAuthSDK` initiates the activation process by calling the PowerAuth Standard RESTful API.
+The final step in the OIDC and PowerAuth integration is to use the `createOIDCActivation` method. This extension function on `PowerAuthSDK` initiates the activation process by calling the PowerAuth Standard RESTful API.
 
 
 ```kotlin
 try {
   val attributes = UriUtils.processDeeplink(deeplinkUri, oidcAuth)
-  powerAuthSDK.createOidcActivation(attributes, "Petr's phone", object : ICreateActivationListener {
+  powerAuthSDK.createOIDCActivation(attributes, "Petr's phone", object : ICreateActivationListener {
     override fun onActivationCreateSuccess(activationResult: CreateActivationResult) {
       // Activation succeeded with activationResult
     }
@@ -207,7 +207,7 @@ Provides methods for generating PKCE codes.
 
 ```kotlin
 try {
-    val pkceCodes = OidcUtils.createPKCE(32)
+    val pkceCodes = OIDCUtils.createPKCE(32)
     // PKCE Codes created successfully
 } catch (e: Exception) {
     // Error generating PKCE codes
@@ -222,7 +222,7 @@ Provides methods to generate random strings in Base64 URL-safe format, useful fo
 
 ```kotlin
 try {
-    val nonce = OidcUtils.getRandomBase64UrlSafe(32)
+    val nonce = OIDCUtils.getRandomBase64UrlSafe(32)
     // Random string generated successfully
 } catch (e: Exception) {
     // Error generating random string
@@ -237,7 +237,7 @@ Provides methods for handling URIs.
 
 ```kotlin
 try {
-    val authorizationUri = OidcUtils.createAuthorizationUri(config, nonce, state, pkceCodes)
+    val authorizationUri = OIDCUtils.createAuthorizationUri(config, nonce, state, pkceCodes)
     println("Authorization URI: $authorizationUri")
 } catch (e: Exception) {
     println("Error creating authorization URI: ${e.message}")
@@ -248,7 +248,7 @@ try {
 
 ```kotlin
 try {
-    val activationAttributes = OidcUtils.processDeeplink(deeplinkUri, oidcAuth)
+    val activationAttributes = OIDCUtils.processDeeplink(deeplinkUri, oidcAuth)
     println("Activation attributes ready: $activationAttributes")
 } catch (e: Exception) {
     println("Failed to process deeplink URI: ${e.message}")

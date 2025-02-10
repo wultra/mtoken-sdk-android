@@ -128,7 +128,7 @@ class OidcTests {
         Assert.assertNotNull("Config should not be null", config)
 
         val oidcAuthDataFuture = CompletableFuture<OIDCAuthorizationRequest>()
-        oidc.prepareOidcAuthorizationData(config) { data ->
+        oidc.prepareAuthorizationData(config) { data ->
             data
                 .onSuccess { oidcAuthDataFuture.complete(it) }
                 .onFailure { oidcAuthDataFuture.completeExceptionally(it) }
@@ -181,8 +181,8 @@ class OidcTests {
 //                .onFailure { configFuture.completeExceptionally(it) }
 //        }
 //        val config = configFuture.get(20, TimeUnit.SECONDS)
-//        val oidcAuthDataFuture = CompletableFuture<OidcAuthorizationRequest>()
-//        oidc.prepareOidcAuthorizationData(config) { data ->
+//        val oidcAuthDataFuture = CompletableFuture<OIDCAuthorizationRequest>()
+//        oidc.prepareAuthorizationData(config) { data ->
 //            data
 //                .onSuccess { oidcAuthDataFuture.complete(it) }
 //                .onFailure { oidcAuthDataFuture.completeExceptionally(it) }
@@ -194,10 +194,10 @@ class OidcTests {
 //            val redirectUri = loginWithAuth0Ktor(oidcAuthData.authorizeUri, username, password)
 //            Assert.assertNotNull(redirectUri)
 //
-//            val paActivationAttributes = OidcUtils.processDeeplink(redirectUri, oidcAuthData)
+//            val paActivationAttributes = OIDCUtils.processDeeplink(redirectUri, oidcAuthData)
 //
 //            if (paActivationAttributes != null) {
-//                pa.createOidcActivation(
+//                pa.createOIDCActivation(
 //                    paActivationAttributes,
 //                    object : ICreateActivationListener {
 //                        override fun onActivationCreateSucceed(result: CreateActivationResult) {

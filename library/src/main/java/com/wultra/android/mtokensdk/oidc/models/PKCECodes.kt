@@ -23,14 +23,16 @@ package com.wultra.android.mtokensdk.oidc.models
  * The PKCE mechanism mitigates the risk of authorization code interception attacks by requiring
  * the client to prove possession of a secure random secret (code verifier) during the exchange.
  *
- * @property codeVerifier A securely generated random string used as a proof key.
- * @property codeChallenge A hashed and Base64 URL-safe encoded version of the code verifier,
- *                         used to verify the authorization code during the exchange.
- * @property codeMethod The method used to generate the `codeChallenge`. Defaults to `S256` (SHA-256).
  * @see [RFC 7636](https://datatracker.ietf.org/doc/html/rfc7636) for details on the PKCE standard.
  */
 data class PKCECodes(
+
+    /** A securely generated random string used as a proof key. */
     val codeVerifier: String,
+
+    /** A hashed and Base64 URL-safe encoded version of the code verifier */
     val codeChallenge: String,
+
+    /** The method used to generate the `codeChallenge`, default is SHA-256 */
     val codeMethod: String = "S256"
 )

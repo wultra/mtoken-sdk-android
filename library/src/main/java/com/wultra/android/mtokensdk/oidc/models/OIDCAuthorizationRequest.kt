@@ -26,24 +26,19 @@ import android.net.Uri
  * - Optionally include PKCE (Proof Key for Code Exchange) support via `codeVerifier`.
  */
 data class OIDCAuthorizationRequest(
-    /**
-     * The URI to be opened in a browser for user authentication and authorization.
-     */
+
+    /** The URI to be opened in a browser for user authentication and authorization. */
     val authorizeUri: Uri,
-    /**
-     * A unique identifier which was used to getting info for authorizeUri creation
-     */
+
+    /** A unique identifier which was used to getting info for authorizeUri creation */
     val providerId: String,
-    /**
-     * A randomly generated value to prevent replay attacks.
-     */
+
+    /** A randomly generated value to prevent replay attacks. */
     val nonce: String,
-    /**
-     * A unique identifier to maintain state between the request and callback.
-     */
+
+    /** A unique identifier to maintain state between the request and callback. */
     val state: String,
-    /**
-     * An optional PKCE code verifier for enhanced security.
-     */
+
+    /** An optional PKCE code verifier for enhanced security. */
     val codeVerifier: String?
 )

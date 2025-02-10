@@ -13,7 +13,7 @@ package com.wultra.android.mtokensdk.api.oidc
 
 import android.content.Context
 import com.google.gson.GsonBuilder
-import com.wultra.android.mtokensdk.api.oidc.model.OidcConfigRequest
+import com.wultra.android.mtokensdk.api.oidc.model.OIDCConfigRequest
 import com.wultra.android.mtokensdk.api.oidc.model.OIDCConfigResponse
 import com.wultra.android.mtokensdk.operation.OperationsUtils
 import com.wultra.android.powerauth.networking.Api
@@ -43,15 +43,13 @@ internal class OIDCApi(
 ) : Api(baseUrl, okHttpClient, powerAuthSDK, gsonBuilder ?: OperationsUtils.defaultGsonBuilder(), appContext, tokenProvider, userAgent ?: UserAgent.libraryDefault(appContext)) {
 
     companion object {
-        private val getConfig = EndpointBasic<OidcConfigRequest, ConfigResponse>("/api/config/oidc", E2EEConfiguration.APPLICATION_SCOPE)
+        private val getConfig = EndpointBasic<OIDCConfigRequest, ConfigResponse>("/api/config/oidc", E2EEConfiguration.APPLICATION_SCOPE)
     }
 
     var okHttpInterceptor: OkHttpBuilderInterceptor? = null
 
-    /**
-     * Get OIDC config.
-     */
-    fun getConfig(request: OidcConfigRequest, listener: IApiCallResponseListener<ConfigResponse>) {
+    /** Get OIDC config. */
+    fun getConfig(request: OIDCConfigRequest, listener: IApiCallResponseListener<ConfigResponse>) {
         post(request, getConfig, null, okHttpInterceptor, listener)
     }
 }
