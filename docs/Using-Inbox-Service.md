@@ -32,24 +32,24 @@ See: [Example Usage](./Example-Usage)
 In case you need to create more customized instance. You can do so with an initializer.
 
 ```kotlin
-val pushService = PushService(
-    httpClient,
-    baseURL,
+val inboxService = InboxService(
     powerAuthSDK,
     appContext,
+    httpClient,
+    baseURL,
     tokenProvider,
     userAgent,
     gsonBuilder
 )
 ```
 
+- `powerAuthSDK ` - PowerAuthSDK instance
+- `appContext` - application context
 - `httpClient ` - [`OkHttpClient`](https://square.github.io/okhttp/) with following SSLValidationStrategy
     - `SSLValidationStrategy.default`
     - `SSLValidationStrategy.noValidation`
     - `SSLValidationStrategy.sslPinning`
 - `baseURL` - address, where your operations server can be reached (ending with `/enrollment-server` in the default setup)
-- `powerAuthSDK ` - PowerAuthSDK instance
-- `appContext` - application context
 
 __Optional parameters:__
 

@@ -19,7 +19,7 @@ package com.wultra.android.mtokensdk
 /**
  * Lazy loaded instance with possibility of "peek".
  */
-class Lazy<T>(private val factory: () -> T) {
+internal class Lazy<T>(private val factory: () -> T) {
 
     @Volatile
     private var instance: T? = null

@@ -8,42 +8,27 @@ Follow the [SDK Integration](./SDK-Integration.md) tutorial for SDK installation
 
 ## Example Code
 
-```swift
+```kotlin
 // PowerAuth instance needs to be configured and a user-activated instance.
 // More about PowerAuth SDK can be found here: https://github.com/wultra/powerauth-mobile-sdk
 
 
-    fun exampleUsage(appContext: Context, powerAuth: PowerAuthSDK) {
-        // Create the WultraMobileToken instance
-        val wmt = powerAuth.createWultraMobileToken(appContext, acceptLanguage = "de")
+fun exampleUsage(appContext: Context, powerAuth: PowerAuthSDK) {
+    // Create the WultraMobileToken instance
+    val wmt = powerAuth.createWultraMobileToken(appContext, acceptLanguage = "de")
 
-        // Launch a coroutine to handle the async operation
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                // Fetch the operations asynchronously
-                val operations = suspendCancellableCoroutine { cont ->
-                    wmt.operations.getOperations {
-                        it.onSuccess { operationList ->
-                            cont.resume(operationList) // Resume with the result
-                        }.onFailure { error ->
-                            cont.resumeWithException(error) // Resume with an exception
-                        }
-                    }
-                }
-
-                withContext(Dispatchers.Main) {
-                    operations.forEach { operation ->
-                        // handle operations on the main thread
-                    }
-                }
-
-            } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    handle error on the main thread
-                }
+    // Fetch operations using a callback
+    wmt.operations.getOperations {
+        it.onSuccess { operations ->
+            // Handle operations
+            for (operation in operations) {
+                // Process each operation
             }
+        }.onFailure { error ->
+            // Handle error
         }
     }
+}
 
 ```
 
