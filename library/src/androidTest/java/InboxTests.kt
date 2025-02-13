@@ -1,7 +1,7 @@
 package com.wultra.android.mtokensdk.test
 
 import com.wultra.android.mtokensdk.inbox.*
-import com.wultra.android.mtokensdk.operation.IOperationsService
+import com.wultra.android.mtokensdk.operation.OperationsService
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
 import org.junit.*
 import org.junit.Assert.*
@@ -10,8 +10,8 @@ import java.util.concurrent.TimeUnit
 
 class InboxTests {
 
-    lateinit var ops: IOperationsService
-    lateinit var inbox: IInboxService
+    lateinit var ops: OperationsService
+    lateinit var inbox: InboxService
     private lateinit var pa: PowerAuthSDK
     val pin = "1234"
 
@@ -20,8 +20,8 @@ class InboxTests {
         try {
             val result = IntegrationUtils.prepareActivation(pin)
             pa = result.first
-            ops = result.second
-            inbox = result.third
+            ops = result.second.operations
+            inbox = result.second.inbox
         } catch (e: Throwable) {
             fail("Activation preparation failed: $e")
         }

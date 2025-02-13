@@ -28,7 +28,6 @@ import com.wultra.android.powerauth.networking.UserAgent
 import com.wultra.android.powerauth.networking.data.StatusResponse
 import com.wultra.android.powerauth.networking.error.ApiError
 import com.wultra.android.powerauth.networking.error.ApiErrorException
-import com.wultra.android.powerauth.networking.ssl.SSLValidationStrategy
 import com.wultra.android.powerauth.networking.tokens.IPowerAuthTokenProvider
 import io.getlime.security.powerauth.sdk.PowerAuthAuthentication
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
@@ -38,44 +37,13 @@ import org.threeten.bp.ZoneId
 import org.threeten.bp.ZonedDateTime
 import java.util.*
 
-/**
- * Convenience factory method to create an IOperationsService instance
- * from given PowerAuthSDK instance.
- *
- * @param appContext Application Context object.
- * @param baseURL Base URL where the operations endpoint rests (ending with `/enrollment-server` in the default setup).
- * @param httpClient OkHttpClient for API communication.
- * @param userAgent Default user agent for each request.
- * @param gsonBuilder Custom GSON builder for deserialization of request. If you want to provide or own
- * deserialization logic, we recommend adding to the instance obtained from the OperationsUtils.defaultGsonBuilder().
- * @return IOperationsService instance
- */
-fun PowerAuthSDK.createOperationsService(appContext: Context, baseURL: String, httpClient: OkHttpClient, userAgent: UserAgent? = null, gsonBuilder: GsonBuilder? = null): IOperationsService {
-    return OperationsService(this, appContext, httpClient, baseURL, null, userAgent, gsonBuilder)
-}
-
-/**
- * Convenience factory method to create an IOperationsService instance
- * from given PowerAuthSDK instance.
- *
- * @param appContext Application Context object.
- * @param baseURL Base URL where the operations endpoint rests  (ending with `/enrollment-server` in the default setup).
- * @param strategy SSL validation strategy for networking.
- * @param userAgent Default user agent for each request.
- * @param gsonBuilder Custom GSON builder for deserialization of request. If you want to provide or own
- * deserialization logic, we recommend adding to the instance obtained from the OperationsUtils.defaultGsonBuilder().
- * @return IOperationsService instance
- */
-fun PowerAuthSDK.createOperationsService(appContext: Context, baseURL: String, strategy: SSLValidationStrategy = SSLValidationStrategy.system(), userAgent: UserAgent? = null, gsonBuilder: GsonBuilder? = null): IOperationsService {
-    val builder = OkHttpClient.Builder()
-    strategy.configure(builder)
-    return OperationsService(this, appContext, builder.build(), baseURL, null, userAgent, gsonBuilder)
-}
-
 private typealias GetOperationsCallback = (result: Result<List<UserOperation>>) -> Unit
 
+/**
+ * Service for operations handling.
+ */
 @Suppress("EXPERIMENTAL_API_USAGE", "ConvertSecondaryConstructorToPrimary")
-class OperationsService: IOperationsService {
+class OperationsService {
 
     companion object {
         /**
@@ -93,15 +61,32 @@ class OperationsService: IOperationsService {
         private const val FORCED_SERVER_TIME_CHANGE_MS = 20_000
     }
 
-    override var listener: IOperationsServiceListener? = null
+    /**
+     * Listener gets notified about changes in operations loading and its result.
+     */
+    var listener: IOperationsServiceListener? = null
 
-    override var acceptLanguage: String
+    /**
+     * Accept language for the outgoing requests headers.
+     * Default value is "en".
+     * Changing this value updates the accept language of the underlying operationsApi.
+     *
+     * Standard RFC "Accept-Language" https://tools.ietf.org/html/rfc7231#section-5.3.5
+     * Response texts are based on this setting. For example when "de" is set, server
+     * will return operation texts in german (if available).
+     */
+    var acceptLanguage: String
         get() = operationApi.acceptLanguage
         set(value) {
             operationApi.acceptLanguage = value
         }
 
-    override var okHttpInterceptor: OkHttpBuilderInterceptor?
+    /**
+     * A custom interceptor can intercept each service call.
+     *
+     * You can use this for request/response logging into your own log system.
+     */
+    var okHttpInterceptor: OkHttpBuilderInterceptor?
         get() = operationApi.okHttpInterceptor
         set(value) {
             operationApi.okHttpInterceptor = value
@@ -112,7 +97,10 @@ class OperationsService: IOperationsService {
     private var timer: Timer? = null
     private val minimumTimePollingInterval: Long = 5_000
 
-    override val lastFetchResult: Result<List<UserOperation>>?
+    /**
+     * Last result of getOperations. This value is not persistently cached.
+     */
+    val lastFetchResult: Result<List<UserOperation>>?
         get() = synchronized(mutex) { lastFetchOperationsResult }
 
     // Contains last fetched result with operations. Must be accessed from the mutex.
@@ -151,20 +139,17 @@ class OperationsService: IOperationsService {
         this.operationApi = OperationApi(httpClient, baseURL, appContext, powerAuthSDK, tokenProvider, userAgent, gsonBuilder)
     }
 
-    private fun currentDate(): ZonedDateTime = run {
-        val timeService = powerAuthSDK.timeSynchronizationService
-        if (timeService.isTimeSynchronized) {
-            val currentTimeInstant = Instant.ofEpochMilli(timeService.currentTime)
-            val defaultTimeZoneId = ZoneId.systemDefault()
-            return ZonedDateTime.ofInstant(currentTimeInstant, defaultTimeZoneId)
-        } else {
-            return ZonedDateTime.now()
-        }
-    }
+    /**
+     * If operations are loading.
+     */
+    fun isLoadingOperations() = synchronized(mutex) { tasks.isNotEmpty() }
 
-    override fun isLoadingOperations() = synchronized(mutex) { tasks.isNotEmpty() }
-
-    override fun getOperations(callback: GetOperationsCallback) {
+    /**
+     * Retrieves user operations.
+     *
+     * @param callback Callback with result
+     */
+    fun getOperations(callback: GetOperationsCallback) {
         synchronized(mutex) {
             val startLoading = tasks.isEmpty()
             tasks.add(callback)
@@ -184,6 +169,12 @@ class OperationsService: IOperationsService {
             }
         }
     }
+
+    /**
+     * Fetch operations from the server and report result to service's [IOperationsService.listener]. The function is effective
+     * only if service's listener is set.
+     */
+    fun fetchOperations() = getOperations {}
 
     private fun processOperationsListResult(result: Result<List<UserOperation>>) {
         synchronized(mutex) {
@@ -206,7 +197,13 @@ class OperationsService: IOperationsService {
         }
     }
 
-    override fun getHistory(authentication: PowerAuthAuthentication, callback: (result: Result<List<UserOperation>>) -> Unit) {
+    /**
+     * Retrieves the history of user operations with its current status.
+     *
+     * @param authentication A multi-factor authentication object for signing. 2FA should be used (password or biometrics).
+     * @param callback Callback with result.
+     */
+    fun getHistory(authentication: PowerAuthAuthentication, callback: (result: Result<List<UserOperation>>) -> Unit) {
         operationApi.history(
             authentication,
             object : IApiCallResponseListener<OperationHistoryResponse> {
@@ -221,9 +218,20 @@ class OperationsService: IOperationsService {
         )
     }
 
-    override fun authorizeOperation(operation: IOperation, authentication: PowerAuthAuthentication, callback: (result: Result<Unit>) -> Unit) {
+    /**
+     * Authorises operation with provided authentication
+     *
+     * @param operation Operation for approval
+     * @param authentication Multi-factor authentication object for signing, which depends on the operation type but usually 2FA (password or biometrics)
+     * @param callback Callback with result.
+     */
+    fun authorizeOperation(operation: IOperation, authentication: PowerAuthAuthentication, callback: (result: Result<Unit>) -> Unit) {
 
-        val currentDate = currentDate()
+        val timeService = powerAuthSDK.timeSynchronizationService
+        val currentDate = if (timeService.isTimeSynchronized) {
+            ZonedDateTime.ofInstant(Instant.ofEpochMilli(timeService.currentTime), ZoneId.systemDefault())
+        } else ZonedDateTime.now()
+
         val authorizeRequest = AuthorizeRequest(AuthorizeRequestObject(operation, currentDate))
         operationApi.authorize(
             authorizeRequest,
@@ -241,7 +249,14 @@ class OperationsService: IOperationsService {
         )
     }
 
-    override fun rejectOperation(operation: IOperation, reason: RejectionData, callback: (result: Result<Unit>) -> Unit) {
+    /**
+     * Rejects operation with provided reason
+     *
+     * @param operation Operation to reject
+     * @param reason Rejection reason
+     * @param callback Callback with result.
+     */
+    fun rejectOperation(operation: IOperation, reason: RejectionData, callback: (result: Result<Unit>) -> Unit) {
         val rejectRequest = RejectRequest(RejectRequestObject(operation.id, reason.serialized))
         operationApi.reject(
             rejectRequest,
@@ -258,13 +273,31 @@ class OperationsService: IOperationsService {
         )
     }
 
+    /**
+     * Sign offline QR operation with provided authentication.
+     *
+     * @param operation Operation to approve
+     * @param authentication Multi-factor authentication object for signing, which depends on the operation type but usually 2FA (password or biometrics)
+     * @param uriId uriId: Custom signature URI ID of the operation. Use URI ID under which the operation was
+     * created on the server. Default value is `/operation/authorize/offline`.
+     *
+     * @throws Exception Various exceptions, based on the error.
+     *
+     * @return Signature that should be displayed to the user
+     */
     @Throws
-    override fun authorizeOfflineOperation(operation: QROperation, authentication: PowerAuthAuthentication, uriId: String): String {
+    fun authorizeOfflineOperation(operation: QROperation, authentication: PowerAuthAuthentication, uriId: String = OperationApi.OFFLINE_AUTHORIZE_URI_ID): String {
         return powerAuthSDK.offlineSignatureWithAuthentication(appContext, authentication, uriId, operation.dataForOfflineSigning(), operation.nonce)
             ?: throw Exception("Cannot sign this operation")
     }
 
-    override fun getDetail(operationId: String, callback: (Result<UserOperation>) -> Unit) {
+    /**
+     * Retrieves operation detail based on operation ID
+     *
+     * @param operationId The identifier of the specific operation.
+     * @param callback Callback with result.
+     */
+    fun getDetail(operationId: String, callback: (Result<UserOperation>) -> Unit) {
         val detailRequest = OperationClaimDetailRequest(OperationClaimDetailData(operationId))
 
         operationApi.getDetail(
@@ -281,7 +314,13 @@ class OperationsService: IOperationsService {
         )
     }
 
-    override fun claim(operationId: String, callback: (Result<UserOperation>) -> Unit) {
+    /**
+     * Claims the "non-personalized" operation and assigns it to the user.
+     *
+     * @param operationId Operation ID that will be claimed as belonging to the user.
+     * @param callback Callback with result.
+     */
+    fun claim(operationId: String, callback: (Result<UserOperation>) -> Unit) {
         val claimRequest = OperationClaimDetailRequest(OperationClaimDetailData(operationId))
         operationApi.claim(
             claimRequest,
@@ -298,10 +337,23 @@ class OperationsService: IOperationsService {
         )
     }
 
-    override fun isPollingOperations() = timer != null
+    /**
+     * Returns if operation polling is running
+     */
+    fun isPollingOperations() = timer != null
 
+    /**
+     * Starts polling operations from the server. You can observe the polling via [listener].
+     *
+     * If operations are already polling, this call is ignored
+     * and the polling interval won't be changed.
+     *
+     * @param pollingInterval Polling interval in milliseconds, default value is 7s and minimum is 5s
+     * @param delayStart When true, polling starts after the first [pollingInterval] passes
+     *                   - By default it is set to false and polling starts immediately.
+     */
     @Synchronized
-    override fun startPollingOperations(pollingInterval: Long, delayStart: Boolean) {
+    fun startPollingOperations(pollingInterval: Long = 7_000, delayStart: Boolean = false) {
         if (timer != null) {
             WMTLogger.w("Polling already in progress")
             return
@@ -334,7 +386,10 @@ class OperationsService: IOperationsService {
         WMTLogger.i("Polling started with $pollingInterval milliseconds interval")
     }
 
-    override fun stopPollingOperations() {
+    /**
+     * Stops operation polling
+     */
+    fun stopPollingOperations() {
         timer?.cancel()
         timer = null
         WMTLogger.i("Operation polling stopped")

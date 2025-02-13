@@ -23,40 +23,41 @@ Inbox Service communicates with the [Mobile Token API](https://developers.wultra
 
 ## Creating an Instance
 
-### Factory Extension With SSL Validation Strategy
+The preferred way of instantiating Operations Service is via `WultraMobileToken` class.
+See: [Example Usage](./Example-Usage)
 
-Convenience factory method that will return a new instance. A new [`OkHttpClient`](https://square.github.io/okhttp/) will be created based on the chosen `SSLValidationStrategy` in the last parameter.
+
+### Customized initialization
+
+In case you need to create more customized instance. You can do so with an initializer.
 
 ```kotlin
-fun PowerAuthSDK.createInboxService(appContext: Context, baseURL: String, strategy: SSLValidationStrategy): IInboxService
+val inboxService = InboxService(
+    powerAuthSDK,
+    appContext,
+    httpClient,
+    baseURL,
+    tokenProvider,
+    userAgent,
+    gsonBuilder
+)
 ```
 
+- `powerAuthSDK ` - PowerAuthSDK instance
 - `appContext` - application context
-- `baseURL` - address, where your operations server can be reached (ending with `/enrollment-server` in the default setup)
-- `strategy` - a strategy used when validating HTTPS requests. The following strategies can be used:
+- `httpClient ` - [`OkHttpClient`](https://square.github.io/okhttp/) with following SSLValidationStrategy
     - `SSLValidationStrategy.default`
     - `SSLValidationStrategy.noValidation`
     - `SSLValidationStrategy.sslPinning`
+- `baseURL` - address, where your operations server can be reached (ending with `/enrollment-server` in the default setup)
 
 __Optional parameters:__
 
+For these, if null is provided, default internal implementation is provided.
+
+- `tokenProvider` - Provider that provides a valid PowerAuth token from token store for api communication.
 - `userAgent` - Optional default user agent used for each request
-
-### Factory Extension With OkHttpClient
-
-Convenience factory method that will return a new instance with provided [`OkHttpClient`](https://square.github.io/okhttp/) that you can configure on your own.
-
-```kotlin
-fun PowerAuthSDK.createInboxService(appContext: Context, baseURL: String, httpClient: OkHttpClient): IInboxService
-```
-
-- `appContext` - application context
-- `baseURL`-  address, where your operations server can be reached (ending with `/enrollment-server` in the default setup)
-- `httpClient` - [`OkHttpClient`](https://square.github.io/okhttp/) instance used for API requests
-
-__Optional parameters:__
-
-- `userAgent` - Optional default user agent used for each request
+- `gsonBuilder` - Optional GSON builder for custom deserialization 
 
 ## Inbox Service Usage
 
