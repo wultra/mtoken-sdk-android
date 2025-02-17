@@ -9,7 +9,7 @@ Version `2.0.x` introduces a significant simplification of the SDK’s design an
 ### Added Functionality
 **Preferred Instantiation Method**  
    The `WultraMobileToken` class is now the recommended way to instantiate the SDK.
-   PowerAuthSDK extension method is provided for this purpose.
+   `PowerAuthSDK` extension method is provided for this purpose.
     
 ```kotlin
 fun createWultraTokenMobile(appContext: Context, powerAuth: PowerAuthSDK) {
@@ -25,7 +25,7 @@ fun createWultraTokenMobile(appContext: Context, powerAuth: PowerAuthSDK) {
 
 1. **Removed interfaces**
 
-The interfaces `IOperationsService`, `IInboxService` and `IPushService` have been removed and concrete class implementations `OperationsService`, `InboxService` and `PushService`shall be used instead.
+The interfaces `IOperationsService`, `IInboxService`, and `IPushService` have been removed and concrete class implementations `OperationsService`, `InboxService`, and `PushService`shall be used instead.
 
 2. **Removed Extension Methods**  
    

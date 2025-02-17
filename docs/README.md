@@ -1,6 +1,6 @@
 # Wultra Mobile Token SDK for Android
 
-With Wultra Mobile Token (WMT) SDK, you can integrate an out-of-band operation approval into an existing mobile app, instead of using a standalone mobile token application. WMT is built on top of [PowerAuth Mobile SDK](https://github.com/wultra/powerauth-mobile-sdk). It communicates with the [Mobile Token API](https://developers.wultra.com/components/enrollment-server/develop/documentation/Mobile-Token-API).
+With Wultra Mobile Token (WMT) SDK, you can integrate an out-of-band operation approval into an existing mobile app instead of using a standalone mobile token application. WMT is built on top of [PowerAuth Mobile SDK](https://github.com/wultra/powerauth-mobile-sdk). It communicates with the [Mobile Token API](https://developers.wultra.com/components/enrollment-server/develop/documentation/Mobile-Token-API).
 
 To understand the Wultra Mobile Token SDK purpose on a business level better, you can visit our own [Mobile Token application](https://www.wultra.com/mobile-token). We use Wultra Mobile Token SDK in our mobile token application as well.
 
@@ -30,6 +30,7 @@ If you need to upgrade the Wultra Mobile Token SDK for Android to a newer versio
 - [Using Operations Service](Using-Operations-Service.md)
 - [Using Push Service](Using-Push-Service.md)
 - [Using Inbox Service](Using-Inbox-Service.md)
+- [Using OIDC Service](Using-OIDC-Service.md)
 - [Operation Expiration Handling](Operation-Expiration.md)
 - [Error Handling](Error-Handling.md)
 - [Language Configuration](Language-Configuration.md)
