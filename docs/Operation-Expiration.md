@@ -5,7 +5,7 @@ Every operation should have an expiration time. An expired operation cannot be c
 ## Retrieving Expiration Time
 
 ### UserOperation
-The `UserOperation` provided by the `IOperations` service has its expiration time inside the `expires` property.
+The `UserOperation` provided by the `OperationService` has its expiration time inside the `expires` property.
 
 ### Custom Operation
 If you're creating your own custom operation by implementing the `IOperation` interface, you need to provide the expiration time by yourself. The expiration time is optional because it's not part of the operation signature.
@@ -38,7 +38,7 @@ Utility class that will observe operations and inform you when it expires.
 
 ```kotlin
 // Sample implementation of a class that's using the OperationExpirationWatcher
-class OperationsManager(private val ops: IOperationsService) {
+class OperationsManager(private val ops: OperationsService) {
 
     private val operationWatcher = OperationExpirationWatcher()
 
