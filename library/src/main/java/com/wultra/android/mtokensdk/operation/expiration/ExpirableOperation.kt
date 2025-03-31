@@ -37,7 +37,7 @@ interface ExpirableOperation {
         return if (this is IOperation && other is IOperation) {
             id == other.id && data == other.data && expires == other.expires
         } else {
-            WMTLogger.w("ExpirableOperation: Fallbacked to comparing `WMTExpirableOperation`s by reference.")
+            WMTLogger.w("ExpirableOperation: Fallbacked to comparing `ExpirableOperation`s by reference.")
             this === other
         }
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Wultra s.r.o.
+ * Copyright 2025 Wultra s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,27 +14,29 @@
  * and limitations under the License.
  */
 
-package com.wultra.android.mtokensdk.api.inbox.model
-
-import com.google.gson.annotations.SerializedName
+package com.wultra.android.mtokensdk
 
 /**
- * Request payload describing which page in messages list should be received.
+ * Lazy loaded instance with possibility of "peek".
  */
-data class GetList(
+internal class Lazy<T>(private val factory: () -> T) {
+
+    @Volatile
+    private var instance: T? = null
+
     /**
-     * Page number.
+     * Returns the instance, initializing it if necessary.
      */
-    @SerializedName("page")
-    val page: Int,
+    val lazy: T
+        get() {
+            return instance ?: synchronized(this) {
+                instance ?: factory().also { instance = it }
+            }
+        }
+
     /**
-     * Page size.
+     * Returns the instance if initialized, otherwise returns null.
      */
-    @SerializedName("size")
-    val size: Int,
-    /**
-     * Specify whether only unread messages should be received.
-     */
-    @SerializedName("onlyUnread")
-    val onlyUnread: Boolean
-)
+    val optional: T?
+        get() = instance
+}

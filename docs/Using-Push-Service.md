@@ -15,40 +15,43 @@ Push Service is responsible for registering the device for the push notification
 Note: Before using Push Service, you need to have a `PowerAuthSDK` object available and initialized with a valid activation. Without a valid PowerAuth activation, the service will return an error.
 <!-- end -->
 
-Push Service communicates with [Mobile Push Registration API](https://github.com/wultra/powerauth-webflow/blob/develop/docs/Mobile-Push-Registration-API.md).
+Push Service communicates with the [Mobile Token API](https://developers.wultra.com/components/enrollment-server/develop/documentation/Mobile-Token-API).
 
 ## Creating an Instance
 
-### Extension Factory With SSL Validation Strategy
+The preferred way of instantiating Operations Service is via `WultraMobileToken` class.
+See: [Example Usage](./Example-Usage)
 
-This factory method will create its own [`OkHttpClient`](https://square.github.io/okhttp/) instance based on the chosen SSL validation strategy.
+
+### Customized initialization
+
+In case you need to create more customized instance. You can do so with an initializer.
 
 ```kotlin
-fun PowerAuthSDK.createPushService(appContext: Context, baseURL: String, strategy: SSLValidationStrategy): IPushService
+val pushService = PushService(
+    powerAuthSDK, 
+    appContext, 
+    okHttpClient, 
+    baseURL, 
+    tokenProvider, 
+    userAgent
+)
 ```
 
+- `powerAuthSDK ` - PowerAuthSDK instance
 - `appContext` - application context
-- `baseURL` - address, where your operations server can be reached
-- `strategy` - a strategy used when validating HTTPS requests. The following strategies can be used:
+- `httpClient ` - [`OkHttpClient`](https://square.github.io/okhttp/) with following SSLValidationStrategy
     - `SSLValidationStrategy.default`
     - `SSLValidationStrategy.noValidation`
     - `SSLValidationStrategy.sslPinning`
+- `baseURL` - address, where your operations server can be reached (ending with `/enrollment-server` in the default setup)
+
 
 __Optional parameters:__
 
-- `userAgent` - Optional default user agent used for each request
+For these, if null is provided, default internal implementation is provided.
 
-### Extension Factory With OkHttpClient
-
-```kotlin
-fun PowerAuthSDK.createPushService(appContext: Context, baseURL: String, httpClient: OkHttpClient): IPushService
-```
-- `appContext` - application context
-- `baseURL` - address, where your operations server can be reached
-- `httpClient` - [`OkHttpClient`](https://square.github.io/okhttp/) instance used for API requests
-
-__Optional parameters:__
-
+- `tokenProvider` - Provider that provides a valid PowerAuth token from token store for api communication.
 - `userAgent` - Optional default user agent used for each request
 
 ## Push Service API Reference

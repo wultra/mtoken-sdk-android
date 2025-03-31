@@ -20,29 +20,29 @@ import android.content.Context
 import android.util.Log
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
-import com.google.gson.*
+import com.google.gson.Gson
+import com.google.gson.TypeAdapter
 import com.google.gson.annotations.JsonAdapter
 import com.google.gson.reflect.TypeToken
 import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonToken
 import com.google.gson.stream.JsonWriter
-import com.wultra.android.mtokensdk.inbox.IInboxService
-import com.wultra.android.mtokensdk.inbox.createInboxService
-import com.wultra.android.mtokensdk.operation.IOperationsService
-import com.wultra.android.mtokensdk.operation.createOperationsService
-import com.wultra.android.powerauth.networking.ssl.SSLValidationStrategy
+import com.wultra.android.mtokensdk.WultraMobileToken
+import com.wultra.android.mtokensdk.createWultraMobileToken
+import com.wultra.android.mtokensdk.oidc.OIDCService
 import io.getlime.security.powerauth.core.ActivationCodeUtil
 import io.getlime.security.powerauth.networking.response.CreateActivationResult
 import io.getlime.security.powerauth.networking.response.ICreateActivationListener
 import io.getlime.security.powerauth.sdk.PowerAuthClientConfiguration
 import io.getlime.security.powerauth.sdk.PowerAuthConfiguration
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
-import okhttp3.MediaType
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okhttp3.RequestBody
-import java.util.*
+import okhttp3.RequestBody.Companion.toRequestBody
 import java.util.Base64.getEncoder
+import java.util.Date
+import java.util.UUID
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
@@ -70,7 +70,7 @@ class IntegrationUtils {
         val context: Context = ApplicationProvider.getApplicationContext()
         private val client = OkHttpClient.Builder().build()
         private val gson = Gson()
-        private val jsonMediaType = MediaType.parse("application/json; charset=UTF-8")!!
+        private val jsonMediaType = "application/json; charset=UTF-8".toMediaType()
 
         private val cloudServerUrl = getInstrumentationParameter("cloudServerUrl")
         private val cloudServerLogin = getInstrumentationParameter("cloudServerLogin")
@@ -82,9 +82,22 @@ class IntegrationUtils {
         private val sdkConfig = getInstrumentationParameter("sdkConfig")
         private var activationName = "" // will be filled when activation is created
         private var registrationId = "" // will be filled when activation is created
+        private val oidcProviderId = getOptionalInstrumentationParameter("oidcProviderId")
+        private val oidcProviderIdPKCE = getOptionalInstrumentationParameter("oidcProviderIdPKCE")
+
+        fun prepareForOIDC(): Pair<PowerAuthSDK, OIDCService> {
+
+            // CREATE PA INSTANCE
+            val cfg = PowerAuthConfiguration.Builder("tests", enrollmentUrl, sdkConfig).build()
+            val clientCfg = PowerAuthClientConfiguration.Builder().allowUnsecuredConnection(true).build()
+            val pa = PowerAuthSDK.Builder(cfg).clientConfiguration(clientCfg).build(context)
+
+            val wmt = pa.createWultraMobileToken(context)
+            return Pair(pa, wmt.oidc)
+        }
 
         @Throws
-        fun prepareActivation(pin: String, userId: String? = null): Triple<PowerAuthSDK, IOperationsService, IInboxService> {
+        fun prepareActivation(pin: String, userId: String? = null): Pair<PowerAuthSDK, WultraMobileToken> {
 
             // Be sure that each activation has its own user
             activationName = userId ?: UUID.randomUUID().toString()
@@ -97,6 +110,7 @@ class IntegrationUtils {
             val cfg = PowerAuthConfiguration.Builder("tests", enrollmentUrl, sdkConfig).build()
             val clientCfg = PowerAuthClientConfiguration.Builder().allowUnsecuredConnection(true).build()
             val pa = PowerAuthSDK.Builder(cfg).clientConfiguration(clientCfg).build(context)
+            val wmt = pa.createWultraMobileToken(context)
 
             // REMOVE LOCAL INSTANCE IF PRESENT
 
@@ -148,10 +162,9 @@ class IntegrationUtils {
                 .trimIndent()
             makeCall<CommitObject>(bodyCommit, "$cloudServerUrl/v2/registrations/${resp.registrationId}/commit")
 
-            return Triple(
+            return Pair(
                 pa,
-                pa.createOperationsService(context, operationsUrl, SSLValidationStrategy.default()),
-                pa.createInboxService(context, inboxUrl, SSLValidationStrategy.default())
+                wmt
             )
         }
 
@@ -263,18 +276,14 @@ class IntegrationUtils {
             Log.d("make call payload", payload ?: "")
             Log.d("make call url", url)
             val creds = getEncoder().encodeToString("$cloudServerLogin:$cloudServerPassword".toByteArray())
-            val body = if (payload != null) {
-                RequestBody.create(jsonMediaType, payload.toByteArray())
-            } else {
-                null
-            }
+            val body = payload?.toByteArray()?.toRequestBody(jsonMediaType)
             val request = Request.Builder()
                 .header("authorization", "Basic $creds")
                 .url(url)
                 .method(method, body)
                 .build()
             val resp = client.newCall(request).execute()
-            val stringResp = resp.body()!!.string()
+            val stringResp = resp.body!!.string()
             Log.d("make call response", stringResp)
             return gson.fromJson(stringResp, object: TypeToken<T>() {}.type)
         }
@@ -282,6 +291,15 @@ class IntegrationUtils {
         @Throws
         private fun getInstrumentationParameter(parameterName: String): String {
             return InstrumentationRegistry.getArguments().getString("tests.sdk.$parameterName") ?: throw Exception("Missing $parameterName in configuration.")
+        }
+
+        private fun getOptionalInstrumentationParameter(parameterName: String): String {
+            val value = InstrumentationRegistry.getArguments().getString("tests.sdk.$parameterName")
+            return if (value == null || value == "null") "" else value
+        }
+
+        fun getOIDCProps(): OIDCProperties {
+            return OIDCProperties(oidcProviderId, oidcProviderIdPKCE)
         }
     }
 }
@@ -343,3 +361,8 @@ data class NewInboxMessage(
 )
 
 data class StatusResponse(val status: String)
+
+data class OIDCProperties(
+    val providerId: String,
+    val providerIdPkce: String
+)

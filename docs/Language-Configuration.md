@@ -8,7 +8,9 @@ Note: Content language capabilities are limited by the implementation of the ser
 
 ### Usage
 
-Both `IOperationsService` and `IPushService` contain an `acceptLanguage` property that should be set to the user's preferred language.
+You can use `WultraMobileToken.setAcceptLanguage` set to the user's preferred language for all WMT services. 
+
+If you're creating services manually (e.g., `OperationsService`), you can set the `acceptLanguage` property directly.
 
 ### Format
 

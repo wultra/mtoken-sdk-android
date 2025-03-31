@@ -56,7 +56,7 @@ class QRParserTests {
             assertEquals("5ff1b1ed-a3cc-45a3-8ab0-ed60950312b6", operation.operationId)
             assertEquals("Payment", operation.title)
             assertEquals("Please confirm this payment", operation.message)
-            assert(operation.flags.biometryAllowed) { "biometry allowed flag missing" }
+            assert(operation.flags.biometricsAllowed) { "biometrics allowed flag missing" }
             assert(operation.flags.blockWhenOnCall) { "block when on call flag missing" }
             assert(operation.flags.flipButtons) { "flip buttons flag missing" }
             assert(operation.flags.fraudWarning) { "fraud warning flag missing" }
@@ -185,7 +185,7 @@ class QRParserTests {
     fun `test missing flags`() {
         try {
             val operation = QROperationParser.parse(makeCode(flags = ""))
-            assertFalse(operation.flags.biometryAllowed)
+            assertFalse(operation.flags.biometricsAllowed)
             assertFalse(operation.flags.blockWhenOnCall)
             assertFalse(operation.flags.flipButtons)
             assertFalse(operation.flags.fraudWarning)

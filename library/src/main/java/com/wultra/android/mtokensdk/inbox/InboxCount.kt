@@ -16,6 +16,8 @@
 
 package com.wultra.android.mtokensdk.inbox
 
+import com.google.gson.annotations.SerializedName
+
 /**
  * Object contains information about unread messages in inbox.
  */
@@ -23,5 +25,6 @@ data class InboxCount(
     /**
      * Number of unread messages in inbox.
      */
+    @SerializedName("countUnread")
     val countUnread: Int
 )

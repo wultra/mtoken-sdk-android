@@ -54,6 +54,6 @@ internal class PushApi constructor(
      * Register FCM token with push server.
      */
     fun registerToken(requestObject: PushRegistrationRequest, listener: IApiCallResponseListener<StatusResponse>) {
-        post(requestObject, endpoint, null, null, okHttpInterceptor, listener)
+        post(requestObject, endpoint, null, okHttpInterceptor, listener)
     }
 }

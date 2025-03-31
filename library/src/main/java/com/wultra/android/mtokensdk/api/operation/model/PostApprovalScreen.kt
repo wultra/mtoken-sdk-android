@@ -29,7 +29,7 @@ import com.wultra.android.mtokensdk.operation.JSONValue
 
 open class PostApprovalScreen(
     /**
-     * type of PostApprovalScreen is presented with different classes (Starting with `WMTPreApprovalScreen*`)
+     * type of PostApprovalScreen is presented with different classes (Starting with `PreApprovalScreen*`)
      */
     val type: Type
 ) {

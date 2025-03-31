@@ -88,7 +88,13 @@ open class UserOperation(
      *  Max 32 characters are expected. Possible values depend on the backend implementation and configuration.
      */
     @SerializedName("statusReason")
-    val statusReason: String?
+    val statusReason: String?,
+
+    /**
+     * Processing status of the operation
+     */
+    @SerializedName("status")
+    val status: UserOperationStatus,
 ) : IOperation, ExpirableOperation
 
 /**
@@ -100,15 +106,18 @@ data class AllowedSignatureType(
     @SerializedName("type")
     val type: Type,
 
-    /** What factors ("password" or/and "biometry") can be used for signing this operation. */
+    /** What factors ("password" or/and "biometrics") can be used for signing this operation. */
     @SerializedName("variants")
     val factors: List<Factor> = emptyList()
 ) {
 
-    /** Check if biometry factor is allowed for the signature type of an operation. */
-    fun isBiometryAllowed(): Boolean {
+    /** Check if biometric factor is allowed for the signature type of an operation. */
+    fun isBiometricsAllowed(): Boolean {
         return factors.contains(Factor.POSSESSION_BIOMETRY)
     }
+
+    @Deprecated(replaceWith = ReplaceWith("isBiometricsAllowed()"), message = "Use isBiometricsAllowed() instead")
+    fun isBiometryAllowed() = isBiometricsAllowed()
 
     /** Signature types. */
     enum class Type(val type: String) {
@@ -226,4 +235,20 @@ data class ProximityCheck(
 enum class ProximityCheckType(val value: String) {
     QR_CODE("QR_CODE"),
     DEEPLINK("DEEPLINK")
+}
+
+/** Processing status of the operation */
+enum class UserOperationStatus {
+    /** Operation was approved */
+    APPROVED,
+    /** Operation was rejected */
+    REJECTED,
+    /** Operation is pending its resolution */
+    PENDING,
+    /** Operation was canceled */
+    CANCELED,
+    /** Operation expired */
+    EXPIRED,
+    /** Operation failed */
+    FAILED
 }

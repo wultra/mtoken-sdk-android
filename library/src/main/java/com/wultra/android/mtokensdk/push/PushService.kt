@@ -28,46 +28,36 @@ import com.wultra.android.powerauth.networking.UserAgent
 import com.wultra.android.powerauth.networking.data.StatusResponse
 import com.wultra.android.powerauth.networking.error.ApiError
 import com.wultra.android.powerauth.networking.error.ApiErrorException
-import com.wultra.android.powerauth.networking.ssl.SSLValidationStrategy
 import com.wultra.android.powerauth.networking.tokens.IPowerAuthTokenProvider
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
 import okhttp3.OkHttpClient
 
 /**
- * Convenience factory method to create an IPushService instance
- * from given PowerAuthSDK instance.
- *
- * @param appContext Application Context
- * @param baseURL Base URL for push request
- * @param okHttpClient HTTP client instance for networking
+ * Service, that communicates with Mobile Token API that handles registration for
+ * push notifications.
  */
-fun PowerAuthSDK.createPushService(appContext: Context, baseURL: String, okHttpClient: OkHttpClient, userAgent: UserAgent? = null): IPushService {
-    return PushService(okHttpClient, baseURL, this, appContext, null, userAgent)
-}
-
-/**
- * Convenience factory method to create an IPushService instance
- * from given PowerAuthSDK instance.
- *
- * @param appContext Application Context
- * @param baseURL Base URL for push request
- * @param strategy SSL validation strategy for networking
- */
-fun PowerAuthSDK.createPushService(appContext: Context, baseURL: String, strategy: SSLValidationStrategy, userAgent: UserAgent? = null): IPushService {
-    val builder = OkHttpClient.Builder()
-    strategy.configure(builder)
-    return createPushService(appContext, baseURL, builder.build(), userAgent)
-}
-
-class PushService(okHttpClient: OkHttpClient, baseURL: String, powerAuthSDK: PowerAuthSDK, appContext: Context, tokenProvider: IPowerAuthTokenProvider? = null, userAgent: UserAgent? = null): IPushService {
-
-    override var acceptLanguage: String
+class PushService(powerAuthSDK: PowerAuthSDK, appContext: Context, okHttpClient: OkHttpClient, baseURL: String, tokenProvider: IPowerAuthTokenProvider? = null, userAgent: UserAgent? = null) {
+    /**
+     * Accept language for the outgoing requests headers.
+     * Default value is "en".
+     * Changing this value updates the accept language of the underlying pushApi.
+     *
+     * Standard RFC "Accept-Language" https://tools.ietf.org/html/rfc7231#section-5.3.5
+     * Response texts are based on this setting. For example when "de" is set, server
+     * will return operation texts in german (if available).
+     */
+    var acceptLanguage: String
         get() = pushApi.acceptLanguage
         set(value) {
             pushApi.acceptLanguage = value
         }
 
-    override var okHttpInterceptor: OkHttpBuilderInterceptor?
+    /**
+     * A custom interceptor can intercept each service call.
+     *
+     * You can use this for request/response logging into your own log system.
+     */
+    var okHttpInterceptor: OkHttpBuilderInterceptor?
         get() = pushApi.okHttpInterceptor
         set(value) {
             pushApi.okHttpInterceptor = value
@@ -75,7 +65,12 @@ class PushService(okHttpClient: OkHttpClient, baseURL: String, powerAuthSDK: Pow
 
     private val pushApi = PushApi(okHttpClient, baseURL, powerAuthSDK, appContext, tokenProvider, userAgent)
 
-    override fun register(fcmToken: String, callback: (Result<Unit>) -> Unit) {
+    /**
+     * Registers FCM on backend to receive notifications about operations
+     * @param fcmToken Firebase Cloud Messaging Token
+     * @param callback Result listener
+     */
+    fun register(fcmToken: String, callback: (Result<Unit>) -> Unit) {
         pushApi.registerToken(
             PushRegistrationRequest(PushRegistrationRequestObject(fcmToken)),
             object : IApiCallResponseListener<StatusResponse> {
@@ -91,7 +86,12 @@ class PushService(okHttpClient: OkHttpClient, baseURL: String, powerAuthSDK: Pow
         )
     }
 
-    override fun registerHuawei(hmsToken: String, callback: (result: Result<Unit>) -> Unit) {
+    /**
+     * Registers HMS on backend to receive notifications about operations
+     * @param hmsToken Huawei Push Token
+     * @param callback Result listener
+     */
+    fun registerHuawei(hmsToken: String, callback: (result: Result<Unit>) -> Unit) {
         pushApi.registerToken(
             PushRegistrationRequest(PushRegistrationRequestObject(hmsToken, Platform.HUAWEI)),
             object : IApiCallResponseListener<StatusResponse> {
