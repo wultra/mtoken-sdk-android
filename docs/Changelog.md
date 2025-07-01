@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.1.0 (Draft)
+
+- Added `mobileTokenData` parameter to authorize operation request
+  - Supports PowerAuth server 1.10+ feature for sending additional mobile token data during operation approval
+  - Added overloaded `authorizeOperation` method with optional `mobileTokenData` parameter
+  - Updated documentation with usage examples
+
 ## 2.0.0 (Feb 2025)
 
 - SDK simplification and added `OIDC` activation feature [(#182)](https://github.com/wultra/mtoken-sdk-android/pull/182)

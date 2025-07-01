@@ -192,6 +192,25 @@ fun approveWithBiometrics(operation: IOperation) {
 }
 ```
 
+### Mobile Token Data
+
+You can also include additional mobile token data when approving an operation. This feature is available with PowerAuth server 1.10+ and allows you to send extra context or metadata along with the authorization request.
+
+```kotlin
+// Approve operation with mobile token data
+fun approveWithMobileTokenData(operation: IOperation, password: String, mobileTokenData: String) {
+
+    val auth = PowerAuthAuthentication.possessionWithPassword(password)
+    this.operationsService.authorizeOperation(operation, auth, mobileTokenData) {
+        it.onSuccess {
+            // show success UI
+        }.onFailure {
+            // show error UI
+        }
+    }
+}
+```
+
 ## Reject an Operation
 
 To reject an operation use `IOperationsService.rejectOperation`. Operation rejection is confirmed by the possession factor so there is no need for creating  `PowerAuthAuthentication ` object. You can simply use it with the following example.
