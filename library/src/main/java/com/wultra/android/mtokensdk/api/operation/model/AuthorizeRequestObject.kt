@@ -38,10 +38,10 @@ internal data class AuthorizeRequestObject(
     val proximityCheck: ProximityCheckData? = null,
 
     @SerializedName("mobileTokenData")
-    val mobileTokenData: String? = null
+    val mobileTokenData: Map<String, Any>? = null
 ) {
 
-    constructor(operation: IOperation, timestampSent: ZonedDateTime = ZonedDateTime.now(), mobileTokenData: String? = null): this(
+    constructor(operation: IOperation, timestampSent: ZonedDateTime = ZonedDateTime.now()): this(
         operation.id,
         operation.data,
         operation.proximityCheck?.let {
@@ -52,7 +52,7 @@ internal data class AuthorizeRequestObject(
                 timestampSent
             )
         },
-        mobileTokenData
+        operation.mobileTokenData
     )
 }
 

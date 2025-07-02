@@ -226,25 +226,13 @@ class OperationsService {
      * @param callback Callback with result.
      */
     fun authorizeOperation(operation: IOperation, authentication: PowerAuthAuthentication, callback: (result: Result<Unit>) -> Unit) {
-        authorizeOperation(operation, authentication, null, callback)
-    }
-
-    /**
-     * Authorises operation with provided authentication and mobile token data
-     *
-     * @param operation Operation for approval
-     * @param authentication Multi-factor authentication object for signing, which depends on the operation type but usually 2FA (password or biometrics)
-     * @param mobileTokenData Additional mobile token data (available with PowerAuth server 1.10+)
-     * @param callback Callback with result.
-     */
-    fun authorizeOperation(operation: IOperation, authentication: PowerAuthAuthentication, mobileTokenData: String?, callback: (result: Result<Unit>) -> Unit) {
 
         val timeService = powerAuthSDK.timeSynchronizationService
         val currentDate = if (timeService.isTimeSynchronized) {
             ZonedDateTime.ofInstant(Instant.ofEpochMilli(timeService.currentTime), ZoneId.systemDefault())
         } else ZonedDateTime.now()
 
-        val authorizeRequest = AuthorizeRequest(AuthorizeRequestObject(operation, currentDate, mobileTokenData))
+        val authorizeRequest = AuthorizeRequest(AuthorizeRequestObject(operation, currentDate))
         operationApi.authorize(
             authorizeRequest,
             authentication,

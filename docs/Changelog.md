@@ -2,10 +2,9 @@
 
 ## 2.1.0 (Draft)
 
-- Added `mobileTokenData` parameter to authorize operation request
-  - Supports PowerAuth server 1.10+ feature for sending additional mobile token data during operation approval
-  - Added overloaded `authorizeOperation` method with optional `mobileTokenData` parameter
-  - Updated documentation with usage examples
+- Added `mobileTokenData` to authorize request for passing customer-specific data
+  - Available with PowerAuth server 1.10+
+  - Can be used for fraud detection systems (FDS) or other custom business logic
 
 ## 2.0.0 (Feb 2025)
 

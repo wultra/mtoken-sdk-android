@@ -37,7 +37,8 @@ class AuthorizeRequestTests {
     private class TestOperation(
         override val id: String,
         override val data: String,
-        override var proximityCheck: ProximityCheck? = null
+        override var proximityCheck: ProximityCheck? = null,
+        override var mobileTokenData: Map<String, Any>? = null
     ) : IOperation
 
     @Test
@@ -55,25 +56,31 @@ class AuthorizeRequestTests {
 
     @Test
     fun `test authorize request with mobile token data`() {
-        val operation = TestOperation("test-id", "test-data")
+        val mobileTokenData = mapOf(
+            "deviceFingerprint" to "abc123def456",
+            "riskScore" to 0.8
+        )
+        val operation = TestOperation("test-id", "test-data", mobileTokenData = mobileTokenData)
         val timestamp = ZonedDateTime.now()
-        val mobileTokenData = "custom-mobile-token-data"
-        val request = AuthorizeRequestObject(operation, timestamp, mobileTokenData)
+        val request = AuthorizeRequestObject(operation, timestamp)
         
         val json = gson.toJson(request)
         
         Assert.assertTrue("JSON should contain id", json.contains("\"id\":\"test-id\""))
         Assert.assertTrue("JSON should contain data", json.contains("\"data\":\"test-data\""))
-        Assert.assertTrue("JSON should contain mobileTokenData", json.contains("\"mobileTokenData\":\"custom-mobile-token-data\""))
+        Assert.assertTrue("JSON should contain mobileTokenData", json.contains("\"mobileTokenData\""))
+        Assert.assertTrue("JSON should contain deviceFingerprint", json.contains("\"deviceFingerprint\":\"abc123def456\""))
+        Assert.assertTrue("JSON should contain riskScore", json.contains("\"riskScore\":0.8"))
     }
 
     @Test
     fun `test authorize request primary constructor with mobile token data`() {
-        val mobileTokenData = "test-token-data"
+        val mobileTokenData = mapOf("testKey" to "testValue")
         val request = AuthorizeRequestObject("op-id", "op-data", null, mobileTokenData)
         
         val json = gson.toJson(request)
         
-        Assert.assertTrue("JSON should contain mobileTokenData", json.contains("\"mobileTokenData\":\"test-token-data\""))
+        Assert.assertTrue("JSON should contain mobileTokenData", json.contains("\"mobileTokenData\""))
+        Assert.assertTrue("JSON should contain testKey", json.contains("\"testKey\":\"testValue\""))
     }
 }
