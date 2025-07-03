@@ -17,17 +17,22 @@
 package com.wultra.android.mtokensdk.api.operation
 
 import com.google.gson.Gson
-import com.google.gson.GsonBuilder
 import com.wultra.android.mtokensdk.api.operation.model.*
 import com.wultra.android.mtokensdk.operation.OperationsUtils
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.threeten.bp.ZonedDateTime
+import org.threeten.bp.zone.TzdbZoneRulesProvider
+import org.threeten.bp.zone.ZoneRulesProvider
 
 class AuthorizeRequestTests {
 
     private lateinit var gson: Gson
+
+    init {
+        initThreeTen()
+    }
 
     @Before
     fun prepareGson() {
@@ -46,9 +51,9 @@ class AuthorizeRequestTests {
         val operation = TestOperation("test-id", "test-data")
         val timestamp = ZonedDateTime.now()
         val request = AuthorizeRequestObject(operation, timestamp)
-        
+
         val json = gson.toJson(request)
-        
+
         Assert.assertTrue("JSON should contain id", json.contains("\"id\":\"test-id\""))
         Assert.assertTrue("JSON should contain data", json.contains("\"data\":\"test-data\""))
         Assert.assertFalse("JSON should not contain mobileTokenData when null", json.contains("mobileTokenData"))
@@ -63,9 +68,9 @@ class AuthorizeRequestTests {
         val operation = TestOperation("test-id", "test-data", mobileTokenData = mobileTokenData)
         val timestamp = ZonedDateTime.now()
         val request = AuthorizeRequestObject(operation, timestamp)
-        
+
         val json = gson.toJson(request)
-        
+
         Assert.assertTrue("JSON should contain id", json.contains("\"id\":\"test-id\""))
         Assert.assertTrue("JSON should contain data", json.contains("\"data\":\"test-data\""))
         Assert.assertTrue("JSON should contain mobileTokenData", json.contains("\"mobileTokenData\""))
@@ -77,10 +82,19 @@ class AuthorizeRequestTests {
     fun `test authorize request primary constructor with mobile token data`() {
         val mobileTokenData = mapOf("testKey" to "testValue")
         val request = AuthorizeRequestObject("op-id", "op-data", null, mobileTokenData)
-        
+
         val json = gson.toJson(request)
-        
+
         Assert.assertTrue("JSON should contain mobileTokenData", json.contains("\"mobileTokenData\""))
         Assert.assertTrue("JSON should contain testKey", json.contains("\"testKey\":\"testValue\""))
+    }
+}
+
+fun Any.initThreeTen() {
+    if (ZoneRulesProvider.getAvailableZoneIds().isEmpty()) {
+        val stream = this.javaClass.classLoader!!.getResourceAsStream("TZDB.dat")
+        stream.use(::TzdbZoneRulesProvider).apply {
+            ZoneRulesProvider.registerProvider(this)
+        }
     }
 }
