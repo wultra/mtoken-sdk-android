@@ -93,37 +93,6 @@ class IntegrationTests {
         Assert.assertNotNull(currentTime)
     }
 
-    // 1FA test are temporally disabled
-
-//    @Test
-//    fun testApproveLogin() {
-//        IntegrationUtils.createOperation(true)
-//        val future = CompletableFuture<List<UserOperation>>()
-//        ops.getOperations(object : IGetOperationListener {
-//            override fun onSuccess(operations: List<UserOperation>) {
-//                future.complete(operations)
-//            }
-//            override fun onError(error: ApiError) {
-//                future.completeExceptionally(error.e)
-//            }
-//        })
-//        val operations = future.get(20, TimeUnit.SECONDS)
-//        Assert.assertTrue("Missing operation", operations.count() == 1)
-//        val auth = PowerAuthAuthentication()
-//        auth.usePossession = true
-//        val opFuture = CompletableFuture<Any?>()
-//        ops.authorizeOperation(operations.first(), auth, object : IAcceptOperationListener {
-//            override fun onSuccess() {
-//                opFuture.complete(null)
-//            }
-//            override fun onError(error: ApiError) {
-//                opFuture.completeExceptionally(error.e)
-//            }
-//        })
-//        Assert.assertNull(opFuture.get(20, TimeUnit.SECONDS))
-//    }
-//
-
     @Test
     fun testApprovePayment() {
         IntegrationUtils.createOperation(IntegrationUtils.Companion.Factors.F_2FA)
@@ -150,6 +119,45 @@ class IntegrationTests {
                 .onFailure { opFuture2.completeExceptionally(it) }
         }
         Assert.assertNull(opFuture2.get(20, TimeUnit.SECONDS))
+    }
+
+    @Test
+    fun testMobileTokenData() {
+        val op = IntegrationUtils.createOperation(IntegrationUtils.Companion.Factors.F_2FA)
+        val future = CompletableFuture<Any?>()
+        ops.getDetail(op.operationId) { result ->
+
+            result.onFailure { future.completeExceptionally(it) }
+                .onSuccess { detail ->
+                    detail.mobileTokenData = mapOf(
+                        "test1" to 1,
+                        "test2" to 2.3,
+                        "test3" to "string",
+                        "test4" to mapOf(
+                            "nested" to true
+                        )
+                    )
+
+                    ops.authorizeOperation(detail, PowerAuthAuthentication.possessionWithPassword(pin)) { authResult ->
+                        authResult.onFailure { future.completeExceptionally(it) }
+                            .onSuccess {
+                                val finalOp = IntegrationUtils.getOperation(op.operationId)
+                                val serverMtd = finalOp.additionalData?.get("mobileTokenData") as? Map<String, Any> ?: throw Exception("mobileTokenData not found in additionalData")
+                                val test1 = serverMtd["test1"]
+                                val test2 = serverMtd["test2"]
+                                val test3 = serverMtd["test3"]
+                                val test4 = (serverMtd["test4"] as? Map<String, Any>)?.get("nested")
+
+                                Assert.assertEquals(1.0, test1) // server returns as Double 🤷‍♂️
+                                Assert.assertEquals(2.3, test2)
+                                Assert.assertEquals("string", test3)
+                                Assert.assertEquals(true, test4)
+                                future.complete(null)
+                            }
+                    }
+                }
+        }
+        Assert.assertNull(future.get(20, TimeUnit.SECONDS))
     }
 
     @Test
@@ -276,7 +284,7 @@ class IntegrationTests {
 
         Assert.assertEquals("Incorrect type of preapproval screen", operation.ui?.preApprovalScreen?.type, PreApprovalScreen.Type.QR_SCAN)
 
-        val totp = IntegrationUtils.getOperation(op).proximityOtp
+        val totp = IntegrationUtils.getOperation(op.operationId).proximityOtp
         Assert.assertNotNull("Even with proximityCheckEnabled: true, in proximityOtp nil", totp)
 
         operation.proximityCheck = ProximityCheck(totp!!, ProximityCheckType.QR_CODE)
