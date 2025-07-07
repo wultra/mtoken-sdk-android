@@ -158,6 +158,47 @@ fun isCustomTabsSupported(): Boolean {
 
 After the user completes the OIDC flow in the web browser, the returned deeplink can be processed to extract the necessary attributes.
 
+### Registering Deeplink Handler
+
+Before your application can receive and process OIDC callback deeplinks, you must register the appropriate intent filter in your `AndroidManifest.xml`. The deeplink scheme and host should match the `redirectUri` configured in your OIDC provider settings.
+
+#### AndroidManifest.xml Configuration
+
+Add an intent filter to the activity that should handle the OIDC callback:
+
+```xml
+<activity android:name=".YourCallbackActivity">
+    <intent-filter android:autoVerify="true">
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data android:scheme="yourapp" android:host="oauth" />
+    </intent-filter>
+</activity>
+```
+
+<!-- begin box info -->
+**Note:** Replace `yourapp://oauth` with the actual scheme and host from your OIDC configuration's `redirectUri`. For example, if your `redirectUri` is `com.example.myapp://callback`, use `android:scheme="com.example.myapp"` and `android:host="callback"`.
+<!-- end -->
+
+#### Jetpack Compose Navigation
+
+If you're using Jetpack Compose with Navigation Component, you can register the deeplink in your navigation graph:
+
+```kotlin
+composable(
+    route = "callback",
+    deepLinks = listOf(
+        navDeepLink {
+            uriPattern = "yourapp://oauth"
+        }
+    )
+) {
+    // Handle the OIDC callback here
+    CallbackScreen()
+}
+```
+
 ### Processing a deeplink 
 
 The `OIDCUtils.processDeeplink` utility function extracts and validates the data needed to initiate PowerAuth activation from the OIDC flow's callback URI.
