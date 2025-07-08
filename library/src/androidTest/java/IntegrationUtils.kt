@@ -193,7 +193,7 @@ class IntegrationUtils {
         }
 
         @Throws
-        fun createNonPersonalizedPACOperation(factors: Factors): NonPersonalisedTOTPOperationObject {
+        fun createNonPersonalizedPACOperation(factors: Factors): OperationObject {
             val opBody = when (factors) {
                 Factors.F_2FA -> { """
                 {

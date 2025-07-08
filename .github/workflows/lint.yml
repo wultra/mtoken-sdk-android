@@ -31,10 +31,3 @@ jobs:
           cache: 'gradle'
       - name: Android Lint
         run: ./gradlew clean library:lint
-      - name: Upload Android Lint results artifact
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: android-lint-results-debug
-          path: app/build/reports/lint-results-debug.html
-          retention-days: 3
