@@ -80,7 +80,12 @@ open class UserOperation(
      * Proximity Check Data to be passed when OTP is handed to the app
      */
     @SerializedName("proximityCheck")
-    override var proximityCheck: ProximityCheck? = null
+    override var proximityCheck: ProximityCheck? = null,
+
+    /**
+     * Additional mobile token data for authorization (available with PowerAuth server 1.10+)
+     */
+    override var mobileTokenData: Map<String, Any>? = null
 ) : IOperation, ExpirableOperation
 
 /**

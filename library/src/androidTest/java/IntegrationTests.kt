@@ -187,6 +187,45 @@ class IntegrationTests {
     }
 
     @Test
+    fun testMobileTokenData() {
+        val op = IntegrationUtils.createOperation(IntegrationUtils.Companion.Factors.F_2FA)
+        val future = CompletableFuture<Any?>()
+        ops.getDetail(op.operationId) { result ->
+
+            result.onFailure { future.completeExceptionally(it) }
+                .onSuccess { detail ->
+                    detail.mobileTokenData = mapOf(
+                        "test1" to 1,
+                        "test2" to 2.3,
+                        "test3" to "string",
+                        "test4" to mapOf(
+                            "nested" to true
+                        )
+                    )
+
+                    ops.authorizeOperation(detail, PowerAuthAuthentication.possessionWithPassword(pin)) { authResult ->
+                        authResult.onFailure { future.completeExceptionally(it) }
+                            .onSuccess {
+                                val finalOp = IntegrationUtils.getOperation(op.operationId)
+                                val serverMtd = finalOp.additionalData?.get("mobileTokenData") as? Map<String, Any> ?: throw Exception("mobileTokenData not found in additionalData")
+                                val test1 = serverMtd["test1"]
+                                val test2 = serverMtd["test2"]
+                                val test3 = serverMtd["test3"]
+                                val test4 = (serverMtd["test4"] as? Map<String, Any>)?.get("nested")
+
+                                Assert.assertEquals(1.0, test1) // server returns as Double 🤷‍♂️
+                                Assert.assertEquals(2.3, test2)
+                                Assert.assertEquals("string", test3)
+                                Assert.assertEquals(true, test4)
+                                future.complete(null)
+                            }
+                    }
+                }
+        }
+        Assert.assertNull(future.get(20, TimeUnit.SECONDS))
+    }
+
+    @Test
     fun testRejectPayment() {
         val op = IntegrationUtils.createOperation(IntegrationUtils.Companion.Factors.F_2FA)
         val future = CompletableFuture<List<UserOperation>>()
@@ -307,7 +346,7 @@ class IntegrationTests {
 
         Assert.assertEquals("Incorrect type of preapproval screen", operation.ui?.preApprovalScreen?.type, PreApprovalScreen.Type.QR_SCAN)
 
-        val totp = IntegrationUtils.getOperation(op).proximityOtp
+        val totp = IntegrationUtils.getOperation(op.operationId).proximityOtp
         Assert.assertNotNull("Even with proximityCheckEnabled: true, in proximityOtp nil", totp)
 
         operation.proximityCheck = ProximityCheck(totp!!, ProximityCheckType.QR_CODE)

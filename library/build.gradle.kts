@@ -90,6 +90,7 @@ dependencies {
 
     // TestDependencies
     testImplementation("junit:junit:4.13.2")
+    testImplementation("com.jakewharton.threetenabp:threetenabp:1.1.1")
 
     // Android tests
     androidTestImplementation("com.jakewharton.threetenabp:threetenabp:1.1.1")

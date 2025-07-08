@@ -19,4 +19,4 @@ configs
 
 # temp data
 /tmp-*
-*.txt
+*.txt*.class

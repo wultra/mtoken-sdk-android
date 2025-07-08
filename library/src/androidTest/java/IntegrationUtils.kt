@@ -214,8 +214,8 @@ class IntegrationUtils {
         }
 
         @Throws
-        fun getOperation(operation: NonPersonalisedTOTPOperationObject): NonPersonalisedTOTPOperationObject {
-            return makeCall(null, "$cloudServerUrl/v2/operations/${operation.operationId}", "GET")
+        fun getOperation(operationId: String): OperationObject {
+            return makeCall(null, "$cloudServerUrl/v2/operations/${operationId}", "GET")
         }
 
         @Throws
@@ -257,8 +257,8 @@ class IntegrationUtils {
 
         @Throws
         private inline fun <reified T> makeCall(payload: String?, url: String, method: String = "POST"): T {
-            Log.d("make call payload", payload ?: "")
             Log.d("make call url", url)
+            Log.d("make call payload", payload ?: "")
             val creds = getEncoder().encodeToString("$cloudServerLogin:$cloudServerPassword".toByteArray())
             val body = if (payload != null) {
                 RequestBody.create(jsonMediaType, payload.toByteArray())
@@ -291,25 +291,16 @@ data class CommitObject(val status: String)
 
 data class OperationObject(
     val operationId: String,
-    val userId: String,
+    val userId: String?,
     val status : String,
     val operationType: String,
-    // val parameters: [] // not needed for test right now
-    val failureCount: Int,
-    val maxFailureCount: Int,
-    val timestampCreated: Double,
-    val timestampExpires: Double
-)
-
-data class NonPersonalisedTOTPOperationObject(
-    val operationId: String,
-    val status: String,
-    val operationType: String,
+    val parameters: Map<String, Any>?,
     val failureCount: Int,
     val maxFailureCount: Int,
     val timestampCreated: Double,
     val timestampExpires: Double,
-    val proximityOtp: String?
+    val proximityOtp: String?,
+    val additionalData: Map<String, Any>?,
 )
 
 data class QRData(
