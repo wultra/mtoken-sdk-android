@@ -24,8 +24,8 @@ import com.wultra.android.mtokensdk.api.operation.model.UserOperation
 import com.wultra.android.mtokensdk.api.operation.model.UserOperationStatus
 import com.wultra.android.mtokensdk.operation.*
 import com.wultra.android.mtokensdk.operation.RejectionData
-import com.wultra.android.mtokensdk.push.IPushService
 import com.wultra.android.mtokensdk.push.PushData
+import com.wultra.android.mtokensdk.push.PushService
 import com.wultra.android.powerauth.networking.error.ApiError
 import io.getlime.security.powerauth.sdk.PowerAuthAuthentication
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
@@ -41,8 +41,8 @@ import java.util.concurrent.TimeUnit
  */
 class IntegrationTests {
 
-    private lateinit var ops: IOperationsService
-    private lateinit var push: IPushService
+    private lateinit var push: PushService
+    private lateinit var ops: OperationsService
     private lateinit var pa: PowerAuthSDK
     private val pin = "1234"
 
@@ -50,9 +50,9 @@ class IntegrationTests {
     fun setup() {
         try {
             val result = IntegrationUtils.prepareActivation(pin)
-            pa = result.pa
-            ops = result.ops
-            push = result.push
+            pa = result.first
+            ops = result.second.operations
+            push = result.second.push
         } catch (e: Throwable) {
             Assert.fail("Activation preparation failed: $e")
         }

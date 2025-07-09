@@ -1,8 +1,9 @@
 # Changelog
 
-## x.x.x (TBA)
+## 2.0.0 (Feb 2025)
 
-- New push registration API that is using `FCM` and `HMS` instead of `ANDROID` and `HUAWEI`
+- SDK simplification and added `OIDC` activation feature [(#182)](https://github.com/wultra/mtoken-sdk-android/pull/182)
+    - [Migration guide](Migration-2.0.md)
 
 ## 1.12.0 (Oct, 2024)
 
