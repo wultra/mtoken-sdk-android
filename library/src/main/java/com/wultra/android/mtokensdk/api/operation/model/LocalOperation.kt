@@ -27,5 +27,8 @@ data class LocalOperation(
     override val data: String,
 
     /** Proximity check data */
-    override var proximityCheck: ProximityCheck? = null
+    override var proximityCheck: ProximityCheck? = null,
+
+    /** Additional mobile token data for authorization (available with PowerAuth server 1.10+) */
+    override var mobileTokenData: Map<String, Any>? = null
 ): IOperation
