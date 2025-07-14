@@ -96,12 +96,12 @@ class PushService(powerAuthSDK: PowerAuthSDK, appContext: Context, okHttpClient:
     }
 
     // deprecated API
-    @Deprecated("Use register function with `data` parameter as a replacement")
+    @Deprecated("This method is deprecated since the server version 1.10.0. Use register `with` data parameter as a replacement") // deprecated in 1.13.0
     fun register(fcmToken: String, callback: (Result<Unit>) -> Unit) {
         register(fcmToken, PushRegistrationRequestObject.Platform.ANDROID, callback)
     }
 
-    @Deprecated("Use register function with `data` parameter as a replacement")
+    @Deprecated("This method is deprecated since the server version 1.10.0. Use register `with` data parameter as a replacement") // deprecated in 1.13.0
     fun registerHuawei(hmsToken: String, callback: (result: Result<Unit>) -> Unit) {
         register(hmsToken, PushRegistrationRequestObject.Platform.HUAWEI, callback)
     }
