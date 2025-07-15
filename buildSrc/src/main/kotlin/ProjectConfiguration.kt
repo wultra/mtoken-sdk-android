@@ -46,9 +46,10 @@ fun loadInstrumentationTestConfigProperties(project: Project, defaultConfig: Def
         "tests.sdk.enrollmentServerUrl",
         "tests.sdk.operationsServerUrl",
         "tests.sdk.inboxServerUrl",
-        "tests.sdk.sdkConfig",
+        "tests.sdk.pushServerUrl",
         "tests.sdk.oidcProviderId",
-        "tests.sdk.oidcProviderIdPKCE"
+        "tests.sdk.oidcProviderIdPKCE",
+        "tests.sdk.sdkConfig",
     )
 
     project.logger.info("LOADING_PROPERTIES Reading $configPropertiesFile")

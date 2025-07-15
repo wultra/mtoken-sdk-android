@@ -1,6 +1,9 @@
 # Changelog
 
-## 2.1.0 (Draft)
+## 2.2.0 (Jul 2025)
+- Implemented Push changes to FCM and HMS [(#174)](https://github.com/wultra/mtoken-sdk-android/issues/174)
+
+## 2.1.0 (Jul 2025)
 
 - Added `mobileTokenData` to authorize request for passing customer-specific data ([documentation](Using-Operations-Service.md#Passing-Additional-Mobile-Token-Data))
   - Available with PowerAuth server 1.10+

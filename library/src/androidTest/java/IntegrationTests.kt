@@ -24,6 +24,8 @@ import com.wultra.android.mtokensdk.api.operation.model.UserOperation
 import com.wultra.android.mtokensdk.api.operation.model.UserOperationStatus
 import com.wultra.android.mtokensdk.operation.*
 import com.wultra.android.mtokensdk.operation.RejectionData
+import com.wultra.android.mtokensdk.push.PushData
+import com.wultra.android.mtokensdk.push.PushService
 import com.wultra.android.powerauth.networking.error.ApiError
 import io.getlime.security.powerauth.sdk.PowerAuthAuthentication
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
@@ -39,6 +41,7 @@ import java.util.concurrent.TimeUnit
  */
 class IntegrationTests {
 
+    private lateinit var push: PushService
     private lateinit var ops: OperationsService
     private lateinit var pa: PowerAuthSDK
     private val pin = "1234"
@@ -49,6 +52,7 @@ class IntegrationTests {
             val result = IntegrationUtils.prepareActivation(pin)
             pa = result.first
             ops = result.second.operations
+            push = result.second.push
         } catch (e: Throwable) {
             Assert.fail("Activation preparation failed: $e")
         }
@@ -331,5 +335,45 @@ class IntegrationTests {
         val opRecord = operations.firstOrNull { it.id == op.operationId }
         Assert.assertNotNull(opRecord)
         Assert.assertTrue("${opRecord?.statusReason} should be PREARRANGED_REASON", opRecord?.statusReason == "PREARRANGED_REASON")
+    }
+
+    @Test
+    fun testRegisterPushLegacyAndroid() {
+        val future = CompletableFuture<Any?>()
+        push.register("testToken") { result ->
+            result.onSuccess { future.complete(null) }
+                .onFailure { future.completeExceptionally(it) }
+        }
+        Assert.assertNull(future.get(10, TimeUnit.SECONDS))
+    }
+
+    @Test
+    fun testRegisterPushLegacyHuawei() {
+        val future = CompletableFuture<Any?>()
+        push.registerHuawei("testToken") { result ->
+            result.onSuccess { future.complete(null) }
+                .onFailure { future.completeExceptionally(it) }
+        }
+        Assert.assertNull(future.get(10, TimeUnit.SECONDS))
+    }
+
+    @Test
+    fun testRegisterPushFCM() {
+        val future = CompletableFuture<Any?>()
+        push.register(PushData.fcm("testToken")) { result ->
+            result.onSuccess { future.complete(null) }
+                .onFailure { future.completeExceptionally(it) }
+        }
+        Assert.assertNull(future.get(10, TimeUnit.SECONDS))
+    }
+
+    @Test
+    fun testRegisterPushHMS() {
+        val future = CompletableFuture<Any?>()
+        push.register(PushData.hms("testToken")) { result ->
+            result.onSuccess { future.complete(null) }
+                .onFailure { future.completeExceptionally(it) }
+        }
+        Assert.assertNull(future.get(10, TimeUnit.SECONDS))
     }
 }

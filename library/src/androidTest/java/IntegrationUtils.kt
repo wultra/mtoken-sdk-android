@@ -79,6 +79,7 @@ class IntegrationUtils {
         private val enrollmentUrl = getInstrumentationParameter("enrollmentServerUrl")
         private val operationsUrl = getInstrumentationParameter("operationsServerUrl")
         private val inboxUrl = getInstrumentationParameter("inboxServerUrl")
+        private val pushUrl = getInstrumentationParameter("pushServerUrl")
         private val sdkConfig = getInstrumentationParameter("sdkConfig")
         private var activationName = "" // will be filled when activation is created
         private var registrationId = "" // will be filled when activation is created
