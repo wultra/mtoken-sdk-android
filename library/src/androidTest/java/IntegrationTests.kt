@@ -24,6 +24,8 @@ import com.wultra.android.mtokensdk.api.operation.model.UserOperation
 import com.wultra.android.mtokensdk.api.operation.model.UserOperationStatus
 import com.wultra.android.mtokensdk.operation.*
 import com.wultra.android.mtokensdk.operation.RejectionData
+import com.wultra.android.mtokensdk.push.PushData
+import com.wultra.android.mtokensdk.push.PushService
 import com.wultra.android.powerauth.networking.error.ApiError
 import io.getlime.security.powerauth.sdk.PowerAuthAuthentication
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
@@ -39,6 +41,7 @@ import java.util.concurrent.TimeUnit
  */
 class IntegrationTests {
 
+    private lateinit var push: PushService
     private lateinit var ops: OperationsService
     private lateinit var pa: PowerAuthSDK
     private val pin = "1234"
@@ -49,6 +52,7 @@ class IntegrationTests {
             val result = IntegrationUtils.prepareActivation(pin)
             pa = result.first
             ops = result.second.operations
+            push = result.second.push
         } catch (e: Throwable) {
             Assert.fail("Activation preparation failed: $e")
         }
@@ -93,37 +97,6 @@ class IntegrationTests {
         Assert.assertNotNull(currentTime)
     }
 
-    // 1FA test are temporally disabled
-
-//    @Test
-//    fun testApproveLogin() {
-//        IntegrationUtils.createOperation(true)
-//        val future = CompletableFuture<List<UserOperation>>()
-//        ops.getOperations(object : IGetOperationListener {
-//            override fun onSuccess(operations: List<UserOperation>) {
-//                future.complete(operations)
-//            }
-//            override fun onError(error: ApiError) {
-//                future.completeExceptionally(error.e)
-//            }
-//        })
-//        val operations = future.get(20, TimeUnit.SECONDS)
-//        Assert.assertTrue("Missing operation", operations.count() == 1)
-//        val auth = PowerAuthAuthentication()
-//        auth.usePossession = true
-//        val opFuture = CompletableFuture<Any?>()
-//        ops.authorizeOperation(operations.first(), auth, object : IAcceptOperationListener {
-//            override fun onSuccess() {
-//                opFuture.complete(null)
-//            }
-//            override fun onError(error: ApiError) {
-//                opFuture.completeExceptionally(error.e)
-//            }
-//        })
-//        Assert.assertNull(opFuture.get(20, TimeUnit.SECONDS))
-//    }
-//
-
     @Test
     fun testApprovePayment() {
         IntegrationUtils.createOperation(IntegrationUtils.Companion.Factors.F_2FA)
@@ -150,6 +123,45 @@ class IntegrationTests {
                 .onFailure { opFuture2.completeExceptionally(it) }
         }
         Assert.assertNull(opFuture2.get(20, TimeUnit.SECONDS))
+    }
+
+    @Test
+    fun testMobileTokenData() {
+        val op = IntegrationUtils.createOperation(IntegrationUtils.Companion.Factors.F_2FA)
+        val future = CompletableFuture<Any?>()
+        ops.getDetail(op.operationId) { result ->
+
+            result.onFailure { future.completeExceptionally(it) }
+                .onSuccess { detail ->
+                    detail.mobileTokenData = mapOf(
+                        "test1" to 1,
+                        "test2" to 2.3,
+                        "test3" to "string",
+                        "test4" to mapOf(
+                            "nested" to true
+                        )
+                    )
+
+                    ops.authorizeOperation(detail, PowerAuthAuthentication.possessionWithPassword(pin)) { authResult ->
+                        authResult.onFailure { future.completeExceptionally(it) }
+                            .onSuccess {
+                                val finalOp = IntegrationUtils.getOperation(op.operationId)
+                                val serverMtd = finalOp.additionalData?.get("mobileTokenData") as? Map<String, Any> ?: throw Exception("mobileTokenData not found in additionalData")
+                                val test1 = serverMtd["test1"]
+                                val test2 = serverMtd["test2"]
+                                val test3 = serverMtd["test3"]
+                                val test4 = (serverMtd["test4"] as? Map<String, Any>)?.get("nested")
+
+                                Assert.assertEquals(1.0, test1) // server returns as Double 🤷‍♂️
+                                Assert.assertEquals(2.3, test2)
+                                Assert.assertEquals("string", test3)
+                                Assert.assertEquals(true, test4)
+                                future.complete(null)
+                            }
+                    }
+                }
+        }
+        Assert.assertNull(future.get(20, TimeUnit.SECONDS))
     }
 
     @Test
@@ -276,7 +288,7 @@ class IntegrationTests {
 
         Assert.assertEquals("Incorrect type of preapproval screen", operation.ui?.preApprovalScreen?.type, PreApprovalScreen.Type.QR_SCAN)
 
-        val totp = IntegrationUtils.getOperation(op).proximityOtp
+        val totp = IntegrationUtils.getOperation(op.operationId).proximityOtp
         Assert.assertNotNull("Even with proximityCheckEnabled: true, in proximityOtp nil", totp)
 
         operation.proximityCheck = ProximityCheck(totp!!, ProximityCheckType.QR_CODE)
@@ -323,5 +335,45 @@ class IntegrationTests {
         val opRecord = operations.firstOrNull { it.id == op.operationId }
         Assert.assertNotNull(opRecord)
         Assert.assertTrue("${opRecord?.statusReason} should be PREARRANGED_REASON", opRecord?.statusReason == "PREARRANGED_REASON")
+    }
+
+    @Test
+    fun testRegisterPushLegacyAndroid() {
+        val future = CompletableFuture<Any?>()
+        push.register("testToken") { result ->
+            result.onSuccess { future.complete(null) }
+                .onFailure { future.completeExceptionally(it) }
+        }
+        Assert.assertNull(future.get(10, TimeUnit.SECONDS))
+    }
+
+    @Test
+    fun testRegisterPushLegacyHuawei() {
+        val future = CompletableFuture<Any?>()
+        push.registerHuawei("testToken") { result ->
+            result.onSuccess { future.complete(null) }
+                .onFailure { future.completeExceptionally(it) }
+        }
+        Assert.assertNull(future.get(10, TimeUnit.SECONDS))
+    }
+
+    @Test
+    fun testRegisterPushFCM() {
+        val future = CompletableFuture<Any?>()
+        push.register(PushData.fcm("testToken")) { result ->
+            result.onSuccess { future.complete(null) }
+                .onFailure { future.completeExceptionally(it) }
+        }
+        Assert.assertNull(future.get(10, TimeUnit.SECONDS))
+    }
+
+    @Test
+    fun testRegisterPushHMS() {
+        val future = CompletableFuture<Any?>()
+        push.register(PushData.hms("testToken")) { result ->
+            result.onSuccess { future.complete(null) }
+                .onFailure { future.completeExceptionally(it) }
+        }
+        Assert.assertNull(future.get(10, TimeUnit.SECONDS))
     }
 }

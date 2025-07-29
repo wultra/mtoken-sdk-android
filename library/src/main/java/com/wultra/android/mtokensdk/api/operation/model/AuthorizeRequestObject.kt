@@ -25,6 +25,7 @@ import org.threeten.bp.ZonedDateTime
  * @property id Operation ID.
  * @property data Operation data.
  * @property proximityCheck Proximity check OTP data.
+ * @property mobileTokenData Additional mobile token data (available with PowerAuth server 1.10+).
  */
 internal data class AuthorizeRequestObject(
     @SerializedName("id")
@@ -34,7 +35,10 @@ internal data class AuthorizeRequestObject(
     val data: String,
 
     @SerializedName("proximityCheck")
-    val proximityCheck: ProximityCheckData? = null
+    val proximityCheck: ProximityCheckData? = null,
+
+    @SerializedName("mobileTokenData")
+    val mobileTokenData: Map<String, Any>? = null
 ) {
 
     constructor(operation: IOperation, timestampSent: ZonedDateTime = ZonedDateTime.now()): this(
@@ -47,7 +51,8 @@ internal data class AuthorizeRequestObject(
                 it.timestampReceived,
                 timestampSent
             )
-        }
+        },
+        operation.mobileTokenData
     )
 }
 

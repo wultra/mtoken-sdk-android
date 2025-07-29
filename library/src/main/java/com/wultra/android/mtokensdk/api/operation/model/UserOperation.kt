@@ -83,6 +83,11 @@ open class UserOperation(
     override var proximityCheck: ProximityCheck? = null,
 
     /**
+     * Additional mobile token data for authorization (available with PowerAuth server 1.10+)
+     */
+    override var mobileTokenData: Map<String, Any>? = null,
+
+    /**
      *  Enum-like reason why the status has changed.
      *
      *  Max 32 characters are expected. Possible values depend on the backend implementation and configuration.

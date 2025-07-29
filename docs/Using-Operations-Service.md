@@ -193,6 +193,55 @@ fun approveWithBiometrics(operation: IOperation) {
 }
 ```
 
+### Passing Additional Mobile Token Data
+
+With PowerAuth server 1.10+, you can pass additional customer-specific data during operation authorization using the `mobileTokenData` property. This can be useful for fraud detection systems (FDS) or other custom business logic.
+
+```kotlin
+import com.wultra.android.mtokensdk.api.operation.model.IOperation
+import com.wultra.android.mtokensdk.api.operation.model.ProximityCheck
+import io.getlime.security.powerauth.sdk.PowerAuthAuthentication
+
+// Create a custom operation with mobile token data
+class CustomOperation(
+    override val id: String,
+    override val data: String,
+    override var proximityCheck: ProximityCheck? = null,
+    override var mobileTokenData: Map<String, Any>? = null
+) : IOperation
+
+// Approve operation with additional FDS data
+fun approveWithFDSData() {
+    val fdsData: Map<String, Any> = mapOf(
+        "deviceFingerprint" to "abc123def456",
+        "riskScore" to 0.8,
+        "location" to mapOf(
+            "latitude" to 50.0755,
+            "longitude" to 14.4378
+        )
+    )
+    
+    val operation = CustomOperation(
+        id = "operationId123",
+        data = "operationData",
+        mobileTokenData = fdsData
+    )
+    
+    val auth = PowerAuthAuthentication.possessionWithPassword("password123")
+    
+    operationsService.authorizeOperation(operation, auth) { result ->
+        result.onSuccess {
+            // show success UI
+        }.onFailure { error ->
+            // show error UI
+        }
+    }
+}
+```
+
+The `mobileTokenData` is completely optional and the structure is customer-specific. If you don't need this functionality, you can continue using operations without providing this property.
+```
+
 ## Reject an Operation
 
 To reject an operation use `IOperationsService.rejectOperation`. Operation rejection is confirmed by the possession factor so there is no need for creating  `PowerAuthAuthentication ` object. You can simply use it with the following example.

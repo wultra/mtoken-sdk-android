@@ -19,7 +19,6 @@ package com.wultra.android.mtokensdk.push
 import android.content.Context
 import com.wultra.android.mtokensdk.api.push.PushApi
 import com.wultra.android.mtokensdk.api.push.PushRegistrationRequest
-import com.wultra.android.mtokensdk.api.push.model.Platform
 import com.wultra.android.mtokensdk.api.push.model.PushRegistrationRequestObject
 import com.wultra.android.mtokensdk.log.WMTLogger
 import com.wultra.android.powerauth.networking.IApiCallResponseListener
@@ -66,13 +65,23 @@ class PushService(powerAuthSDK: PowerAuthSDK, appContext: Context, okHttpClient:
     private val pushApi = PushApi(okHttpClient, baseURL, powerAuthSDK, appContext, tokenProvider, userAgent)
 
     /**
-     * Registers FCM on backend to receive notifications about operations
-     * @param fcmToken Firebase Cloud Messaging Token
+     * Registers FCM on PowerAuth backend to receive notifications about operations and inbox.
+     *
+     * @param data Token and push platform (Firebase Cloud Messaging or Huawei Push)
      * @param callback Result listener
      */
-    fun register(fcmToken: String, callback: (Result<Unit>) -> Unit) {
+    fun register(data: PushData, callback: (result: Result<Unit>) -> Unit) {
+        val platform = when (data.platform) {
+            PushPlatform.FCM -> PushRegistrationRequestObject.Platform.FCM
+            PushPlatform.HMS -> PushRegistrationRequestObject.Platform.HMS
+        }
+
+        register(data.token, platform, callback)
+    }
+
+    private fun register(token: String, platform: PushRegistrationRequestObject.Platform, callback: (Result<Unit>) -> Unit) {
         pushApi.registerToken(
-            PushRegistrationRequest(PushRegistrationRequestObject(fcmToken)),
+            PushRegistrationRequest(PushRegistrationRequestObject(token, platform)),
             object : IApiCallResponseListener<StatusResponse> {
                 override fun onSuccess(result: StatusResponse) {
                     callback(Result.success(Unit))
@@ -86,24 +95,14 @@ class PushService(powerAuthSDK: PowerAuthSDK, appContext: Context, okHttpClient:
         )
     }
 
-    /**
-     * Registers HMS on backend to receive notifications about operations
-     * @param hmsToken Huawei Push Token
-     * @param callback Result listener
-     */
-    fun registerHuawei(hmsToken: String, callback: (result: Result<Unit>) -> Unit) {
-        pushApi.registerToken(
-            PushRegistrationRequest(PushRegistrationRequestObject(hmsToken, Platform.HUAWEI)),
-            object : IApiCallResponseListener<StatusResponse> {
-                override fun onSuccess(result: StatusResponse) {
-                    callback(Result.success(Unit))
-                }
+    // deprecated API
+    @Deprecated("This method is deprecated since the server version 1.10.0. Use register with `data` parameter as a replacement") // deprecated in 1.13.0
+    fun register(fcmToken: String, callback: (Result<Unit>) -> Unit) {
+        register(fcmToken, PushRegistrationRequestObject.Platform.ANDROID, callback)
+    }
 
-                override fun onFailure(error: ApiError) {
-                    WMTLogger.e("Failed to register hms token for WMT push notifications.")
-                    callback(Result.failure(ApiErrorException(error)))
-                }
-            }
-        )
+    @Deprecated("This method is deprecated since the server version 1.10.0. Use register with `data` parameter as a replacement") // deprecated in 1.13.0
+    fun registerHuawei(hmsToken: String, callback: (result: Result<Unit>) -> Unit) {
+        register(hmsToken, PushRegistrationRequestObject.Platform.HUAWEI, callback)
     }
 }

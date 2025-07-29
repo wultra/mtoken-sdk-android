@@ -30,4 +30,7 @@ interface IOperation {
 
     /** Additional information with proximity check data */
     var proximityCheck: ProximityCheck?
+
+    /** Additional mobile token data for authorization (available with PowerAuth server 1.10+) */
+    var mobileTokenData: Map<String, Any>?
 }

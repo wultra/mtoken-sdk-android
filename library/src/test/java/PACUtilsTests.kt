@@ -59,6 +59,7 @@ class PACUtilsTests {
         Assert.assertEquals("Parsing of operationId", "E/+DRFVmd4iZABEiM0RVZneImQARIjNEVWZ3iJkAESIzRFVmd4iZAA=", parsed?.operationId)
     }
 
+    @Test
     fun testQRPACParserWithValidJWT() {
         val code = "eyJhbGciOiJub25lIiwidHlwZSI6IkpXVCJ9.eyJvaWQiOiIzYjllZGZkMi00ZDgyLTQ3N2MtYjRiMy0yMGZhNWM5OWM5OTMiLCJwb3RwIjoiMTQzNTc0NTgifQ=="
         val parsed = PACUtils.parseQRCode(code)
