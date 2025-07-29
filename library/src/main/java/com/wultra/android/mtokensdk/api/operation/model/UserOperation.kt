@@ -99,7 +99,7 @@ open class UserOperation(
      * Processing status of the operation
      */
     @SerializedName("status")
-    val status: UserOperationStatus,
+    val status: UserOperationStatus?,
 ) : IOperation, ExpirableOperation
 
 /**
