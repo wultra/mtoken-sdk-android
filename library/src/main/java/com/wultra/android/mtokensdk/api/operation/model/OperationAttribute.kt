@@ -211,13 +211,13 @@ class AlertAttribute(
      * Possible values: SUCCESS, WARNING, INFO, ERROR
      */
     val alertType: String,
-    
+
     /** Title of the alert. Optional. */
     val title: String?,
-    
+
     /** Message content of the alert */
     val message: String,
-    
+
     /** Label for the alert */
     label: Label
 ): Attribute(Type.ALERT, label)
