@@ -24,7 +24,6 @@ import com.wultra.android.mtokensdk.api.operation.model.Attribute
 import com.wultra.android.mtokensdk.api.operation.model.PostApprovalScreen
 import com.wultra.android.mtokensdk.api.operation.model.PreApprovalScreen
 import com.wultra.android.mtokensdk.api.operation.model.UserOperation
-import com.wultra.android.mtokensdk.api.operation.model.UserOperationStatus
 import org.threeten.bp.ZonedDateTime
 
 class OperationsUtils {
