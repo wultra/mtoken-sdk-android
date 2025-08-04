@@ -30,10 +30,6 @@ enum class UserOperationStatus {
 
 The `UserOperationStatus` within `UserOperation.status`  now represents the status of an operation, making the `OperationHistoryEntryStatus` and `OperationHistoryEntry` redundant. As a result, `OperationHistoryEntry` has been removed. In all instances where `OperationHistoryEntry` was previously used, `UserOperation` is used instead.
 
-<!-- begin box info -->
-ℹ️ **Note:** Starting with version `1.12.1` (and also in `2.0.1`, `2.1.1`, `2.2.1`), the `status` property has become **nullable** (`Status?`) to align with backend behavior, where this field may be omitted.
-<!-- end -->
-
 ### Replaced at
 
 In the `getHistory` method of `IOperationsService`, `OperationHistoryEntry` has been replaced by `UserOperation` for retrieving user operation history.
