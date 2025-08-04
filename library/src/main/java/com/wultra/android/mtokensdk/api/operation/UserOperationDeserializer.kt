@@ -47,10 +47,9 @@ class UserOperationDeserializer : JsonDeserializer<UserOperation> {
 
         // Status handling (null or invalid = fallback to PENDING)
         val rawStatus = obj.get("status")?.asString
-        val status = try {
-            if (rawStatus != null) UserOperationStatus.valueOf(rawStatus)
-            else UserOperationStatus.PENDING
-        } catch (_: Exception) {
+        val status = if (rawStatus != null) {
+            UserOperationStatus.valueOf(rawStatus)
+        } else {
             UserOperationStatus.PENDING
         }
 
