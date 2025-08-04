@@ -14,14 +14,12 @@ package com.wultra.android.mtokensdk.api.operation
 import com.google.gson.JsonDeserializationContext
 import com.google.gson.JsonDeserializer
 import com.google.gson.JsonElement
-import com.google.gson.reflect.TypeToken
 import com.wultra.android.mtokensdk.api.operation.model.UserOperation
 import java.lang.reflect.Type
 import org.threeten.bp.ZonedDateTime
 import com.wultra.android.mtokensdk.api.operation.model.FormData
 import com.wultra.android.mtokensdk.api.operation.model.AllowedSignatureType
 import com.wultra.android.mtokensdk.api.operation.model.OperationUIData
-import com.wultra.android.mtokensdk.api.operation.model.ProximityCheck
 import com.wultra.android.mtokensdk.api.operation.model.UserOperationStatus
 
 class UserOperationDeserializer : JsonDeserializer<UserOperation> {
@@ -45,7 +43,7 @@ class UserOperationDeserializer : JsonDeserializer<UserOperation> {
         val ui = obj.get("ui")?.let { context.deserialize<OperationUIData>(it, OperationUIData::class.java) }
         val statusReason = obj.get("statusReason")?.asString
 
-        // Status handling (null or invalid = fallback to PENDING)
+        // Status handling, fallback to PENDING on legacy systems
         val rawStatus = obj.get("status")?.asString
         val status = if (rawStatus != null) {
             UserOperationStatus.valueOf(rawStatus)
