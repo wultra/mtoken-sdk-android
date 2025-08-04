@@ -17,17 +17,16 @@
 package com.wultra.android.mtokensdk.api.operation
 
 import com.google.gson.Gson
-import com.google.gson.GsonBuilder
 import com.google.gson.TypeAdapter
 import com.google.gson.reflect.TypeToken
 import com.wultra.android.mtokensdk.api.operation.model.*
 import com.wultra.android.mtokensdk.api.push.PushRegistrationRequest
 import com.wultra.android.mtokensdk.api.push.model.PushRegistrationRequestObject
+import com.wultra.android.mtokensdk.operation.OperationsUtils
 import com.wultra.android.powerauth.networking.data.StatusResponse
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-import org.threeten.bp.ZonedDateTime
 import java.math.BigDecimal
 
 class JsonDeserializationTests {
@@ -37,10 +36,7 @@ class JsonDeserializationTests {
 
     @Before
     fun prepareGson() {
-        val builder = GsonBuilder()
-        builder.registerTypeHierarchyAdapter(Attribute::class.java, AttributeTypeAdapter())
-        builder.registerTypeAdapter(ZonedDateTime::class.java, ZonedDateTimeDeserializer())
-        gson = builder.create()
+        gson = OperationsUtils.defaultGsonBuilder().create()
         typeAdapter = gson.getAdapter(TypeToken.get(OperationListResponse::class.java))
     }
 
@@ -498,6 +494,6 @@ class JsonDeserializationTests {
 
         val operation = typeAdapter.fromJson(json).responseObject[0]
         Assert.assertNotNull("Failed to parse JSON data", operation)
-        Assert.assertNull(operation.status)
+        Assert.assertEquals(UserOperationStatus.PENDING, operation.status)
     }
 }
