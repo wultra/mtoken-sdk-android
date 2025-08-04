@@ -23,6 +23,7 @@ import com.wultra.android.mtokensdk.api.operation.ZonedDateTimeDeserializer
 import com.wultra.android.mtokensdk.api.operation.model.Attribute
 import com.wultra.android.mtokensdk.api.operation.model.PostApprovalScreen
 import com.wultra.android.mtokensdk.api.operation.model.PreApprovalScreen
+import com.wultra.android.mtokensdk.api.operation.model.Templates
 import org.threeten.bp.ZonedDateTime
 
 class OperationsUtils {
@@ -46,6 +47,11 @@ class OperationsUtils {
             builder.registerTypeAdapter(ZonedDateTime::class.java, ZonedDateTimeDeserializer())
             builder.registerTypeAdapter(PreApprovalScreen::class.java, PreApprovalScreenDeserializer())
             builder.registerTypeAdapter(PostApprovalScreen::class.java, PostApprovalScreenDeserializer())
+            builder.registerTypeAdapter(Templates::class.java, TemplatesDeserializer())
+            builder.registerTypeAdapter(Templates.ListTemplate::class.java, ListTemplateDeserializer())
+            builder.registerTypeAdapter(Templates.DetailTemplate::class.java, DetailTemplateDeserializer())
+            builder.registerTypeAdapter(Templates.DetailTemplate.Section::class.java, SectionDeserializer())
+            builder.registerTypeAdapter(Templates.DetailTemplate.Section.Cell::class.java, CellDeserializer())
             return builder
         }
     }

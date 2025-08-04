@@ -21,6 +21,7 @@ import com.wultra.android.mtokensdk.api.operation.model.*
 import com.wultra.android.mtokensdk.operation.JSONValue
 import com.wultra.android.mtokensdk.operation.OperationsUtils
 import junit.framework.TestCase.assertEquals
+import junit.framework.TestCase.assertNull
 import junit.framework.TestCase.fail
 import org.junit.Test
 
@@ -208,6 +209,64 @@ class OperationUIDataTests {
         assertEquals(postApprovalGenericResult.payload["object"], JSONValue.JSONObject(mapOf("nestedObject" to JSONValue.JSONString("stringValue"))))
     }
 
+    @Test
+    fun testListTemplates() {
+        val uiResult = prepareUIData(templatesList)
+        if (uiResult == null) {
+            fail("Failed to parse JSON data")
+            return
+        }
+
+        assertEquals("POSITIVE", uiResult.templates?.list?.style)
+        assertEquals("$\\{operation.request_no} Withdrawal Initiation", uiResult.templates?.list?.header)
+        assertNull(uiResult.templates?.list?.title)
+        assertNull(uiResult.templates?.list?.message)
+        assertNull(uiResult.templates?.list?.image)
+    }
+
+    @Test
+    fun testTemplates() {
+        val uiResult = prepareUIData(uiDataWithTemplates)
+        if (uiResult == null) {
+            fail("Failed to parse JSON data")
+            return
+        }
+
+        assertEquals("POSITIVE", uiResult.templates?.list?.style)
+        assertEquals("\${operation.request_no} Withdrawal Initiation", uiResult.templates?.list?.header)
+        assertEquals("\${operation.account} · \${operation.enterprise}", uiResult.templates?.list?.title)
+        assertEquals("\${operation.tx_amount}", uiResult.templates?.list?.message)
+        assertEquals("operation.image", uiResult.templates?.list?.image)
+
+        assertEquals(null, uiResult.templates?.detail?.style)
+        assertEquals(false, uiResult.templates?.detail?.showTitleAndMessage)
+
+        assertEquals("MONEY", uiResult.templates?.detail?.sections?.get(0)?.style)
+        assertEquals("operation.money.header", uiResult.templates?.detail?.sections?.get(0)?.title)
+        assertEquals(null, uiResult.templates?.detail?.sections?.get(0)?.cells?.get(0)?.style)
+        assertEquals("operation.amount", uiResult.templates?.detail?.sections?.get(0)?.cells?.get(0)?.name)
+        assertEquals(false, uiResult.templates?.detail?.sections?.get(0)?.cells?.get(0)?.visibleTitle)
+        assertEquals(true, uiResult.templates?.detail?.sections?.get(0)?.cells?.get(0)?.canCopy)
+        assertEquals(Templates.DetailTemplate.Section.Cell.Collapsable.NO, uiResult.templates?.detail?.sections?.get(0)?.cells?.get(0)?.collapsable)
+
+        assertEquals("CONVERSION", uiResult.templates?.detail?.sections?.get(0)?.cells?.get(1)?.style)
+        assertEquals("operation.conversion", uiResult.templates?.detail?.sections?.get(0)?.cells?.get(1)?.name)
+        assertEquals(null, uiResult.templates?.detail?.sections?.get(0)?.cells?.get(1)?.visibleTitle)
+        assertEquals(true, uiResult.templates?.detail?.sections?.get(0)?.cells?.get(1)?.canCopy)
+        assertEquals(Templates.DetailTemplate.Section.Cell.Collapsable.NO, uiResult.templates?.detail?.sections?.get(0)?.cells?.get(1)?.collapsable)
+
+        assertEquals(null, uiResult.templates?.detail?.sections?.get(0)?.cells?.get(2)?.style)
+        assertEquals("operation.conversion2", uiResult.templates?.detail?.sections?.get(0)?.cells?.get(2)?.name)
+        assertEquals(true, uiResult.templates?.detail?.sections?.get(0)?.cells?.get(2)?.visibleTitle)
+        assertEquals(false, uiResult.templates?.detail?.sections?.get(0)?.cells?.get(2)?.canCopy)
+        assertEquals(Templates.DetailTemplate.Section.Cell.Collapsable.COLLAPSED, uiResult.templates?.detail?.sections?.get(0)?.cells?.get(2)?.collapsable)
+
+        assertEquals(3, uiResult.templates?.detail?.sections?.get(0)?.cells?.size)
+
+        assertNull(uiResult.templates?.detail?.sections?.get(1)?.cells)
+        assertNull(uiResult.templates?.detail?.sections?.get(2)?.cells)
+    }
+
     /** Helpers */
     private val jsonDecoder: Gson = OperationsUtils.defaultGsonBuilder().setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").create()
 
@@ -218,6 +277,14 @@ class OperationUIDataTests {
             null
         }
         return result
+    }
+
+    private fun prepareUIData(response: String): OperationUIData? {
+        return try {
+            jsonDecoder.fromJson(response, OperationUIData::class.java)
+        } catch (e: Exception) {
+            null
+        }
     }
 
     private val preApprovalResponse: String = """
@@ -450,5 +517,89 @@ class OperationUIDataTests {
             }]
         }
     }
+    """
+
+    private val templatesList: String = """
+        {
+            "flipButtons": false,
+            "blockApprovalOnCall": true,
+            "templates": {
+                "list": {
+                    "style": "POSITIVE",
+                    "header": "${'$'}\\{operation.request_no} Withdrawal Initiation",
+                    "message": null,
+                    "image": true
+                }
+            }
+        }
+    """
+
+    private val uiDataWithTemplates: String = """
+{
+            "flipButtons": false,
+            "blockApprovalOnCall": true,
+            "templates": {
+                "list": {
+                    "style": "POSITIVE",
+                    "header": "${"$"}{operation.request_no} Withdrawal Initiation",
+                    "message": "${"$"}{operation.tx_amount}",
+                    "title": "${"$"}{operation.account} · ${"$"}{operation.enterprise}",
+                    "image": "operation.image"
+                },
+                "detail": {
+                    "style": null,
+                    "showTitleAndMessage": false,
+                    "sections": [
+                        {
+                            "style": "MONEY",
+                            "title": "operation.money.header",
+                            "cells": [
+                                {
+                                    "name": "operation.amount",
+                                    "visibleTitle": false,
+                                    "style": null,
+                                    "canCopy": true,
+                                    "collapsable": "NO",
+                                    "centered": true
+                                },
+                                {
+                                    "style": "CONVERSION",
+                                    "name": "operation.conversion",
+                                    "canCopy": true,
+                                    "collapsable": "NO"
+                                },
+                                {
+                                    "name": "operation.conversion2",
+                                    "visibleTitle": true,
+                                    "style": null,
+                                    "canCopy": false,
+                                    "collapsable": "COLLAPSED"
+                                },
+                                {
+                                    "visibleTitle": true
+                                }
+                            ]
+                        },
+                        {
+                            "style": "FOOTER",
+                            "title": "operation.footer"
+                        },
+                        {
+                            "style": "FOOTER",
+                            "title": "operation.footer",
+                            "cells":
+                                {
+                                    "name": "operation.amount",
+                                    "visibleTitle": false,
+                                    "style": null,
+                                    "canCopy": true,
+                                    "collapsable": "NO",
+                                    "centered": true
+                                }
+                        }
+                    ]
+                }
+            }
+        }
     """
 }
