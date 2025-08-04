@@ -580,6 +580,7 @@ Attributes types:
 - `PARTY_INFO` providing structured information about third-party data (for example known e-shop)  
 - `AMOUNT_CONVERSION` provides data about Money conversion  
 - `IMAGE` image row  
+- `ALERT` view to display success, info, warning or error message
 - `UNKNOWN` fallback option when an unknown attribute type is passed. Such an attribute only contains the label.  
 
 Definition of `OperationUIData`:
