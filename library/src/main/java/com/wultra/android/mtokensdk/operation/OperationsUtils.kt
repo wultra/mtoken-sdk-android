@@ -23,6 +23,7 @@ import com.wultra.android.mtokensdk.api.operation.ZonedDateTimeDeserializer
 import com.wultra.android.mtokensdk.api.operation.model.Attribute
 import com.wultra.android.mtokensdk.api.operation.model.PostApprovalScreen
 import com.wultra.android.mtokensdk.api.operation.model.PreApprovalScreen
+import com.wultra.android.mtokensdk.api.operation.model.UserOperation
 import org.threeten.bp.ZonedDateTime
 
 class OperationsUtils {
@@ -31,6 +32,7 @@ class OperationsUtils {
          * Default GSON builder that is used when null is passed by the integrator.
          *
          * This builder provides parsing logic for:
+         *  - user operation, including fallback for missing or invalid status values
          *  - attributes in UserOperation
          *  - time deserializer
          *  - operation history entry serializer
@@ -42,6 +44,7 @@ class OperationsUtils {
          */
         fun defaultGsonBuilder(): GsonBuilder {
             val builder = GsonBuilder()
+            builder.registerTypeHierarchyAdapter(UserOperation::class.java, UserOperationDeserializer())
             builder.registerTypeHierarchyAdapter(Attribute::class.java, AttributeTypeAdapter())
             builder.registerTypeAdapter(ZonedDateTime::class.java, ZonedDateTimeDeserializer())
             builder.registerTypeAdapter(PreApprovalScreen::class.java, PreApprovalScreenDeserializer())

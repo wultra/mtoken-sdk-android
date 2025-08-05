@@ -78,12 +78,16 @@ open class UserOperation(
 
     /**
      * Proximity Check Data to be passed when OTP is handed to the app
+     *
+     * This data is not retrieved from the server but is set by the application.
      */
     @SerializedName("proximityCheck")
     override var proximityCheck: ProximityCheck? = null,
 
     /**
      * Additional mobile token data for authorization (available with PowerAuth server 1.10+)
+     *
+     * This data is not retrieved from the server but is set by the application.
      */
     override var mobileTokenData: Map<String, Any>? = null,
 
@@ -97,6 +101,8 @@ open class UserOperation(
 
     /**
      * Processing status of the operation
+     *
+     * The value fallbacks to PENDING on legacy systems
      */
     @SerializedName("status")
     val status: UserOperationStatus,
