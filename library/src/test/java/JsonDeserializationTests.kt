@@ -17,17 +17,16 @@
 package com.wultra.android.mtokensdk.api.operation
 
 import com.google.gson.Gson
-import com.google.gson.GsonBuilder
 import com.google.gson.TypeAdapter
 import com.google.gson.reflect.TypeToken
 import com.wultra.android.mtokensdk.api.operation.model.*
 import com.wultra.android.mtokensdk.api.push.PushRegistrationRequest
 import com.wultra.android.mtokensdk.api.push.model.PushRegistrationRequestObject
+import com.wultra.android.mtokensdk.operation.OperationsUtils
 import com.wultra.android.powerauth.networking.data.StatusResponse
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-import org.threeten.bp.ZonedDateTime
 import java.math.BigDecimal
 
 class JsonDeserializationTests {
@@ -37,10 +36,7 @@ class JsonDeserializationTests {
 
     @Before
     fun prepareGson() {
-        val builder = GsonBuilder()
-        builder.registerTypeHierarchyAdapter(Attribute::class.java, AttributeTypeAdapter())
-        builder.registerTypeAdapter(ZonedDateTime::class.java, ZonedDateTimeDeserializer())
-        gson = builder.create()
+        gson = OperationsUtils.defaultGsonBuilder().create()
         typeAdapter = gson.getAdapter(TypeToken.get(OperationListResponse::class.java))
     }
 
@@ -434,5 +430,70 @@ class JsonDeserializationTests {
         val o = gson.fromJson(json, PushRegistrationRequest::class.java)
         Assert.assertEquals("testtoken", o.requestObject.token)
         Assert.assertEquals(PushRegistrationRequestObject.Platform.HMS, o.requestObject.platform)
+    }
+
+    @Test
+    fun `test operation with status`() {
+        val json = """
+            {
+                "responseObject": [
+                    {
+                        "id": "e10bbc25-cf42-4812-815e-3972f49d8f7f",
+                        "name": "login",
+                        "data": "A2",
+                        "status": "PENDING",
+                        "operationCreated": "2025-07-29T14:43:33+0000",
+                        "operationExpires": "2025-07-29T14:48:33+0000",
+                        "allowedSignatureType": {
+                            "type": "2FA",
+                            "variants": ["possession_knowledge", "possession_biometry"]
+                        },
+                        "formData": {
+                            "title": "Login Approval",
+                            "message": "Are you logging in to the internet banking?",
+                            "attributes": []
+                        }
+                    }
+                ],
+                "status": "OK",
+                "currentTimestamp": "2025-07-29T14:43:36+0000"
+            }
+        """.trimIndent()
+
+        val operation = typeAdapter.fromJson(json).responseObject[0]
+        Assert.assertNotNull("Failed to parse JSON data", operation)
+        Assert.assertEquals(UserOperationStatus.PENDING, operation.status)
+    }
+
+    @Test
+    fun `test operation without status`() {
+        val json = """
+            {
+                "responseObject": [
+                    {
+                        "id": "e10bbc25-cf42-4812-815e-3972f49d8f7f",
+                        "name": "login",
+                        "data": "A2",
+                        "operationCreated": "2025-07-29T14:43:33+0000",
+                        "operationExpires": "2025-07-29T14:48:33+0000",
+                        "allowedSignatureType": {
+                            "type": "2FA",
+                            "variants": ["possession_knowledge", "possession_biometry"]
+                        },
+                        "formData": {
+                            "title": "Login Approval",
+                            "message": "Are you logging in to the internet banking?",
+                            "attributes": []
+                        }
+                    }
+                ],
+                "status": "OK",
+                "currentTimestamp": "2025-07-29T14:43:36+0000"
+            }
+        """.trimIndent()
+
+        val operation = typeAdapter.fromJson(json).responseObject[0]
+        Assert.assertNotNull("Failed to parse JSON data", operation)
+        Assert.assertEquals(UserOperationStatus.PENDING, operation.status)
     }
 }
