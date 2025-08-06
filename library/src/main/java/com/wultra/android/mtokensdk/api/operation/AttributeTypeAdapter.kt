@@ -116,7 +116,7 @@ internal class AttributeTypeAdapter : TypeAdapter<Attribute>() {
                     label
                 )
                 Attribute.Type.IMAGE -> ImageAttribute(attr("thumbnailUrl") ?: return null, attr("originalUrl"), label)
-                Attribute.Type.ALERT -> AlertAttribute(attr("alertType") ?: return null, attr("title"), attr("message") ?: return null, label)
+                Attribute.Type.ALERT -> AlertAttribute(AlertType.valueOf(attr<String>("alertType") ?: return null), attr("title"), attr("message") ?: return null, label)
                 Attribute.Type.UNKNOWN -> Attribute(Attribute.Type.UNKNOWN, label)
             }
         }

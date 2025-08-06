@@ -247,7 +247,7 @@ class JsonDeserializationTests {
         Assert.assertEquals(Attribute.Type.ALERT, alertWarning.type)
         Assert.assertEquals("operation.warning", alertWarning.label.id)
         Assert.assertEquals("Warning", alertWarning.label.value)
-        Assert.assertEquals("WARNING", alertWarning.alertType)
+        Assert.assertEquals(AlertType.WARNING, alertWarning.alertType)
         Assert.assertEquals("Important Warning", alertWarning.title)
         Assert.assertEquals("This is a warning message with all attributes filled in.", alertWarning.message)
 
@@ -255,7 +255,7 @@ class JsonDeserializationTests {
         Assert.assertEquals(Attribute.Type.ALERT, alertSuccess.type)
         Assert.assertEquals("operation.success", alertSuccess.label.id)
         Assert.assertEquals("Success", alertSuccess.label.value)
-        Assert.assertEquals("SUCCESS", alertSuccess.alertType)
+        Assert.assertEquals(AlertType.SUCCESS, alertSuccess.alertType)
         Assert.assertNull(alertSuccess.title)
         Assert.assertEquals("This is a success message with missing optional title.", alertSuccess.message)
     }
