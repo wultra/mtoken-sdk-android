@@ -39,6 +39,7 @@ open class Attribute(
         PARTY_INFO,
         AMOUNT_CONVERSION,
         IMAGE,
+        ALERT,
         UNKNOWN
     }
 
@@ -199,3 +200,35 @@ class ImageAttribute(
     /** Image label */
     label: Label
 ): Attribute(Type.IMAGE, label)
+
+/**
+ * Enum representing the type of alert to be displayed.
+ * Each type corresponds to a different visual appearance.
+ */
+enum class AlertType(val value: String) {
+    SUCCESS("SUCCESS"),
+    WARNING("WARNING"),
+    INFO("INFO"),
+    ERROR("ERROR")
+}
+
+/**
+ * Alert attribute represents a notification or message that should be displayed to the user.
+ * It contains information about the type, title, and message of the alert.
+ */
+class AlertAttribute(
+    /**
+     * Type of the alert that determines its visual appearance.
+     * Possible values: SUCCESS, WARNING, INFO, ERROR
+     */
+    val alertType: AlertType,
+
+    /** Title of the alert. Optional. */
+    val title: String?,
+
+    /** Message content of the alert */
+    val message: String,
+
+    /** Label for the alert */
+    label: Label
+): Attribute(Type.ALERT, label)

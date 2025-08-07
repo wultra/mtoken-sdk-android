@@ -167,14 +167,14 @@ class JsonDeserializationTests {
     @Test
     fun `test real data 2`() {
         val json = """
-            {"status":"OK","currentTimestamp":"2023-02-10T12:30:42+0000","responseObject":[{"id":"930febe7-f350-419a-8bc0-c8883e7f71e3","name":"authorize_payment","data":"A1*A100CZK*Q238400856/0300**D20170629*NUtility Bill Payment - 05/2017","operationCreated":"2018-08-08T12:30:42+0000","operationExpires":"2018-08-08T12:35:43+0000","allowedSignatureType":{"type":"2FA","variants":["possession_knowledge", "possession_biometry"]},"formData":{"title":"Potvrzení platby","message":"Dobrý den,prosíme o potvrzení následující platby:","attributes":[{"type":"AMOUNT","id":"operation.amount","label":"Částka","amount":965165234082.23,"currency":"CZK","valueFormatted": "965165234082.23 CZK"},{"type":"KEY_VALUE","id":"operation.account","label":"Na účet","value":"238400856/0300"},{"type":"KEY_VALUE","id":"operation.dueDate","label":"Datum splatnosti","value":"29.6.2017"},{"type":"NOTE","id":"operation.note","label":"Poznámka","note":"Utility Bill Payment - 05/2017"},{"type":"PARTY_INFO","id":"operation.partyInfo","label":"Application","partyInfo":{"logoUrl":"http://whywander.com/wp-content/uploads/2017/05/prague_hero-100x100.jpg","name":"Tesco","description":"Objevte více příběhů psaných s chutí","websiteUrl":"https://itesco.cz/hello/vse-o-jidle/pribehy-psane-s-chuti/clanek/tomovy-burgery-pro-zapalene-fanousky/15012"}},{ "type": "AMOUNT_CONVERSION", "id": "operation.conversion", "label": "Conversion", "dynamic": true, "sourceAmount": 1.26, "sourceCurrency": "ETC", "sourceAmountFormatted": "1.26", "sourceCurrencyFormatted": "ETC", "sourceValueFormatted": "1.26 ETC", "targetAmount": 1710.98, "targetCurrency": "USD", "targetAmountFormatted": "1,710.98", "targetCurrencyFormatted": "USD", "targetValueFormatted": "1,710.98 USD"},{ "type": "IMAGE", "id": "operation.image", "label": "Image", "thumbnailUrl": "https://example.com/123_thumb.jpeg", "originalUrl": "https://example.com/123.jpeg" },{ "type": "IMAGE", "id": "operation.image", "label": "Image", "thumbnailUrl": "https://example.com/123_thumb.jpeg" },{ "type": "IMAGE", "id": "operation.image", "label": "Image", "thumbnailUrl": "https://example.com/123_thumb.jpeg", "originalUrl": 12345 }]}},{"id":"930febe7-f350-419a-8bc0-c8883e7f71e3","name":"authorize_payment","data":"A1*A100CZK*Q238400856/0300**D20170629*NUtility Bill Payment - 05/2017","operationCreated":"2018-08-08T12:30:42+0000","operationExpires":"2018-08-08T12:35:43+0000","allowedSignatureType":{"type":"1FA","variants":["possession_knowledge"]},"formData":{"title":"Potvrzení platby","message":"Dobrý den,prosíme o potvrzení následující platby:","attributes":[{"type":"AMOUNT","id":"operation.amount","label":"Částka","amount":100,"currency":"CZK"},{"type":"KEY_VALUE","id":"operation.account","label":"Na účet","value":"238400856/0300"},{"type":"KEY_VALUE","id":"operation.dueDate","label":"Datum splatnosti","value":"29.6.2017"},{"type":"NOTE","id":"operation.note","label":"Poznámka","note":"Utility Bill Payment - 05/2017"}]}}]}
+            {"status":"OK","currentTimestamp":"2023-02-10T12:30:42+0000","responseObject":[{"id":"930febe7-f350-419a-8bc0-c8883e7f71e3","name":"authorize_payment","data":"A1*A100CZK*Q238400856/0300**D20170629*NUtility Bill Payment - 05/2017","operationCreated":"2018-08-08T12:30:42+0000","operationExpires":"2018-08-08T12:35:43+0000","allowedSignatureType":{"type":"2FA","variants":["possession_knowledge","possession_biometry"]},"formData":{"title":"Potvrzení platby","message":"Dobrý den,prosíme o potvrzení následující platby:","attributes":[{"type":"AMOUNT","id":"operation.amount","label":"Částka","amount":965165234082.23,"currency":"CZK","valueFormatted":"965165234082.23 CZK"},{"type":"KEY_VALUE","id":"operation.account","label":"Na účet","value":"238400856/0300"},{"type":"KEY_VALUE","id":"operation.dueDate","label":"Datum splatnosti","value":"29.6.2017"},{"type":"NOTE","id":"operation.note","label":"Poznámka","note":"Utility Bill Payment - 05/2017"},{"type":"PARTY_INFO","id":"operation.partyInfo","label":"Application","partyInfo":{"logoUrl":"http://whywander.com/wp-content/uploads/2017/05/prague_hero-100x100.jpg","name":"Tesco","description":"Objevte více příběhů psaných s chutí","websiteUrl":"https://itesco.cz/hello/vse-o-jidle/pribehy-psane-s-chuti/clanek/tomovy-burgery-pro-zapalene-fanousky/15012"}},{"type":"AMOUNT_CONVERSION","id":"operation.conversion","label":"Conversion","dynamic":true,"sourceAmount":1.26,"sourceCurrency":"ETC","sourceAmountFormatted":"1.26","sourceCurrencyFormatted":"ETC","sourceValueFormatted":"1.26 ETC","targetAmount":1710.98,"targetCurrency":"USD","targetAmountFormatted":"1,710.98","targetCurrencyFormatted":"USD","targetValueFormatted":"1,710.98 USD"},{"type":"IMAGE","id":"operation.image","label":"Image","thumbnailUrl":"https://example.com/123_thumb.jpeg","originalUrl":"https://example.com/123.jpeg"},{"type":"IMAGE","id":"operation.image","label":"Image","thumbnailUrl":"https://example.com/123_thumb.jpeg"},{"type":"IMAGE","id":"operation.image","label":"Image","thumbnailUrl":"https://example.com/123_thumb.jpeg","originalUrl":12345},{"type":"ALERT","id":"operation.warning","label":"Warning","alertType":"WARNING","title":"Important Warning","message":"This is a warning message with all attributes filled in."},{"type":"ALERT","id":"operation.success","label":"Success","alertType":"SUCCESS","message":"This is a success message with missing optional title."},{"type":"ALERT","id":"operation.success","label":"Typo","alertType":"TYPO","message":"This is a message with invalid alert type."}]}},{"id":"930febe7-f350-419a-8bc0-c8883e7f71e3","name":"authorize_payment","data":"A1*A100CZK*Q238400856/0300**D20170629*NUtility Bill Payment - 05/2017","operationCreated":"2018-08-08T12:30:42+0000","operationExpires":"2018-08-08T12:35:43+0000","allowedSignatureType":{"type":"1FA","variants":["possession_knowledge"]},"formData":{"title":"Potvrzení platby","message":"Dobrý den,prosíme o potvrzení následující platby:","attributes":[{"type":"AMOUNT","id":"operation.amount","label":"Částka","amount":100,"currency":"CZK"},{"type":"KEY_VALUE","id":"operation.account","label":"Na účet","value":"238400856/0300"},{"type":"KEY_VALUE","id":"operation.dueDate","label":"Datum splatnosti","value":"29.6.2017"},{"type":"NOTE","id":"operation.note","label":"Poznámka","note":"Utility Bill Payment - 05/2017"}]}}]}
         """.trimIndent()
         val response = typeAdapter.fromJson(json)
         Assert.assertNotNull(response)
         Assert.assertEquals(1676032242000, response.currentTimestamp?.toInstant()?.toEpochMilli())
         Assert.assertEquals(2, response.responseObject.size)
         val operation = response.responseObject[0]
-        Assert.assertEquals(9, operation.formData.attributes.size)
+        Assert.assertEquals(12, operation.formData.attributes.size)
 
         val amountAttr = operation.formData.attributes[0] as AmountAttribute
         Assert.assertEquals(Attribute.Type.AMOUNT, amountAttr.type)
@@ -242,6 +242,31 @@ class JsonDeserializationTests {
         Assert.assertEquals("https://example.com/123_thumb.jpeg", ia3.thumbnailUrl)
         // here we're testing if a wrong type (int) was parsed to null
         Assert.assertEquals(null, ia3.originalUrl)
+
+        val alertWarning = operation.formData.attributes[9] as AlertAttribute
+        Assert.assertEquals(Attribute.Type.ALERT, alertWarning.type)
+        Assert.assertEquals("operation.warning", alertWarning.label.id)
+        Assert.assertEquals("Warning", alertWarning.label.value)
+        Assert.assertEquals(AlertType.WARNING, alertWarning.alertType)
+        Assert.assertEquals("Important Warning", alertWarning.title)
+        Assert.assertEquals("This is a warning message with all attributes filled in.", alertWarning.message)
+
+        val alertSuccess = operation.formData.attributes[10] as AlertAttribute
+        Assert.assertEquals(Attribute.Type.ALERT, alertSuccess.type)
+        Assert.assertEquals("operation.success", alertSuccess.label.id)
+        Assert.assertEquals("Success", alertSuccess.label.value)
+        Assert.assertEquals(AlertType.SUCCESS, alertSuccess.alertType)
+        Assert.assertNull(alertSuccess.title)
+        Assert.assertEquals("This is a success message with missing optional title.", alertSuccess.message)
+
+        // test fallback to AlertType.INFO if alertType has typo or different value than enum value
+        val alertTypo = operation.formData.attributes[11] as AlertAttribute
+        Assert.assertEquals(Attribute.Type.ALERT, alertTypo.type)
+        Assert.assertEquals("operation.success", alertTypo.label.id)
+        Assert.assertEquals("Typo", alertTypo.label.value)
+        Assert.assertEquals(AlertType.INFO, alertTypo.alertType)
+        Assert.assertNull(alertTypo.title)
+        Assert.assertEquals("This is a message with invalid alert type.", alertTypo.message)
     }
 
     @Test
