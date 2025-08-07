@@ -27,9 +27,9 @@ object Constants {
     }
 
     object Java {
-        val sourceCompatibility = JavaVersion.VERSION_11
-        val targetCompatibility = JavaVersion.VERSION_11
-        const val kotlinJvmTarget = "11"
+        val sourceCompatibility = JavaVersion.VERSION_17
+        val targetCompatibility = JavaVersion.VERSION_17
+        const val kotlinJvmTarget = "17"
     }
 
     object Android {
