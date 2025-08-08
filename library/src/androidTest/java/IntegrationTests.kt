@@ -30,9 +30,9 @@ import com.wultra.android.powerauth.networking.error.ApiError
 import io.getlime.security.powerauth.sdk.PowerAuthAuthentication
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
 import org.junit.*
-import org.threeten.bp.Instant
-import org.threeten.bp.ZoneId
-import org.threeten.bp.ZonedDateTime
+import java.time.Instant
+import java.time.ZoneId
+import java.time.ZonedDateTime
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
@@ -65,10 +65,6 @@ class IntegrationTests {
         }
         IntegrationUtils.removeRegistration(pa.activationIdentifier)
         pa.removeActivationLocal(IntegrationUtils.context)
-    }
-
-    init {
-        initThreeTen()
     }
 
     @Test

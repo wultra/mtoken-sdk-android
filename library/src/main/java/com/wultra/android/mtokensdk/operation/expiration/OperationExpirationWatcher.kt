@@ -188,7 +188,7 @@ class OperationExpirationWatcher {
             // This is a precaution when you'll receive an expired operation from the backend over and over again
             // and it would lead to infinite refresh time. This also helps when device and backend time is out of sync heavily.
             // This leads to a minimal "expire report time" of 5 seconds.
-            val interval = max(5, firstOp.expires.toEpochSecond() - currentDateProvider.getCurrentDate().toEpochSecond())
+            val interval = max(5, firstOp.expires - currentDateProvider.getCurrentDate())
 
             WMTLogger.d("OperationExpirationWatcher: Scheduling operation expire check in ${interval.toInt()} seconds.")
 

@@ -27,7 +27,7 @@ import com.wultra.android.powerauth.networking.tokens.IPowerAuthTokenProvider
 import io.getlime.security.powerauth.sdk.PowerAuthAuthentication
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
 import okhttp3.OkHttpClient
-import org.threeten.bp.ZonedDateTime
+import java.time.ZonedDateTime
 
 internal class OperationListResponse(
     @SerializedName("currentTimestamp")

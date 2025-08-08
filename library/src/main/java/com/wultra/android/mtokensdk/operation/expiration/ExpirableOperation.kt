@@ -18,14 +18,13 @@ package com.wultra.android.mtokensdk.operation.expiration
 
 import com.wultra.android.mtokensdk.api.operation.model.IOperation
 import com.wultra.android.mtokensdk.log.WMTLogger
-import org.threeten.bp.ZonedDateTime
 
 /**
  * Interface defining an operation for the [OperationExpirationWatcher].
  */
 interface ExpirableOperation {
 
-    val expires: ZonedDateTime
+    val expires: Long
 
     /**
      * Comparing method.
@@ -42,5 +41,5 @@ interface ExpirableOperation {
         }
     }
 
-    fun isExpired(currentDate: ZonedDateTime) = expires < currentDate
+    fun isExpired(currentDate: Long) = expires < currentDate
 }

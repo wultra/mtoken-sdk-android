@@ -18,7 +18,9 @@ package com.wultra.android.mtokensdk.api.operation.model
 
 import com.google.gson.annotations.SerializedName
 import com.wultra.android.mtokensdk.operation.expiration.ExpirableOperation
-import org.threeten.bp.ZonedDateTime
+import io.getlime.security.powerauth.sdk.PowerAuthSDK
+import java.time.ZoneId
+import java.time.ZonedDateTime
 
 /**
  * [UserOperation] is an object returned from the backend that can be either approved or rejected.
@@ -49,11 +51,11 @@ open class UserOperation(
 
     /** Date and time when the operation was created. */
     @SerializedName("operationCreated")
-    val created: ZonedDateTime,
+    val created: Long,
 
     /** Date and time when the operation will expire. */
     @SerializedName("operationExpires")
-    override val expires: ZonedDateTime,
+    override val expires: Long,
 
     /** Data that should be presented to the user. */
     @SerializedName("formData")
@@ -228,10 +230,41 @@ data class ProximityCheck(
     /** Type of the Proximity check */
     val type: ProximityCheckType,
 
-    /** Timestamp when the operation was scanned (qrCode) or delivered to the device (deeplink) */
-    val timestampReceived: ZonedDateTime = ZonedDateTime.now()
-)
+    /**
+     * Timestamp when the operation was scanned (qrCode) or delivered to the device (deeplink)
+     *
+     * We **strongly recommend** using [withSynchronizedTime] to ensure
+     * the timestamp is aligned with the server time, especially for time-sensitive operations.
+     */
+    val timestampReceived: Long = ZonedDateTime.now(ZoneId.systemDefault()).toInstant().toEpochMilli()
+) {
+    companion object {
 
+        /**
+         * Creates a new instance using time synchronized with PowerAuth server, if available.
+         *
+         * If the SDK is not initialized or synchronization is unavailable, falls back to system time.
+         *
+         * @param totp The TOTP code.
+         * @param type The proximity check type.
+         * @param powerAuthSDK Instance of PowerAuthSDK.
+         */
+        fun withSynchronizedTime(
+            totp: String,
+            type: ProximityCheckType,
+            powerAuthSDK: PowerAuthSDK
+        ): ProximityCheck {
+            val timeService = powerAuthSDK.timeSynchronizationService
+            val timestamp = if (timeService.isTimeSynchronized) {
+                timeService.currentTime
+            } else {
+                // fallback to system clock
+                ZonedDateTime.now(ZoneId.systemDefault()).toInstant().toEpochMilli()
+            }
+            return ProximityCheck(totp, type, timestamp)
+        }
+    }
+}
 /**
  * Types of possible Proximity Checks
  */

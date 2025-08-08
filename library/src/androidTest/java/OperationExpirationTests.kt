@@ -22,19 +22,13 @@ import com.wultra.android.mtokensdk.operation.expiration.OperationExpirationWatc
 import org.junit.After
 import org.junit.Assert
 import org.junit.Test
-import org.threeten.bp.ZonedDateTime
-import org.threeten.bp.zone.TzdbZoneRulesProvider
-import org.threeten.bp.zone.ZoneRulesProvider
+import java.time.ZonedDateTime
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
 class OperationExpirationTests {
 
     private val watcher = OperationExpirationWatcher()
-
-    init {
-        initThreeTen()
-    }
 
     @After
     fun clear() {
@@ -138,7 +132,7 @@ class OperationExpirationTests {
             }
             future.complete(null)
         }
-        watcher.add(listOf(Operation(), Operation(ZonedDateTime.now().plusSeconds(20))))
+        watcher.add(listOf(Operation(), Operation(ZonedDateTime.now().plusSeconds(20).toInstant().toEpochMilli())))
         // we need to wait longer, because minimum report time is 5 seconds
         Assert.assertNull(future.get(10, TimeUnit.SECONDS))
     }
@@ -151,13 +145,4 @@ private class WatcherListener(private val callback: (List<ExpirableOperation>) -
     }
 }
 
-private class Operation(override val expires: ZonedDateTime = ZonedDateTime.now()): ExpirableOperation
-
-fun Any.initThreeTen() {
-    if (ZoneRulesProvider.getAvailableZoneIds().isEmpty()) {
-        val stream = this.javaClass.classLoader!!.getResourceAsStream("TZDB.dat")
-        stream.use(::TzdbZoneRulesProvider).apply {
-            ZoneRulesProvider.registerProvider(this)
-        }
-    }
-}
+private class Operation(override val expires: Long = ZonedDateTime.now().toInstant().toEpochMilli()): ExpirableOperation

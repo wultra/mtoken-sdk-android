@@ -1,5 +1,8 @@
 @file:Suppress("UnstableApiUsage")
 
+import org.gradle.kotlin.dsl.coreLibraryDesugaring
+
+
 /*
 * Copyright 2022 Wultra s.r.o.
 *
@@ -51,8 +54,13 @@ android {
         }
     }
     compileOptions {
+        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = Constants.Java.sourceCompatibility
         targetCompatibility = Constants.Java.targetCompatibility
+    }
+
+    dependencies {
+        coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
     }
 
     kotlinOptions {
@@ -81,7 +89,6 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib:${Constants.BuildScript.kotlinVersion}")
     implementation("androidx.annotation:annotation:1.9.1")
     implementation("com.google.code.gson:gson:2.13.1")
-    implementation("com.jakewharton.threetenabp:threetenabp:1.4.9")
     implementation("com.squareup.okhttp3:okhttp:5.1.0")
     implementation("com.wultra.android.powerauth:powerauth-networking:1.5.0")
 
@@ -91,10 +98,8 @@ dependencies {
 
     // TestDependencies
     testImplementation("junit:junit:4.13.2")
-    testImplementation("com.jakewharton.threetenabp:threetenabp:1.4.9")
 
     // Android tests
-    androidTestImplementation("com.jakewharton.threetenabp:threetenabp:1.4.9")
     androidTestImplementation("com.wultra.android.powerauth:powerauth-sdk:1.9.5")
     androidTestImplementation("com.wultra.android.powerauth:powerauth-networking:1.5.0")
     androidTestImplementation("androidx.test:runner:1.7.0")

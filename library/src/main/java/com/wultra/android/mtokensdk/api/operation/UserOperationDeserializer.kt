@@ -21,12 +21,15 @@ import com.google.gson.JsonDeserializer
 import com.google.gson.JsonElement
 import com.wultra.android.mtokensdk.api.operation.model.UserOperation
 import java.lang.reflect.Type
-import org.threeten.bp.ZonedDateTime
 import com.wultra.android.mtokensdk.api.operation.model.FormData
 import com.wultra.android.mtokensdk.api.operation.model.AllowedSignatureType
 import com.wultra.android.mtokensdk.api.operation.model.OperationUIData
 import com.wultra.android.mtokensdk.api.operation.model.UserOperationStatus
+import java.time.ZonedDateTime
 
+/**
+ * Custom deserializer for [UserOperation]
+ */
 class UserOperationDeserializer : JsonDeserializer<UserOperation> {
     override fun deserialize(
         json: JsonElement,
@@ -60,8 +63,8 @@ class UserOperationDeserializer : JsonDeserializer<UserOperation> {
             id = id,
             name = name,
             data = data,
-            created = created,
-            expires = expires,
+            created = created.toInstant().toEpochMilli(),
+            expires = expires.toInstant().toEpochMilli(),
             formData = formData,
             allowedSignatureType = allowedSignatureType,
             ui = ui,

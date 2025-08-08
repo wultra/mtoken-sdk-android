@@ -19,12 +19,11 @@ package com.wultra.android.mtokensdk.operation
 import com.google.gson.GsonBuilder
 import com.wultra.android.mtokensdk.api.operation.*
 import com.wultra.android.mtokensdk.api.operation.AttributeTypeAdapter
-import com.wultra.android.mtokensdk.api.operation.ZonedDateTimeDeserializer
 import com.wultra.android.mtokensdk.api.operation.model.Attribute
 import com.wultra.android.mtokensdk.api.operation.model.PostApprovalScreen
 import com.wultra.android.mtokensdk.api.operation.model.PreApprovalScreen
 import com.wultra.android.mtokensdk.api.operation.model.UserOperation
-import org.threeten.bp.ZonedDateTime
+import java.time.ZonedDateTime
 
 class OperationsUtils {
     companion object {
