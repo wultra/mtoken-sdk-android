@@ -19,17 +19,11 @@ Because we continue to support **minSdk 21**, **core library desugaring is requi
 
 ### 2.1 Time types moved to `java.time`
 - All public date/time types now use **`java.time`** (e.g., `ZonedDateTime`, `Instant`, `ZoneId`).
-- Example model:
-  ```kotlin
-  open class UserOperation(
-      val created: ZonedDateTime,
-      override val expires: ZonedDateTime,
-      // ...
-  )
-  ```
+
 
 ### 2.2 New helper: synchronized timestamp for `ProximityCheck`
 We added a convenient factory that prefers **server‑synchronized time** from PowerAuth and falls back to the device clock:
+
 ```kotlin
 data class ProximityCheck(
     val totp: String,
@@ -58,17 +52,6 @@ data class ProximityCheck(
 }
 ```
 
-**Why use it?**
-- TOTP/proximity flows are **time‑sensitive**; relying on device time can cause drift‑related errors if the user’s clock is wrong.
-- Using `withSynchronizedTime(...)` ensures the timestamp aligns with the server whenever possible.
-
-**Recommended migration:**
-- Wherever you previously constructed `ProximityCheck(totp, type)` or `ProximityCheck(totp, type, ZonedDateTime.now())`, switch to:
-  ```kotlin
-  val pc = ProximityCheck.withSynchronizedTime(totp, type, powerAuthSDK)
-  ```
-- You can still pass your own `timestampReceived` if you have a trusted time source.
-
 ### 2.3 Initialization
 - **No more ThreeTenABP initialization** in your `Application`. Remove any `AndroidThreeTen.init(context)` or similar calls.
 
@@ -76,11 +59,12 @@ data class ProximityCheck(
 
 ## 3) App changes you must do
 
-Because your app likely has `minSdk < 26`, you must enable **core library desugaring** to use `java.time`.
+Because this SDK now uses java.time while supporting minSdk 21, you must enable **core library desugaring** to compile and run.
 
 ### Gradle (KTS)
 
 **app/build.gradle.kts**
+
 ```kotlin
 android {
     compileOptions {
@@ -95,22 +79,6 @@ dependencies {
 }
 ```
 
-**Gradle (Groovy)**
-```groovy
-android {
-  compileOptions {
-    coreLibraryDesugaringEnabled true
-  }
-}
-
-dependencies {
-  coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:2.1.5"
-}
-```
-
----
-
-## 4) Code changes in your app
 
 ### Replace imports
 Search & replace in your codebase:
@@ -124,6 +92,7 @@ Search & replace in your codebase:
 | `org.threeten.bp.format.DateTimeFormatter` | `java.time.format.DateTimeFormatter` |
 
 Most APIs are 1:1 compatible:
+
 ```kotlin
 // ThreeTenABP
 val zdt = org.threeten.bp.ZonedDateTime.now()
@@ -137,11 +106,12 @@ Delete any `AndroidThreeTen.init(appContext)` or similar in `Application`.
 
 ---
 
-## 5) Serialization (Gson) notes
+## 4) Serialization (Gson) notes
 
 If you previously registered ThreeTen adapters, you can now use adapters for `java.time` (your project may already have a `ZonedDateTime` adapter). We handle our models internally, but if you serialize app-specific time fields, register your own Gson adapters for `java.time` as needed.
 
 Example ISO adapter (simplified):
+
 ```kotlin
 class ZonedDateTimeAdapter : JsonSerializer<ZonedDateTime>, JsonDeserializer<ZonedDateTime> {
     override fun serialize(src: ZonedDateTime?, type: Type?, ctx: JsonSerializationContext?): JsonElement =
@@ -158,24 +128,7 @@ class ZonedDateTimeAdapter : JsonSerializer<ZonedDateTime>, JsonDeserializer<Zon
 
 ---
 
-## 6) Troubleshooting
-
-- **Build fails with AAR metadata error about desugaring**  
-  The app didn’t enable core library desugaring. Add:
-  ```gradle
-  coreLibraryDesugaringEnabled true
-  coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:2.1.5"
-  ```
-
-- **`NoClassDefFoundError: java.time.*` at runtime on Android 5–7**  
-  Desugaring not enabled or the dependency missing. See Gradle snippet above.
-
-- **Parsing ISO strings ending with `+0000`**  
-  Use an adapter that normalizes `+HHmm` → `+HH:mm` before `ZonedDateTime.parse`.
-
----
-
-## 7) Summary
+## 5) Summary
 
 - ThreeTenABP is discontinued → we switched to **`java.time`**.
 - Prefer `ProximityCheck.withSynchronizedTime(...)` to reduce clock‑drift issues in time‑sensitive flows.
