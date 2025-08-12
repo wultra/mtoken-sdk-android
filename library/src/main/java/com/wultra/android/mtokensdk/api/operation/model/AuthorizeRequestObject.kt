@@ -50,7 +50,7 @@ internal data class AuthorizeRequestObject(
             ProximityCheckData(
                 it.totp,
                 it.type,
-                timestampReceived = ZonedDateTime.ofInstant(Instant.ofEpochMilli(it.timestampReceived), ZoneId.systemDefault()),
+                timestampReceived = it.timestampReceived,
                 timestampSent
             )
         },

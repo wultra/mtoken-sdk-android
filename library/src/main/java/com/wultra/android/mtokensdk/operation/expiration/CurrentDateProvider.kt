@@ -16,18 +16,15 @@
 
 package com.wultra.android.mtokensdk.operation.expiration
 
+import java.time.ZoneId
 import java.time.ZonedDateTime
 
 /**
- * Provides current time as milliseconds since epoch.
- *
- * Implementations can return system time, server-synchronized time, or any custom source.
- *
- * If you need a ZonedDateTime, you can convert it manually:
- * `ZonedDateTime.ofInstant(Instant.ofEpochMilli(getCurrentDate()), ZoneId.systemDefault())`
+ * Provides current date. Can be a system date, server date or whatever
+ * you choose. Default implementation of this protocol returns system date.
  */
 interface CurrentDateProvider {
-    fun getCurrentDate(): Long
+    fun getCurrentDate(): ZonedDateTime
 }
 
 /**
@@ -36,5 +33,5 @@ interface CurrentDateProvider {
  * the new `.now()` instance that is returned for `getCurrentDate`.
  */
 class OffsetDateProvider(private val offset: Long = 0): CurrentDateProvider {
-    override fun getCurrentDate(): Long = ZonedDateTime.now().plusSeconds(offset).toInstant().toEpochMilli()
+    override fun getCurrentDate(): ZonedDateTime = ZonedDateTime.now().plusSeconds(offset)
 }

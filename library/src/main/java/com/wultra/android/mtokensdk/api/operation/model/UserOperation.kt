@@ -19,6 +19,7 @@ package com.wultra.android.mtokensdk.api.operation.model
 import com.google.gson.annotations.SerializedName
 import com.wultra.android.mtokensdk.operation.expiration.ExpirableOperation
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
+import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
 
@@ -51,11 +52,11 @@ open class UserOperation(
 
     /** Date and time when the operation was created. */
     @SerializedName("operationCreated")
-    val created: Long,
+    val created: ZonedDateTime,
 
     /** Date and time when the operation will expire. */
     @SerializedName("operationExpires")
-    override val expires: Long,
+    override val expires: ZonedDateTime,
 
     /** Data that should be presented to the user. */
     @SerializedName("formData")
@@ -236,7 +237,7 @@ data class ProximityCheck(
      * We **strongly recommend** using [withSynchronizedTime] to ensure
      * the timestamp is aligned with the server time, especially for time-sensitive operations.
      */
-    val timestampReceived: Long = ZonedDateTime.now(ZoneId.systemDefault()).toInstant().toEpochMilli()
+    val timestampReceived: ZonedDateTime = ZonedDateTime.now()
 ) {
     companion object {
 
@@ -255,13 +256,11 @@ data class ProximityCheck(
             powerAuthSDK: PowerAuthSDK
         ): ProximityCheck {
             val timeService = powerAuthSDK.timeSynchronizationService
-            val timestamp = if (timeService.isTimeSynchronized) {
-                timeService.currentTime
-            } else {
-                // fallback to system clock
-                ZonedDateTime.now(ZoneId.systemDefault()).toInstant().toEpochMilli()
-            }
-            return ProximityCheck(totp, type, timestamp)
+            val currentDate = if (timeService.isTimeSynchronized) {
+                ZonedDateTime.ofInstant(Instant.ofEpochMilli(timeService.currentTime), ZoneId.systemDefault())
+            } else ZonedDateTime.now()
+
+            return ProximityCheck(totp, type, currentDate)
         }
     }
 }

@@ -132,7 +132,7 @@ class OperationExpirationTests {
             }
             future.complete(null)
         }
-        watcher.add(listOf(Operation(), Operation(ZonedDateTime.now().plusSeconds(20).toInstant().toEpochMilli())))
+        watcher.add(listOf(Operation(), Operation(ZonedDateTime.now().plusSeconds(20))))
         // we need to wait longer, because minimum report time is 5 seconds
         Assert.assertNull(future.get(10, TimeUnit.SECONDS))
     }
@@ -145,4 +145,4 @@ private class WatcherListener(private val callback: (List<ExpirableOperation>) -
     }
 }
 
-private class Operation(override val expires: Long = ZonedDateTime.now().toInstant().toEpochMilli()): ExpirableOperation
+private class Operation(override val expires: ZonedDateTime = ZonedDateTime.now()): ExpirableOperation
