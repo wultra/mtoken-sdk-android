@@ -1,6 +1,7 @@
 # Changelog
 
 ## 2.3.0 (TBA)
+Added Alert Attribute [(#186](https://github.com/wultra/mtoken-sdk-android/issues/186)
 Refactored time handling to use java.time.ZonedDateTime throughout the SDK, replacing ThreeTenABP due to its deprecation. [(#93](https://github.com/wultra/mtoken-sdk-android/issues/93)
 Added ProximityCheck.withSynchronizedTime() factory method to create proximity checks with server-synchronized timestamps, reducing clock drift issues. [(#201)](https://github.com/wultra/mtoken-sdk-android/issues/201)
 
