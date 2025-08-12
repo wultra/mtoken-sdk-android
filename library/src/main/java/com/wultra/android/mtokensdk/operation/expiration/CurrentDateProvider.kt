@@ -16,7 +16,6 @@
 
 package com.wultra.android.mtokensdk.operation.expiration
 
-import java.time.ZoneId
 import java.time.ZonedDateTime
 
 /**

@@ -17,8 +17,6 @@
 package com.wultra.android.mtokensdk.api.operation.model
 
 import com.google.gson.annotations.SerializedName
-import java.time.Instant
-import java.time.ZoneId
 import java.time.ZonedDateTime
 
 /**
