@@ -1,8 +1,3 @@
-@file:Suppress("UnstableApiUsage")
-
-import org.gradle.kotlin.dsl.coreLibraryDesugaring
-
-
 /*
 * Copyright 2022 Wultra s.r.o.
 *

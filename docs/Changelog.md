@@ -2,14 +2,11 @@
 
 ## 2.3.0 (TBA)
 Added Alert Attribute [(#186](https://github.com/wultra/mtoken-sdk-android/issues/186)
-Refactored time handling to use java.time.ZonedDateTime throughout the SDK, replacing ThreeTenABP due to its deprecation. [(#93](https://github.com/wultra/mtoken-sdk-android/issues/93)
+Refactored time handling to use java.time.ZonedDateTime throughout the SDK, replacing ThreeTenABP due to its deprecation. [(#93)](https://github.com/wultra/mtoken-sdk-android/issues/93)
 Added ProximityCheck.withSynchronizedTime() factory method to create proximity checks with server-synchronized timestamps, reducing clock drift issues. [(#201)](https://github.com/wultra/mtoken-sdk-android/issues/201)
 
 ## 2.2.1 (Aug 2025)
 When the status property for UserOperation is missing, it now falls back to the PENDING value (happens only on legacy server API).
-
-## 2.2.0 (Jul 2025)
-Implemented Push changes to FCM and HMS (#174)
 
 ## 2.2.0 (Jul 2025)
 - Implemented Push changes to FCM and HMS [(#174)](https://github.com/wultra/mtoken-sdk-android/issues/174)

@@ -256,11 +256,11 @@ data class ProximityCheck(
             powerAuthSDK: PowerAuthSDK
         ): ProximityCheck {
             val timeService = powerAuthSDK.timeSynchronizationService
-            val currentDate = if (timeService.isTimeSynchronized) {
+            val currentDateTime = if (timeService.isTimeSynchronized) {
                 ZonedDateTime.ofInstant(Instant.ofEpochMilli(timeService.currentTime), ZoneId.systemDefault())
             } else ZonedDateTime.now()
 
-            return ProximityCheck(totp, type, currentDate)
+            return ProximityCheck(totp, type, currentDateTime)
         }
     }
 }
