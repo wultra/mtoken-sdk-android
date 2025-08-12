@@ -1,8 +1,8 @@
 # Changelog
 
 ## 2.3.0 (TBA)
-Refactored time handling to use java.time.ZonedDateTime throughout the SDK, replacing ThreeTenABP due to its deprecation.
-Added ProximityCheck.withSynchronizedTime() factory method to create proximity checks with server-synchronized timestamps, reducing clock drift issues.
+Refactored time handling to use java.time.ZonedDateTime throughout the SDK, replacing ThreeTenABP due to its deprecation. [(#93](https://github.com/wultra/mtoken-sdk-android/issues/93)
+Added ProximityCheck.withSynchronizedTime() factory method to create proximity checks with server-synchronized timestamps, reducing clock drift issues. [(#201)](https://github.com/wultra/mtoken-sdk-android/issues/201)
 
 ## 2.2.1 (Aug 2025)
 When the status property for UserOperation is missing, it now falls back to the PENDING value (happens only on legacy server API).
