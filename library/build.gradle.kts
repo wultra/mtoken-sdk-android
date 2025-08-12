@@ -1,4 +1,3 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 /*
 * Copyright 2022 Wultra s.r.o.
@@ -57,12 +56,10 @@ android {
     buildFeatures {
         buildConfig = true
     }
-}
 
-kotlin {
-    compilerOptions {
-        jvmTarget.set(JvmTarget.fromTarget(Constants.Java.kotlinJvmTarget))
-        suppressWarnings.set(false)
+    kotlinOptions {
+        jvmTarget = Constants.Java.kotlinJvmTarget
+        suppressWarnings = false
     }
 }
 
@@ -82,24 +79,24 @@ dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
     // Bundled
     implementation("org.jetbrains.kotlin:kotlin-stdlib:${Constants.BuildScript.kotlinVersion}")
-    implementation("androidx.annotation:annotation:1.9.1")
-    implementation("com.google.code.gson:gson:2.13.1")
-    implementation("com.squareup.okhttp3:okhttp:5.1.0")
+    implementation("androidx.annotation:annotation:1.8.2")
+    implementation("com.google.code.gson:gson:2.11.0")
+    implementation("com.squareup.okhttp3:okhttp:4.9.3")
     implementation("com.wultra.android.powerauth:powerauth-networking:1.5.0")
 
     // Dependencies
-    compileOnly("com.wultra.android.powerauth:powerauth-sdk:1.9.5")
-    compileOnly("io.getlime.core:rest-model-base:1.12.0")
+    compileOnly("com.wultra.android.powerauth:powerauth-sdk:1.9.2")
+    compileOnly("io.getlime.core:rest-model-base:1.9.0")
 
     // TestDependencies
     testImplementation("junit:junit:4.13.2")
 
     // Android tests
-    androidTestImplementation("com.wultra.android.powerauth:powerauth-sdk:1.9.5")
+    androidTestImplementation("com.wultra.android.powerauth:powerauth-sdk:1.9.2")
     androidTestImplementation("com.wultra.android.powerauth:powerauth-networking:1.5.0")
-    androidTestImplementation("androidx.test:runner:1.7.0")
+    androidTestImplementation("androidx.test:runner:1.6.2")
     androidTestImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test:core:1.7.0")
+    androidTestImplementation("androidx.test:core:1.6.1")
     androidTestImplementation(platform("org.jetbrains.kotlin:kotlin-bom:${Constants.BuildScript.kotlinVersion}"))
 }
 

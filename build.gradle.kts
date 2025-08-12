@@ -25,8 +25,10 @@ buildscript {
         classpath("com.android.tools.build:gradle:${Constants.BuildScript.androidPluginVersion}")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${Constants.BuildScript.kotlinVersion}")
         classpath("org.jetbrains.dokka:dokka-gradle-plugin:${Constants.BuildScript.dokkaVersion}")
+        // releasing
+        classpath("io.github.gradle-nexus:publish-plugin:${Constants.BuildScript.publishVersion}")
         // tests
-        classpath("com.github.bjoernq:unmockplugin:0.9.0")
+        classpath("com.github.bjoernq:unmockplugin:0.7.9")
     }
 }
 
