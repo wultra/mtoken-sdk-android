@@ -53,11 +53,10 @@ android {
     compileOptions {
         sourceCompatibility = Constants.Java.sourceCompatibility
         targetCompatibility = Constants.Java.targetCompatibility
-    }
-
-    kotlinOptions {
-        jvmTarget = Constants.Java.kotlinJvmTarget
-        suppressWarnings = false
+        kotlinOptions {
+            jvmTarget = Constants.Java.kotlinJvmTarget
+            suppressWarnings = false
+        }
     }
 
     buildFeatures {
@@ -81,21 +80,21 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib:${Constants.BuildScript.kotlinVersion}")
     implementation("androidx.annotation:annotation:1.9.1")
     implementation("com.google.code.gson:gson:2.13.1")
-    implementation("com.jakewharton.threetenabp:threetenabp:1.4.9")
     implementation("com.squareup.okhttp3:okhttp:5.1.0")
+    implementation("com.jakewharton.threetenabp:threetenabp:1.1.1")
     implementation("com.wultra.android.powerauth:powerauth-networking:1.5.0")
 
     // Dependencies
-    compileOnly("com.wultra.android.powerauth:powerauth-sdk:1.9.5")
     compileOnly("io.getlime.core:rest-model-base:1.12.0")
+    compileOnly("com.wultra.android.powerauth:powerauth-sdk:1.9.2")
 
     // TestDependencies
     testImplementation("junit:junit:4.13.2")
-    testImplementation("com.jakewharton.threetenabp:threetenabp:1.4.9")
+    testImplementation("com.jakewharton.threetenabp:threetenabp:1.1.1")
 
     // Android tests
-    androidTestImplementation("com.jakewharton.threetenabp:threetenabp:1.4.9")
     androidTestImplementation("com.wultra.android.powerauth:powerauth-sdk:1.9.5")
+    androidTestImplementation("com.jakewharton.threetenabp:threetenabp:1.1.1")
     androidTestImplementation("com.wultra.android.powerauth:powerauth-networking:1.5.0")
     androidTestImplementation("androidx.test:runner:1.7.0")
     androidTestImplementation("junit:junit:4.13.2")
