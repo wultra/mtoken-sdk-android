@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 /*
 * Copyright 2022 Wultra s.r.o.
 *
@@ -30,8 +32,6 @@ android {
 
     defaultConfig {
         minSdk = Constants.Android.minSdkVersion
-        @Suppress("DEPRECATION")
-        targetSdk = Constants.Android.targetSdkVersion
 
         // since Android Gradle Plugin 4.1.0
         // VERSION_CODE and VERSION_NAME are not generated for libraries
@@ -54,32 +54,32 @@ android {
         targetCompatibility = Constants.Java.targetCompatibility
     }
 
-    dependencies {
-        coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
-    }
-
-    kotlinOptions {
-        jvmTarget = Constants.Java.kotlinJvmTarget
-        suppressWarnings = false
-    }
-
     buildFeatures {
         buildConfig = true
     }
+}
 
-    // Custom ktlint script
-    tasks.register("ktlint") {
-        logger.lifecycle("ktlint")
-        exec {
-            commandLine = listOf("./../scripts/lint.sh", "--no-error")
-        }
+kotlin {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.fromTarget(Constants.Java.kotlinJvmTarget))
+        suppressWarnings.set(false)
     }
+}
 
-    // Make ktlint run before build
-    tasks.getByName("preBuild").dependsOn("ktlint")
+// Custom ktlint script
+tasks.register<Exec>("ktlint") {
+    group = "verification"
+    description = "Run ktlint via custom script"
+    commandLine("./../scripts/lint.sh", "--no-error")
+}
+
+// Run ktlint before build
+tasks.named("preBuild").configure {
+    dependsOn("ktlint")
 }
 
 dependencies {
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
     // Bundled
     implementation("org.jetbrains.kotlin:kotlin-stdlib:${Constants.BuildScript.kotlinVersion}")
     implementation("androidx.annotation:annotation:1.9.1")
