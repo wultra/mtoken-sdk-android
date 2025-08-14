@@ -4,7 +4,7 @@ This guide explains how to migrate projects using **Wultra Mobile Token SDK for 
 
 The key change is a **move from ThreeTenABP (`org.threeten.bp`) to the platform `java.time` API**. ThreeTenABP has been discontinued, so we aligned the SDK with the modern, supported APIs.
 
-Because we continue to support **minSdk 21**, **core library desugaring is required** in your app to use `java.time` on Android < 26.
+Because we continue to support **minSdk 21**, **core library desugaring is required** in your app.
 
 ---
 
@@ -22,35 +22,7 @@ Because we continue to support **minSdk 21**, **core library desugaring is requi
 
 
 ### 2.2 New helper: synchronized timestamp for `ProximityCheck`
-We added a convenient factory that prefers **server‑synchronized time** from PowerAuth and falls back to the device clock:
-
-```kotlin
-data class ProximityCheck(
-    val totp: String,
-    val type: ProximityCheckType,
-    val timestampReceived: ZonedDateTime = ZonedDateTime.now()
-) {
-    companion object {
-        /**
-         * Creates a new instance using time synchronized with PowerAuth server, if available.
-         * Falls back to system time when synchronization is not available.
-         */
-        fun withSynchronizedTime(
-            totp: String,
-            type: ProximityCheckType,
-            powerAuthSDK: PowerAuthSDK
-        ): ProximityCheck {
-            val timeService = powerAuthSDK.timeSynchronizationService
-            val currentDate = if (timeService.isTimeSynchronized) {
-                ZonedDateTime.ofInstant(Instant.ofEpochMilli(timeService.currentTime), ZoneId.systemDefault())
-            } else {
-                ZonedDateTime.now()
-            }
-            return ProximityCheck(totp, type, currentDate)
-        }
-    }
-}
-```
+You can now use the static factory [ProximityCheck.withSynchronizedTime](../library/src/main/java/com/wultra/android/mtokensdk/api/operation/model/UserOperation.kt#withSynchronizedTime) to create a ProximityCheck instance with a timestamp that prefers **server-synchronized** time from PowerAuth, falling back to the device clock if synchronization is not available.
 
 ### 2.3 Initialization
 - **No more ThreeTenABP initialization** in your `Application`. Remove any `AndroidThreeTen.init(context)` or similar calls.
@@ -61,7 +33,7 @@ data class ProximityCheck(
 
 Because this SDK now uses java.time while supporting minSdk 21, you must enable **core library desugaring** to compile and run.
 
-### Gradle (KTS)
+### Gradle (kts)
 
 **app/build.gradle.kts**
 
@@ -106,29 +78,7 @@ Delete any `AndroidThreeTen.init(appContext)` or similar in `Application`.
 
 ---
 
-## 4) Serialization (Gson) notes
-
-If you previously registered ThreeTen adapters, you can now use adapters for `java.time` (your project may already have a `ZonedDateTime` adapter). We handle our models internally, but if you serialize app-specific time fields, register your own Gson adapters for `java.time` as needed.
-
-Example ISO adapter (simplified):
-
-```kotlin
-class ZonedDateTimeAdapter : JsonSerializer<ZonedDateTime>, JsonDeserializer<ZonedDateTime> {
-    override fun serialize(src: ZonedDateTime?, type: Type?, ctx: JsonSerializationContext?): JsonElement =
-        JsonPrimitive(src?.format(DateTimeFormatter.ISO_ZONED_DATE_TIME))
-
-    override fun deserialize(json: JsonElement, type: Type, ctx: JsonDeserializationContext): ZonedDateTime {
-        val s = json.asString
-        // Handle "+HHmm" -> "+HH:mm" if your backend sends that:
-        val fixed = s.replace(Regex("\+([0-9]{2})([0-9]{2})$"), "+$1:$2")
-        return ZonedDateTime.parse(fixed, DateTimeFormatter.ISO_ZONED_DATE_TIME)
-    }
-}
-```
-
----
-
-## 5) Summary
+## 4) Summary
 
 - ThreeTenABP is discontinued → we switched to **`java.time`**.
 - Prefer `ProximityCheck.withSynchronizedTime(...)` to reduce clock‑drift issues in time‑sensitive flows.

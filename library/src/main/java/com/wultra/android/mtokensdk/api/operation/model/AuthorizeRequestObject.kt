@@ -48,7 +48,7 @@ internal data class AuthorizeRequestObject(
             ProximityCheckData(
                 it.totp,
                 it.type,
-                timestampReceived = it.timestampReceived,
+                it.timestampReceived,
                 timestampSent
             )
         },
