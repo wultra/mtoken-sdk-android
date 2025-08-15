@@ -22,17 +22,11 @@ import com.wultra.android.mtokensdk.operation.OperationsUtils
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-import org.threeten.bp.ZonedDateTime
-import org.threeten.bp.zone.TzdbZoneRulesProvider
-import org.threeten.bp.zone.ZoneRulesProvider
+import java.time.ZonedDateTime
 
 class AuthorizeRequestTests {
 
     private lateinit var gson: Gson
-
-    init {
-        initThreeTen()
-    }
 
     @Before
     fun prepareGson() {
@@ -87,14 +81,5 @@ class AuthorizeRequestTests {
 
         Assert.assertTrue("JSON should contain mobileTokenData", json.contains("\"mobileTokenData\""))
         Assert.assertTrue("JSON should contain testKey", json.contains("\"testKey\":\"testValue\""))
-    }
-}
-
-fun Any.initThreeTen() {
-    if (ZoneRulesProvider.getAvailableZoneIds().isEmpty()) {
-        val stream = this.javaClass.classLoader!!.getResourceAsStream("TZDB.dat")
-        stream.use(::TzdbZoneRulesProvider).apply {
-            ZoneRulesProvider.registerProvider(this)
-        }
     }
 }

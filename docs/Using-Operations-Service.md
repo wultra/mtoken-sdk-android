@@ -12,8 +12,8 @@
 - [Off-line Authorization](#off-line-authorization)
 - [Operations API Reference](#operations-api-reference)
 - [UserOperation](#useroperation)
-- [Creating a Custom Operation](#creating-a-custom-operation)
 - [ProximityCheck](#proximitycheck)
+- [Creating a Custom Operation](#creating-a-custom-operation)
 
 ## Introduction
 <!-- end -->
@@ -640,35 +640,6 @@ ProximityCheckType types:
 - `QR_CODE` TOTP was scanned from the QR code
 - `DEEPLINK` TOTP was delivered to the app via Deeplink
 
-## Creating a Custom Operation
-
-In some specific scenarios, you might need to approve or reject an operation that you received through a different channel than `getOperations`. In such cases, you can implement the `IOperation` interface in your custom class and then feed created objects to both `authorizeOperation` and `rejectOperation` methods.
-
-<!-- begin box success -->
-You can use the `LocalOperation` convenience class that implements the `IOperation` protocol.
-<!-- end -->
-
-Definition of the `IOperation`:
-
-```kotlin
-interface IOperation {
-
-    /**
-     * Operation identifier
-     */
-    val id: String
-
-    /**
-     * Data for signing
-     */
-    val data: String
-
-    /** 
-     * Additional information with proximity check data 
-     */ 
-    var proximityCheck: ProximityCheck?
-}
-```
 
 ## TOTP ProximityCheck
 
@@ -714,3 +685,56 @@ data class PACData(
 
 - Accepted formats:
   - notice that the totp key in JWT and in query shall be `potp`!
+
+#### Creating a ProximityCheck with Server-Synchronized Time
+
+When handling an operation with a required ProximityCheck, you will need to send a ProximityCheck along with your authorization request.
+
+The SDK provides a factory method:
+
+```kotlin
+val proximityCheck = ProximityCheck.withSynchronizedTime(
+    totp = "123456",
+    type = ProximityCheckType.QR_CODE,
+    powerAuthSDK = powerAuth
+)
+operation.proximityCheck = proximityCheck
+
+this.operationsService.authorizeOperation(operation, auth) { result ->
+    result.onSuccess {
+        // Operation approved successfully
+    }.onFailure { error ->
+        // Handle error
+    }
+}
+```
+
+## Creating a Custom Operation
+
+In some specific scenarios, you might need to approve or reject an operation that you received through a different channel than `getOperations`. In such cases, you can implement the `IOperation` interface in your custom class and then feed created objects to both `authorizeOperation` and `rejectOperation` methods.
+
+<!-- begin box success -->
+You can use the `LocalOperation` convenience class that implements the `IOperation` protocol.
+<!-- end -->
+
+Definition of the `IOperation`:
+
+```kotlin
+interface IOperation {
+
+    /**
+     * Operation identifier
+     */
+    val id: String
+
+    /**
+     * Data for signing
+     */
+    val data: String
+
+    /** 
+     * Additional information with proximity check data 
+     */ 
+    var proximityCheck: ProximityCheck?
+}
+```

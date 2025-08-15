@@ -1,4 +1,3 @@
-@file:Suppress("UnstableApiUsage")
 
 /*
 * Copyright 2022 Wultra s.r.o.
@@ -32,8 +31,6 @@ android {
 
     defaultConfig {
         minSdk = Constants.Android.minSdkVersion
-        @Suppress("DEPRECATION")
-        targetSdk = Constants.Android.targetSdkVersion
 
         // since Android Gradle Plugin 4.1.0
         // VERSION_CODE and VERSION_NAME are not generated for libraries
@@ -51,36 +48,39 @@ android {
         }
     }
     compileOptions {
+        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = Constants.Java.sourceCompatibility
         targetCompatibility = Constants.Java.targetCompatibility
-        kotlinOptions {
-            jvmTarget = Constants.Java.kotlinJvmTarget
-            suppressWarnings = false
-        }
     }
 
     buildFeatures {
         buildConfig = true
     }
 
-    // Custom ktlint script
-    tasks.register("ktlint") {
-        logger.lifecycle("ktlint")
-        exec {
-            commandLine = listOf("./../scripts/lint.sh", "--no-error")
-        }
+    kotlinOptions {
+        jvmTarget = Constants.Java.kotlinJvmTarget
+        suppressWarnings = false
     }
+}
 
-    // Make ktlint run before build
-    tasks.getByName("preBuild").dependsOn("ktlint")
+// Custom ktlint script
+tasks.register<Exec>("ktlint") {
+    group = "verification"
+    description = "Run ktlint via custom script"
+    commandLine("./../scripts/lint.sh", "--no-error")
+}
+
+// Run ktlint before build
+tasks.named("preBuild").configure {
+    dependsOn("ktlint")
 }
 
 dependencies {
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
     // Bundled
     implementation("org.jetbrains.kotlin:kotlin-stdlib:${Constants.BuildScript.kotlinVersion}")
     implementation("androidx.annotation:annotation:1.8.2")
     implementation("com.google.code.gson:gson:2.11.0")
-    implementation("com.jakewharton.threetenabp:threetenabp:1.1.1")
     implementation("com.squareup.okhttp3:okhttp:4.9.3")
     implementation("com.wultra.android.powerauth:powerauth-networking:1.5.0")
 
@@ -90,10 +90,8 @@ dependencies {
 
     // TestDependencies
     testImplementation("junit:junit:4.13.2")
-    testImplementation("com.jakewharton.threetenabp:threetenabp:1.1.1")
 
     // Android tests
-    androidTestImplementation("com.jakewharton.threetenabp:threetenabp:1.1.1")
     androidTestImplementation("com.wultra.android.powerauth:powerauth-sdk:1.9.2")
     androidTestImplementation("com.wultra.android.powerauth:powerauth-networking:1.5.0")
     androidTestImplementation("androidx.test:runner:1.6.2")

@@ -22,19 +22,13 @@ import com.wultra.android.mtokensdk.operation.expiration.OperationExpirationWatc
 import org.junit.After
 import org.junit.Assert
 import org.junit.Test
-import org.threeten.bp.ZonedDateTime
-import org.threeten.bp.zone.TzdbZoneRulesProvider
-import org.threeten.bp.zone.ZoneRulesProvider
+import java.time.ZonedDateTime
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
 class OperationExpirationTests {
 
     private val watcher = OperationExpirationWatcher()
-
-    init {
-        initThreeTen()
-    }
 
     @After
     fun clear() {
@@ -152,12 +146,3 @@ private class WatcherListener(private val callback: (List<ExpirableOperation>) -
 }
 
 private class Operation(override val expires: ZonedDateTime = ZonedDateTime.now()): ExpirableOperation
-
-fun Any.initThreeTen() {
-    if (ZoneRulesProvider.getAvailableZoneIds().isEmpty()) {
-        val stream = this.javaClass.classLoader!!.getResourceAsStream("TZDB.dat")
-        stream.use(::TzdbZoneRulesProvider).apply {
-            ZoneRulesProvider.registerProvider(this)
-        }
-    }
-}

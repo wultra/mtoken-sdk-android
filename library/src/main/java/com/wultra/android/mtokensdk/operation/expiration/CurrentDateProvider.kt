@@ -16,7 +16,7 @@
 
 package com.wultra.android.mtokensdk.operation.expiration
 
-import org.threeten.bp.ZonedDateTime
+import java.time.ZonedDateTime
 
 /**
  * Provides current date. Can be a system date, server date or whatever

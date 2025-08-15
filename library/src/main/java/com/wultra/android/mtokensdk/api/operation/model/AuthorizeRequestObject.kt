@@ -17,7 +17,7 @@
 package com.wultra.android.mtokensdk.api.operation.model
 
 import com.google.gson.annotations.SerializedName
-import org.threeten.bp.ZonedDateTime
+import java.time.ZonedDateTime
 
 /**
  * Authorize request model class.

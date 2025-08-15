@@ -18,7 +18,7 @@ package com.wultra.android.mtokensdk.operation.expiration
 
 import com.wultra.android.mtokensdk.api.operation.model.IOperation
 import com.wultra.android.mtokensdk.log.WMTLogger
-import org.threeten.bp.ZonedDateTime
+import java.time.ZonedDateTime
 
 /**
  * Interface defining an operation for the [OperationExpirationWatcher].

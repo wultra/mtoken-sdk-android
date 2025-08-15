@@ -18,7 +18,10 @@ package com.wultra.android.mtokensdk.api.operation.model
 
 import com.google.gson.annotations.SerializedName
 import com.wultra.android.mtokensdk.operation.expiration.ExpirableOperation
-import org.threeten.bp.ZonedDateTime
+import io.getlime.security.powerauth.sdk.PowerAuthSDK
+import java.time.Instant
+import java.time.ZoneId
+import java.time.ZonedDateTime
 
 /**
  * [UserOperation] is an object returned from the backend that can be either approved or rejected.
@@ -228,10 +231,39 @@ data class ProximityCheck(
     /** Type of the Proximity check */
     val type: ProximityCheckType,
 
-    /** Timestamp when the operation was scanned (qrCode) or delivered to the device (deeplink) */
+    /**
+     * Timestamp when the operation was scanned (qrCode) or delivered to the device (deeplink)
+     *
+     * We **strongly recommend** using [withSynchronizedTime] to ensure
+     * the timestamp is aligned with the server time, especially for time-sensitive operations.
+     */
     val timestampReceived: ZonedDateTime = ZonedDateTime.now()
-)
+) {
+    companion object {
 
+        /**
+         * Creates a new instance using time synchronized with PowerAuth server, if available.
+         *
+         * If the SDK is not initialized or synchronization is unavailable, falls back to system time.
+         *
+         * @param totp The TOTP code.
+         * @param type The proximity check type.
+         * @param powerAuthSDK Instance of PowerAuthSDK.
+         */
+        fun withSynchronizedTime(
+            totp: String,
+            type: ProximityCheckType,
+            powerAuthSDK: PowerAuthSDK
+        ): ProximityCheck {
+            val timeService = powerAuthSDK.timeSynchronizationService
+            val currentDateTime = if (timeService.isTimeSynchronized) {
+                ZonedDateTime.ofInstant(Instant.ofEpochMilli(timeService.currentTime), ZoneId.systemDefault())
+            } else ZonedDateTime.now()
+
+            return ProximityCheck(totp, type, currentDateTime)
+        }
+    }
+}
 /**
  * Types of possible Proximity Checks
  */
