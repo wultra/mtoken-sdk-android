@@ -22,7 +22,7 @@ Because we continue to support **minSdk 21**, **core library desugaring is requi
 
 
 ### 2.2 New helper: synchronized timestamp for `ProximityCheck`
-You can now use the static factory [ProximityCheck.withSynchronizedTime](https://github.com/wultra/mtoken-sdk-android/blob/8ce306f551589c0666226af2e251f609c5c14860/library/src/main/java/com/wultra/android/mtokensdk/api/operation/model/UserOperation.kt#L253-L266) to create a ProximityCheck instance with a timestamp that prefers **server-synchronized** time from PowerAuth, falling back to the device clock if synchronization is not available.
+You can now use the static factory `ProximityCheck.withSynchronizedTime` to create a ProximityCheck instance with a timestamp that prefers **server-synchronized** time from PowerAuth, falling back to the device clock if synchronization is not available.
 
 ### 2.3 Initialization
 - **No more ThreeTenABP initialization** in your `Application`. Remove any `AndroidThreeTen.init(context)` or similar calls.
