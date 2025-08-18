@@ -99,8 +99,8 @@ if [ x$DO_SIGN == x1 ]; then
     # Load and validate API credentials (if exist)
     if [ -f ".credentials" ]; then
         source ".credentials"
-    elif [ -f "~/.lime/credentials" ]; then # legacy support
-        source "~/.lime/credentials"
+    elif [ -f ~/.lime/credentials ]; then # legacy support
+        source ~/.lime/credentials
     fi
     [[ x$NEXUS_USER == x ]] && FAILURE "Missing NEXUS_USER variable in API credentials."
     [[ x$NEXUS_PASSWORD == x ]] && FAILURE "Missing NEXUS_PASSWORD variable in API credentials."
