@@ -9,7 +9,7 @@ SRC_ROOT="`( cd \"$TOP/..\" && pwd )`"
 function USAGE
 {
     echo ""
-    echo "Usage: sh android-publish-build.sh [options] repository"
+    echo "Usage: sh build-and-publish.sh [options] repository"
     echo ""
     echo "    This tool helps with library publication to Maven Central"
     echo "    or to local maven cache."
