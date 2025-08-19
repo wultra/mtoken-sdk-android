@@ -66,7 +66,7 @@ echo "| Publishing $ARTIFACT_ID to $TARGET_REPO repository"
 
 echo "| - Version: $VERSION_NAME"
 if [ x$DO_SIGN == x1 ]; then
-    echo " - Signing artifacts is enabled."
+    echo "| - Signing artifacts is enabled."
 else
     echo "| - Signing artifacts is disabled."
 fi
@@ -125,16 +125,6 @@ fi
 pushd "${SRC_ROOT}"
 
 GRADLE_CMD_LINE="$GRADLE_PARAMS clean assembleRelease $PUBLISH_GRADLE_TASK"
-echo "Gradle command line >> ./gradlew $GRADLE_CMD_LINE"
 ./gradlew $GRADLE_CMD_LINE
-
-if [ $TARGET_REPO == 'central' ]; then
-    # Publishing to "central" require one more step
-    echo -e "\nPublishing with staging API\n"
-    curl --silent --fail-with-body          \
-        -X POST                             \
-        -u ${NEXUS_USER}:${NEXUS_PASSWORD}  \
-        https://ossrh-staging-api.central.sonatype.com/manual/upload/defaultRepository/com.wultra
-fi
 
 popd
