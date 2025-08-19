@@ -32,7 +32,7 @@ fun exampleUsage(appContext: Context, powerAuth: PowerAuthSDK) {
 
 ```
 
-For more examples see [IntegrationTests](https://github.com/wultra/mtoken-sdk-ios/blob/develop/WultraMobileTokenSDKTests/IntegrationTests.swift)
+For more examples see [IntegrationTests](https://github.com/wultra/mtoken-sdk-android/blob/develop/library/src/androidTest/java/IntegrationTests.kt)
 
 ## Read Next
 

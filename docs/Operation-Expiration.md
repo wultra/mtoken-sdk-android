@@ -12,7 +12,7 @@ If you're creating your own custom operation by implementing the `IOperation` in
 
 ## Handling via Push Notifications
 
-If the device is [registered to receive push notifications](Using-Push-Service.md), it will receive an [`PushMessageOperationFinished `](https://github.com/wultra/mtoken-sdk-android/blob/develop/library/src/main/java/com/wultra/android/mtokensdk/push/PushParser.kt#L80#docucheck-keep-link) notification with the [`TIMEOUT `](https://github.com/wultra/mtoken-sdk-android/blob/develop/library/src/main/java/com/wultra/android/mtokensdk/push/PushParser.kt#L115#docucheck-keep-link) result when the operation expires.
+If the device is [registered to receive push notifications](Using-Push-Service.md), it will receive a [`PushMessageOperationFinished `](https://github.com/wultra/mtoken-sdk-android/blob/develop/library/src/main/java/com/wultra/android/mtokensdk/push/PushParser.kt#L80#docucheck-keep-link) notification with the [`TIMEOUT `](https://github.com/wultra/mtoken-sdk-android/blob/develop/library/src/main/java/com/wultra/android/mtokensdk/push/PushParser.kt#L115#docucheck-keep-link) result when the operation expires.
 
 The operation list should be refreshed on such notification.
 
