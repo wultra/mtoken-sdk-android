@@ -209,6 +209,10 @@ data class OperationUIData(
     @SerializedName("preApprovalScreen")
     val preApprovalScreen: PreApprovalScreen?,
 
+    /** UI for multiple pre-approval operation screens */
+    @SerializedName("preApprovalScreens")
+    val preApprovalScreens: List<PreApprovalScreen>? = null,
+
     /**
      * UI for post-approval operation screen
      *

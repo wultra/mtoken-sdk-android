@@ -16,6 +16,8 @@
 
 package com.wultra.android.mtokensdk.api.operation.model
 
+import com.google.gson.annotations.SerializedName
+
 /**
  *  PreApprovalScreen contains data to be presented before approving operation
  *
@@ -46,7 +48,13 @@ open class PreApprovalScreen(
     /**
      * Type of the approval button
      */
-    val approvalType: PreApprovalScreenConfirmAction?
+    val approvalType: PreApprovalScreenConfirmAction?,
+
+    val id: String? = null,
+    val backButton: Boolean? = null,
+    val image: String? = null,
+    val elements: List<PreApprovalElement>? = null,
+    val controls: PreApprovalControls? = null
 ) {
     enum class Type(val value: String) {
         INFO("INFO"),
@@ -58,4 +66,86 @@ open class PreApprovalScreen(
 
 enum class PreApprovalScreenConfirmAction {
     SLIDER
+}
+
+// NEW nested models for V2 features
+data class PreApprovalElement(
+
+    @SerializedName("id")
+    val id: String?,
+
+    @SerializedName("type")
+    val type: ElementType,
+
+    @SerializedName("style")
+    val style: AlertStyle?,
+
+    @SerializedName("action")
+    val action: ButtonAction?,
+
+    @SerializedName("href")
+    val href: String?,
+
+    @SerializedName("icon")
+    val icon: String?,
+
+    @SerializedName("text")
+    val text: String?
+) {
+    enum class ElementType {
+        @SerializedName("LISTITEM") LISTITEM,
+        @SerializedName("ALERT") ALERT,
+        @SerializedName("BUTTON") BUTTON
+    }
+    enum class AlertStyle {
+        @SerializedName("INFO") INFO,
+        @SerializedName("WARNING") WARNING,
+        @SerializedName("DANGER") DANGER
+    }
+    enum class ButtonAction {
+        @SerializedName("LINK") LINK,
+        @SerializedName("MAIL") MAIL,
+        @SerializedName("PHONE") PHONE
+    }
+}
+
+data class PreApprovalControls(
+
+    @SerializedName("flip")
+    val flip: Boolean?,
+
+    @SerializedName("decline")
+    val decline: Decline?,
+
+    @SerializedName("approve")
+    val approve: Approve?
+) {
+    data class Decline(
+
+        @SerializedName("type")
+        val type: DeclineType,
+
+        @SerializedName("text")
+        val text: String?
+    )
+    data class Approve(
+
+        @SerializedName("type")
+        val type: ApproveType,
+
+        @SerializedName("text")
+        val text: String?,
+
+        @SerializedName("counter")
+        val counter: Int?
+    )
+
+    enum class DeclineType {
+        @SerializedName("BACK") BACK,
+        @SerializedName("REJECT") REJECT
+    }
+    enum class ApproveType {
+        @SerializedName("SLIDER") SLIDER,
+        @SerializedName("BUTTON") BUTTON
+    }
 }
