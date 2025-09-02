@@ -63,6 +63,10 @@ All available methods of the `IPushService` API are:
 
 ## Registering to Push Notifications
 
+<!-- begin box warning -->
+If your server is running an older version than `1.10.x`, use the `register(fcmToken:callback:)` and `register(hmsToken:callback:)` deprecated methods instead to stay compatible.
+<!-- end -->
+
 To register an app to push notifications, you can simply call the `register` method:
 
 ### Firebase Cloud Messaging
@@ -89,6 +93,7 @@ FirebaseInstanceId.getInstance().instanceId.addOnCompleteListener { task ->
 To be able to successfully process notifications, you need to register the app to receive push notifications in the first place. For more information visit [official documentation](https://firebase.google.com/docs/cloud-messaging/android/client).
 
 ### Huawei Messaging Service (HarmonyOS / EMUI)
+
 For Huawei devices, you can also register your app to receive push notifications using Huawei Push Kit. To integrate Huawei Push Kit into your app, please refer to the Huawei Push Kit documentation.
 
 ```kotlin
