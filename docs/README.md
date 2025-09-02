@@ -15,16 +15,6 @@ Remarks:
 - This library does not contain any UI.
 - We also provide an [iOS](https://github.com/wultra/mtoken-sdk-ios), [Flutter](https://github.com/wultra/mtoken-sdk-flutter) and [React Native/Cordova](https://github.com/wultra/mtoken-sdk-js) versions of this library.
 
-## Migration Guides
-
-If you need to upgrade the Wultra Mobile Token SDK for Android to a newer version, you can check the following migration guides:
-
-- [Migration from version `2.2.x` to `2.3.x`](Migration-2.3.md)
-- [Migration from version `1.12.x` to `2.0.x`](Migration-2.0.md)
-- [Migration from version `1.11.x` to `1.12.x`](Migration-1.12.md)
-- [Migration from version `1.9.x` to `1.10.x`](Migration-1.10.md)
-- [Migration from version `1.4.x` to `1.5.x`](Migration-1.5.md)
-
 <!-- begin remove -->
 ## Integration Tutorials
 
@@ -39,4 +29,5 @@ If you need to upgrade the Wultra Mobile Token SDK for Android to a newer versio
 - [Language Configuration](Language-Configuration.md)
 - [Logging](Logging.md)
 - [Changelog](Changelog.md)
+- [Migration Guides](./Migration-Guides.md)
 <!-- end -->
