@@ -257,7 +257,7 @@ class OperationsService {
      * @param callback Callback with result.
      */
     fun rejectOperation(operation: IOperation, reason: RejectionData, callback: (result: Result<Unit>) -> Unit) {
-        val rejectRequest = RejectRequest(RejectRequestObject(operation.id, reason.serialized))
+        val rejectRequest = RejectRequest(RejectRequestObject(operation.id, reason.serialized, operation.mobileTokenData))
         operationApi.reject(
             rejectRequest,
             object : IApiCallResponseListener<StatusResponse> {
