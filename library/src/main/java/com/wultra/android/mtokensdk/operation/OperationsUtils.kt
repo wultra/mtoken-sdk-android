@@ -20,9 +20,11 @@ import com.google.gson.GsonBuilder
 import com.wultra.android.mtokensdk.api.operation.*
 import com.wultra.android.mtokensdk.api.operation.AttributeTypeAdapter
 import com.wultra.android.mtokensdk.api.operation.model.Attribute
+import com.wultra.android.mtokensdk.api.operation.model.OperationUIData
 import com.wultra.android.mtokensdk.api.operation.model.PostApprovalScreen
-import com.wultra.android.mtokensdk.api.operation.model.PreApprovalScreen
+import com.wultra.android.mtokensdk.api.operation.model.preapproval.PreApprovalScreen
 import com.wultra.android.mtokensdk.api.operation.model.UserOperation
+import com.wultra.android.mtokensdk.api.operation.model.preapproval.PreApprovalElement
 import java.time.ZonedDateTime
 
 class OperationsUtils {
@@ -30,13 +32,14 @@ class OperationsUtils {
         /**
          * Default GSON builder that is used when null is passed by the integrator.
          *
-         * This builder provides parsing logic for:
-         *  - user operation, including fallback for missing or invalid status values
-         *  - attributes in UserOperation
-         *  - time deserializer
-         *  - operation history entry serializer
-         *  - pre-approval screen
-         *  - post-approval screen
+         * Registers:
+         *  - UserOperation
+         *  - Attribute hierarchy
+         *  - ZonedDateTime
+         *  - OperationUIData (handles plural `preApprovalScreens` and legacy singular)
+         *  - PreApprovalScreen
+         *  - PreApprovalElement hierarchy
+         *  - PostApprovalScreen
          *
          *  If you plan to provide your own adapters or deserializer, we recommend adding it to this
          *  default builder.
@@ -46,8 +49,17 @@ class OperationsUtils {
             builder.registerTypeHierarchyAdapter(UserOperation::class.java, UserOperationDeserializer())
             builder.registerTypeHierarchyAdapter(Attribute::class.java, AttributeTypeAdapter())
             builder.registerTypeAdapter(ZonedDateTime::class.java, ZonedDateTimeDeserializer())
+
+            // Operation UI data with plural vs legacy singular handling
+            builder.registerTypeAdapter(OperationUIData::class.java, OperationUIDataDeserializer())
+
+            // Pre-approval screen + element hierarchy
             builder.registerTypeAdapter(PreApprovalScreen::class.java, PreApprovalScreenDeserializer())
+            builder.registerTypeHierarchyAdapter(PreApprovalElement::class.java, PreApprovalElementTypeAdapter())
+
+            // Post-approval
             builder.registerTypeAdapter(PostApprovalScreen::class.java, PostApprovalScreenDeserializer())
+
             return builder
         }
     }

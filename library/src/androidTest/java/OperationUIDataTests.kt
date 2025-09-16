@@ -18,75 +18,109 @@ package com.wultra.android.mtokensdk.test
 
 import com.google.gson.Gson
 import com.wultra.android.mtokensdk.api.operation.model.*
+import com.wultra.android.mtokensdk.api.operation.model.preapproval.PreApprovalControls
+import com.wultra.android.mtokensdk.api.operation.model.preapproval.PreApprovalElement
+import com.wultra.android.mtokensdk.api.operation.model.preapproval.PreApprovalElementAlert
+import com.wultra.android.mtokensdk.api.operation.model.preapproval.PreApprovalElementListItem
+import com.wultra.android.mtokensdk.api.operation.model.preapproval.PreApprovalScreen
 import com.wultra.android.mtokensdk.operation.JSONValue
 import com.wultra.android.mtokensdk.operation.OperationsUtils
 import junit.framework.TestCase.assertEquals
+import junit.framework.TestCase.assertNotNull
 import junit.framework.TestCase.fail
 import org.junit.Test
 
 class OperationUIDataTests {
 
     @Test
-    fun testPreApprovalWarningResponse() {
+    fun testPreApprovalWarningResponseLegacy() {
         val result = prepareResult(preApprovalResponse)
+        val ui: OperationUIData? = result?.ui
 
-        if (result != null) {
-            val ui = OperationUIData(
-                flipButtons = true,
-                blockApprovalOnCall = false,
-                preApprovalScreen = PreApprovalScreen(
+        val expectedUI = OperationUIData(
+            flipButtons = true,
+            blockApprovalOnCall = false,
+            preApprovalScreens = listOf(
+                PreApprovalScreen(
                     type = PreApprovalScreen.Type.WARNING,
                     heading = "Watch out!",
                     message = "You may become a victim of an attack.",
-                    items = arrayListOf(
-                        "You activate a new app and allow access to your accounts",
-                        "Make sure the activation takes place on your device",
-                        "If you have been prompted for this operation in connection with a payment, decline it"
+                    id = null,
+                    backButton = null,
+                    image = null,
+                    elements = listOf(
+                        PreApprovalElementListItem(text = "You activate a new app and allow access to your accounts"),
+                        PreApprovalElementListItem(text = "Make sure the activation takes place on your device"),
+                        PreApprovalElementListItem(text = "If you have been prompted for this operation in connection with a payment, decline it")
                     ),
-                    approvalType = PreApprovalScreenConfirmAction.SLIDER
-                ),
-                postApprovalScreen = null
-            )
+                    controls = PreApprovalControls(approve = PreApprovalControls.Approve(PreApprovalControls.ApproveType.SLIDER))
+                )
+            ),
+            postApprovalScreen = null
+        )
 
-            assertEquals(result.ui?.flipButtons, ui.flipButtons)
-            assertEquals(result.ui?.blockApprovalOnCall, ui.blockApprovalOnCall)
-            assertEquals(result.ui?.preApprovalScreen?.type, ui.preApprovalScreen?.type)
-            assertEquals(result.ui?.preApprovalScreen?.heading, ui.preApprovalScreen?.heading)
-            assertEquals(result.ui?.preApprovalScreen?.message, ui.preApprovalScreen?.message)
-            assertEquals(result.ui?.preApprovalScreen?.items, ui.preApprovalScreen?.items)
-            assertEquals(result.ui?.preApprovalScreen?.approvalType, ui.preApprovalScreen?.approvalType)
-        } else {
-            fail("Fail to serialize JSON")
-            return
+        val screens = ui?.preApprovalScreens
+        assertNotNull("preApprovalScreens should not be null", screens)
+        assertEquals(expectedUI.flipButtons, ui?.flipButtons)
+        assertEquals(expectedUI.blockApprovalOnCall, ui?.blockApprovalOnCall)
+
+        // one translated screen
+        assertEquals(1, screens?.size)
+        val s0 = screens!![0]
+
+        assertEquals(expectedUI.preApprovalScreens?.first()?.type, s0.type)
+        assertEquals(expectedUI.preApprovalScreens?.first()?.heading, s0.heading)
+        assertEquals(expectedUI.preApprovalScreens?.first()?.message, s0.message)
+
+        // elements: 3 list items with same texts
+        val elements = s0.elements ?: error("elements should not be null")
+        assertEquals(3, elements.size)
+        val texts = elements.map {
+            assertEquals(true, it is PreApprovalElementListItem)
+            (it as PreApprovalElementListItem).text
         }
+        assertEquals(
+            listOf(
+                "You activate a new app and allow access to your accounts",
+                "Make sure the activation takes place on your device",
+                "If you have been prompted for this operation in connection with a payment, decline it"
+            ),
+            texts
+        )
+
+        // controls.approve == SLIDER
+        val controls = s0.controls ?: error("controls should not be null")
+        val approve = controls.approve ?: error("controls.approve should not be null")
+        assertEquals(PreApprovalControls.ApproveType.SLIDER, approve.type)
     }
 
     @Test
     fun testPreApprovalUnknownResponse() {
         val result = prepareResult(preApprovalFutureResponse)
+            ?: run { fail("Fail to serialize JSON"); return }
 
-        if (result != null) {
-            val ui = OperationUIData(
-                flipButtons = true,
-                blockApprovalOnCall = false,
-                preApprovalScreen = PreApprovalScreen(
+        // Expected UI
+        val expectedUi = OperationUIData(
+            flipButtons = true,
+            blockApprovalOnCall = false,
+            preApprovalScreens = listOf(
+                PreApprovalScreen(
                     type = PreApprovalScreen.Type.UNKNOWN,
                     heading = "Future",
-                    message = "Future is now, old man.",
-                    items = arrayListOf(),
-                    approvalType = null
-                ),
-                postApprovalScreen = null
-            )
+                    message = "Future is now, old man."
+                )
+            ),
+            postApprovalScreen = null
+        )
 
-            assertEquals(result.ui?.preApprovalScreen?.type, ui.preApprovalScreen?.type)
-            assertEquals(result.ui?.preApprovalScreen?.heading, ui.preApprovalScreen?.heading)
-            assertEquals(result.ui?.preApprovalScreen?.items, ui.preApprovalScreen?.items)
-            assertEquals(result.ui?.preApprovalScreen?.approvalType, ui.preApprovalScreen?.approvalType)
-        } else {
-            fail("Fail to serialize JSON")
-            return
-        }
+        val screens = result.ui?.preApprovalScreens
+        assertNotNull("preApprovalScreens should not be null", screens)
+        assertEquals(1, screens!!.size)
+
+        // Compare selected fields to expected
+        assertEquals(expectedUi.preApprovalScreens?.get(0)?.type, screens[0].type)
+        assertEquals(expectedUi.preApprovalScreens?.get(0)?.heading, screens[0].heading)
+        assertEquals(expectedUi.preApprovalScreens?.get(0)?.message, screens[0].message)
     }
 
     @Test
@@ -100,7 +134,7 @@ class OperationUIDataTests {
         val ui = OperationUIData(
             flipButtons = null,
             blockApprovalOnCall = null,
-            preApprovalScreen = null,
+            preApprovalScreens = null,
             postApprovalScreen = PostApprovalScreenRedirect(
                 heading = "Thank you for your order",
                 message = "You will be redirected to the merchant application.",
@@ -115,9 +149,9 @@ class OperationUIDataTests {
         val resultPostApproval = result.ui?.postApprovalScreen as? PostApprovalScreenReview
         val uiPostApproval = ui.postApprovalScreen as? PostApprovalScreenReview
 
-        assertEquals(result.ui?.flipButtons, ui.flipButtons)
-        assertEquals(result.ui?.blockApprovalOnCall, ui.blockApprovalOnCall)
-        assertEquals(result.ui?.preApprovalScreen?.type, ui.flipButtons)
+        assertEquals(null, result.ui?.flipButtons)
+        assertEquals(null, result.ui?.blockApprovalOnCall)
+        assertEquals(null, result.ui?.preApprovalScreens)
         assertEquals(resultPostApproval?.heading, uiPostApproval?.heading)
         assertEquals(resultPostApproval?.message, uiPostApproval?.message)
         assertEquals(resultPostApproval?.payload?.attributes, uiPostApproval?.payload?.attributes)
@@ -134,7 +168,7 @@ class OperationUIDataTests {
         val ui = OperationUIData(
             flipButtons = null,
             blockApprovalOnCall = null,
-            preApprovalScreen = null,
+            preApprovalScreens = null,
             postApprovalScreen = PostApprovalScreenReview(
                 heading = "Successful",
                 message = "The operation was approved.",
@@ -155,9 +189,9 @@ class OperationUIDataTests {
         val resultPostApproval = result.ui?.postApprovalScreen as? PostApprovalScreenReview
         val uiPostApproval = ui.postApprovalScreen as? PostApprovalScreenReview
 
-        assertEquals(result.ui?.flipButtons, ui.flipButtons)
-        assertEquals(result.ui?.blockApprovalOnCall, ui.blockApprovalOnCall)
-        assertEquals(result.ui?.preApprovalScreen?.type, ui.flipButtons)
+        assertEquals(null, result.ui?.flipButtons)
+        assertEquals(null, result.ui?.blockApprovalOnCall)
+        assertEquals(null, result.ui?.preApprovalScreens)
         assertEquals(resultPostApproval?.heading, uiPostApproval?.heading)
         assertEquals(resultPostApproval?.message, uiPostApproval?.message)
         assertEquals(resultPostApproval?.payload?.attributes?.get(0)?.type, uiPostApproval?.payload?.attributes?.get(0)?.type)
@@ -209,79 +243,195 @@ class OperationUIDataTests {
     }
 
     @Test
-    fun testPreApprovalScreensWithFallback() {
+    fun testPreApprovalScreensResponseWithPreApprovalIgnoredLegacy() {
         val result = prepareResult(preApprovalScreensResponse)
-            ?: run { fail("Failed to parse JSON"); return }
+        assertNotNull("Failed to parse JSON data", result)
 
-        // Top-level flags
-        assertEquals(true, result.ui?.flipButtons)
-        assertEquals(false, result.ui?.blockApprovalOnCall)
+        // New apps: array should be present with 2 screens
+        val screens = result!!.ui?.preApprovalScreens
+        assertNotNull("preApprovalScreens missing", screens)
+        assertEquals("preApprovalScreens has wrong count", 2, screens!!.size)
 
-        // New apps: array present with 2 screens
-        val screens = result.ui?.preApprovalScreens ?: run {
-            fail("preApprovalScreens missing"); return
-        }
-        assertEquals(2, screens.size)
-
-        // Screen #1 (WARNING)
+        // Screen1 (WARNING)
         val s1 = screens[0]
-        assertEquals("id1", s1.id)
         assertEquals(PreApprovalScreen.Type.WARNING, s1.type)
+        assertEquals("id1", s1.id)
         assertEquals(true, s1.backButton)
         assertEquals("image-label", s1.image)
         assertEquals("Watch out!", s1.heading)
         assertEquals("You may become a victim of an attack.", s1.message)
-        assertEquals(true, s1.controls?.flip)
-        assertEquals(PreApprovalControls.DeclineType.REJECT, s1.controls?.decline?.type)
-        assertEquals("Reject Payment", s1.controls?.decline?.text)
-        assertEquals(PreApprovalControls.ApproveType.BUTTON, s1.controls?.approve?.type)
-        assertEquals("Approve Payment", s1.controls?.approve?.text)
-        assertEquals(10, s1.controls?.approve?.counter)
+
+        // controls
+        val c1 = s1.controls
+        assertNotNull(c1)
+        assertEquals(true, c1!!.flip)
+        assertEquals(PreApprovalControls.DeclineType.REJECT, c1.decline?.type)
+        assertEquals("Reject Payment", c1.decline?.text)
+        assertEquals(PreApprovalControls.ApproveType.BUTTON, c1.approve?.type)
+        assertEquals("Approve Payment", c1.approve?.text)
+        assertEquals(10, c1.approve?.counter)
 
         // elements
-        assertEquals(3, s1.elements?.size)
-        s1.elements?.get(0)?.let { e0 ->
-            assertEquals(PreApprovalElement.ElementType.ALERT, e0.type)
-            assertEquals(PreApprovalElement.AlertStyle.INFO, e0.style)
-            assertEquals("Make sure the activation takes place on your device", e0.text)
-        } ?: fail("Missing element 0")
+        val e1 = s1.elements
+        assertNotNull(e1)
+        assertEquals(3, e1!!.size)
+        val first = e1.first()
+        assertEquals(true, first is PreApprovalElementAlert)
+        (first as PreApprovalElementAlert).let { alert ->
+            assertEquals(PreApprovalElement.ElementType.ALERT, alert.type)
+            assertEquals(PreApprovalElement.ElementStyle.INFO, alert.style)
+            assertEquals("Make sure the activation takes place on your device", alert.text)
+        }
 
-        s1.elements?.get(1)?.let { e1 ->
-            assertEquals(PreApprovalElement.ElementType.BUTTON, e1.type)
-            assertEquals(PreApprovalElement.ButtonAction.PHONE, e1.action)
-            assertEquals("Call center", e1.text)
-            assertEquals("+42012345678", e1.href)
-        } ?: fail("Missing element 1")
-
-        s1.elements?.get(2)?.let { e2 ->
-            assertEquals(PreApprovalElement.ElementType.LISTITEM, e2.type)
-            assertEquals("icon-label", e2.icon)
-            assertEquals("You activate a new app and allow access to your accounts", e2.text)
-        } ?: fail("Missing element 2")
-
-        // Screen #2 (QR_SCAN)
+        // Screen2 (QR_SCAN)
         val s2 = screens[1]
         assertEquals("id2", s2.id)
         assertEquals(PreApprovalScreen.Type.QR_SCAN, s2.type)
+        assertEquals(null, s2.backButton)
+        assertEquals(null, s2.image)
         assertEquals("Watch out!", s2.heading)
         assertEquals("You may become a victim of an attack.", s2.message)
         assertEquals(null, s2.controls)
-        assertEquals(1, s2.elements?.size)
-        s2.elements?.first()?.let { e ->
-            assertEquals(PreApprovalElement.ElementType.LISTITEM, e.type)
-            assertEquals("icon-label", e.icon)
-            assertEquals("You activate a new app and allow access to your accounts", e.text)
-        } ?: fail("Missing element in screen 2")
+        assertEquals(null, s2.elements)
 
-        // Old apps: legacy single preApprovalScreen should be present (QR fallback)
-        val legacy = result.ui?.preApprovalScreen ?: run {
-            fail("legacy preApprovalScreen missing"); return
+        // Sanity: top-level flags still parsed
+        assertEquals(true, result.ui?.flipButtons)
+        assertEquals(false, result.ui?.blockApprovalOnCall)
+    }
+
+    @Test
+    fun testLegacyPreApproval() {
+        val result = prepareResult(legacyPreApproval())
+            ?: run { fail("Failed to parse JSON data"); return }
+
+        val first = result.ui?.preApprovalScreens?.firstOrNull()
+            ?: run { fail("preApprovalScreens missing"); return }
+
+        assertEquals(PreApprovalScreen.Type.WARNING, first.type)
+        val elements = first.elements ?: emptyList()
+        val texts = elements.map {
+            assert(it is PreApprovalElementListItem)
+            (it as PreApprovalElementListItem).text
         }
-        assertEquals(PreApprovalScreen.Type.QR_SCAN, legacy.type)
-        assertEquals("Watch out!", legacy.heading)
-        assertEquals("You may become a victim of an attack.", legacy.message)
-        assertEquals(listOf("You activate a new app and allow access to your accounts"), legacy.items)
-        assertEquals(null, legacy.approvalType)
+        assertEquals(listOf("A", "B", "C"), texts)
+
+        val approve = first.controls?.approve ?: run { fail("controls.approve missing"); return }
+        assertEquals(PreApprovalControls.ApproveType.SLIDER, approve.type)
+        assertEquals(null, approve.text)
+        assertEquals(null, approve.counter)
+    }
+
+    @Test
+    fun testLegacyEmptyItemsBecomeNull() {
+        val result = prepareResult(preApprovalFutureResponse)
+            ?: run { fail("Failed to parse JSON data"); return }
+
+        val first = result.ui?.preApprovalScreens?.firstOrNull()
+            ?: run { fail("preApprovalScreens missing"); return }
+
+        // FUTURE → UNKNOWN (forward-compat), empty items → null
+        assertEquals(PreApprovalScreen.Type.UNKNOWN, first.type)
+        assertEquals(null, first.elements)
+    }
+
+    @Test
+    fun testSingularIsWrappedIntoPlural() {
+        val result = prepareResult(preApprovalResponse)
+            ?: run { fail("Failed to parse JSON data"); return }
+
+        val screens = result.ui?.preApprovalScreens
+        assertNotNull(screens)
+        assertEquals(1, screens!!.size)
+    }
+
+    @Test
+    fun testUnknownScreenTypeForwardCompat() {
+        val json = """
+        {
+          "id":"1","name":"n","data":"d","status":"PENDING",
+          "operationCreated":"2023-04-25T13:09:52+0000",
+          "operationExpires":"2023-04-25T13:14:52+0000",
+          "ui":{"preApprovalScreen":{"type":"FUTURE","heading":"Future","message":"Future is now, old man."}},
+          "allowedSignatureType":{"type":"2FA","variants":[]},
+          "formData":{"title":"t","message":"m","attributes":[]}
+        }
+    """
+        val r = prepareResult(json) ?: run { fail("parse fail"); return }
+        val s = r.ui?.preApprovalScreens?.firstOrNull() ?: run { fail("no screen"); return }
+        assertEquals(PreApprovalScreen.Type.UNKNOWN, s.type)
+        assertEquals("Future", s.heading)
+        assertEquals("Future is now, old man.", s.message)
+    }
+
+    @Test
+    fun testUnknownElementTypeForwardCompat() {
+        val json = """
+        {
+          "id":"1","name":"n","data":"d","status":"PENDING",
+          "operationCreated":"2023-04-25T13:09:52+0000",
+          "operationExpires":"2023-04-25T13:14:52+0000",
+          "ui":{
+            "preApprovalScreen":{
+              "type":"WARNING","heading":"H","message":"M",
+              "elements":[ {"type":"TOTALLY_NEW","text":"new-kind"} ]
+            }
+          },
+          "allowedSignatureType":{"type":"2FA","variants":[]},
+          "formData":{"title":"t","message":"m","attributes":[]}
+        }
+    """
+        val r = prepareResult(json) ?: run { fail("parse fail"); return }
+        val s = r.ui?.preApprovalScreens?.firstOrNull() ?: run { fail("no screen"); return }
+        val e = s.elements?.firstOrNull() ?: run { fail("no elements"); return }
+        assertEquals(PreApprovalElement.ElementType.UNKNOWN, e.type)
+        assertEquals("new-kind", e.text)
+    }
+
+    @Test
+    fun testControlsApproveAndDeclineVariants() {
+        val json = """
+        {
+          "id":"1","name":"n","data":"d","status":"PENDING",
+          "operationCreated":"2023-04-25T13:09:52+0000",
+          "operationExpires":"2023-04-25T13:14:52+0000",
+          "ui":{
+            "preApprovalScreen":{
+              "type":"INFO","heading":"H","message":"M",
+              "controls":{
+                "flip":true,
+                "axis":"HORIZONTAL",
+                "decline":{"type":"BACK","text":"Back"},
+                "approve":{"type":"BUTTON","text":"Confirm","counter":3}
+              }
+            }
+          },
+          "allowedSignatureType":{"type":"2FA","variants":[]},
+          "formData":{"title":"t","message":"m","attributes":[]}
+        }
+    """
+        val r = prepareResult(json) ?: run { fail("parse fail"); return }
+        val s = r.ui?.preApprovalScreens?.firstOrNull() ?: run { fail("no screen"); return }
+        val c = s.controls ?: run { fail("controls missing"); return }
+        assertEquals(true, c.flip)
+        assertEquals(PreApprovalControls.ButtonAxis.HORIZONTAL, c.axis)
+        assertEquals(PreApprovalControls.DeclineType.BACK, c.decline?.type)
+        assertEquals("Back", c.decline?.text)
+        assertEquals(PreApprovalControls.ApproveType.BUTTON, c.approve?.type)
+        assertEquals("Confirm", c.approve?.text)
+        assertEquals(3, c.approve?.counter)
+    }
+
+    @Test
+    fun testLegacyEmptyItemsBecomeNilElements() {
+        val result = prepareResult(preApprovalFutureResponse)
+            ?: run { fail("Failed to parse JSON data"); return }
+
+        val first = result.ui?.preApprovalScreens?.firstOrNull()
+            ?: run { fail("preApprovalScreens missing"); return }
+
+        // FUTURE → UNKNOWN
+        assertEquals(PreApprovalScreen.Type.UNKNOWN, first.type)
+        assertEquals(null, first.elements) // empty items → nil
     }
 
     /** Helpers */
@@ -586,15 +736,7 @@ class OperationUIDataTests {
                     "backButton": null,
                     "image": null,
                     "heading": "Watch out!",
-                    "message": "You may become a victim of an attack.",
-                    "elements": [
-                        {
-                            "type": "LISTITEM",
-                            "icon": "icon-label",
-                            "text": "You activate a new app and allow access to your accounts"
-                        }
-                    ],
-                    "controls": null
+                    "message": "You may become a victim of an attack."
                 }
             ],
             "preApprovalScreen": {
@@ -637,4 +779,60 @@ class OperationUIDataTests {
         }
     }
 """
+
+    private val legacyPreApproval = {
+        """
+        {
+            "id": "f68f6e70-a3d8-4616-b138-358e1799599d",
+            "name": "authorize_payment_postApproval",
+            "data": "A1*A100.00EUR*ICZ3855000000003643174999",
+            "status": "PENDING",
+            "operationCreated": "2023-04-25T12:29:23+0000",
+            "operationExpires": "2023-04-25T12:34:23+0000",
+            "ui": {
+                "flipButtons": true,
+                "blockApprovalOnCall": false,
+                "preApprovalScreen": {
+                    "type": "WARNING",
+                    "heading": "H",
+                    "message": "M",
+                    "items": [
+                        "A",
+                        "B",
+                        "C"
+                    ],
+                    "approvalType": "SLIDER"
+                }
+            },
+            "allowedSignatureType": {
+                "type": "2FA",
+                "variants": [
+                    "possession_knowledge",
+                    "possession_biometry"
+                ]
+            },
+            "formData": {
+                "title": "Payment Approval",
+                "message": "Please confirm the payment",
+                "attributes": [
+                    {
+                        "type": "AMOUNT",
+                        "id": "operation.amount",
+                        "label": "Amount",
+                        "amount": 100,
+                        "currency": "EUR",
+                        "amountFormatted": "100,00",
+                        "currencyFormatted": "€"
+                    },
+                    {
+                        "type": "KEY_VALUE",
+                        "id": "operation.account",
+                        "label": "To Account",
+                        "value": "CZ3855000000003643174999"
+                    }
+                ]
+            }
+        }
+        """
+    }
 }

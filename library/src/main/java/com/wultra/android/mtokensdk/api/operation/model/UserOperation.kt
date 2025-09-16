@@ -17,6 +17,7 @@
 package com.wultra.android.mtokensdk.api.operation.model
 
 import com.google.gson.annotations.SerializedName
+import com.wultra.android.mtokensdk.api.operation.model.preapproval.PreApprovalScreen
 import com.wultra.android.mtokensdk.operation.expiration.ExpirableOperation
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
 import java.time.Instant
@@ -205,13 +206,9 @@ data class OperationUIData(
     @SerializedName("blockApprovalOnCall")
     val blockApprovalOnCall: Boolean?,
 
-    /** UI for pre-approval operation screen */
-    @SerializedName("preApprovalScreen")
-    val preApprovalScreen: PreApprovalScreen?,
-
     /** UI for multiple pre-approval operation screens */
     @SerializedName("preApprovalScreens")
-    val preApprovalScreens: List<PreApprovalScreen>? = null,
+    val preApprovalScreens: List<PreApprovalScreen>?,
 
     /**
      * UI for post-approval operation screen

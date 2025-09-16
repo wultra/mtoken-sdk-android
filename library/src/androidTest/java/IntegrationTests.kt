@@ -16,12 +16,12 @@
 
 package com.wultra.android.mtokensdk.test
 
-import com.wultra.android.mtokensdk.api.operation.model.PreApprovalScreen
 import com.wultra.android.mtokensdk.api.operation.model.ProximityCheck
 import com.wultra.android.mtokensdk.api.operation.model.ProximityCheckType
 import com.wultra.android.mtokensdk.api.operation.model.QROperationParser
 import com.wultra.android.mtokensdk.api.operation.model.UserOperation
 import com.wultra.android.mtokensdk.api.operation.model.UserOperationStatus
+import com.wultra.android.mtokensdk.api.operation.model.preapproval.PreApprovalScreen
 import com.wultra.android.mtokensdk.operation.*
 import com.wultra.android.mtokensdk.operation.RejectionData
 import com.wultra.android.mtokensdk.push.PushData
@@ -282,7 +282,7 @@ class IntegrationTests {
 
         val operation = future.get(20, TimeUnit.SECONDS)
 
-        Assert.assertEquals("Incorrect type of preapproval screen", operation.ui?.preApprovalScreen?.type, PreApprovalScreen.Type.QR_SCAN)
+        Assert.assertEquals("Incorrect type of preapproval screen", operation.ui?.preApprovalScreens?.get(0)?.type, PreApprovalScreen.Type.QR_SCAN)
 
         val totp = IntegrationUtils.getOperation(op.operationId).proximityOtp
         Assert.assertNotNull("Even with proximityCheckEnabled: true, in proximityOtp nil", totp)
