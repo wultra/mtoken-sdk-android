@@ -194,7 +194,8 @@ fun approveWithBiometrics(operation: IOperation) {
 
 ### Passing Additional Mobile Token Data
 
-With PowerAuth server 1.10+, you can pass additional customer-specific data during operation authorization using the `mobileTokenData` property. This can be useful for fraud detection systems (FDS) or other custom business logic.
+With PowerAuth server 1.10+, you can pass additional customer-specific data during operation authorization using the `mobileTokenData` property. This can be useful for fraud detection systems (FDS) or other custom business logic. 
+
 
 ```kotlin
 import com.wultra.android.mtokensdk.api.operation.model.IOperation
@@ -238,8 +239,9 @@ fun approveWithFDSData() {
 }
 ```
 
+Similarly to approving an operation, you can also pass mobileTokenData when rejecting and operation.
+
 The `mobileTokenData` is completely optional and the structure is customer-specific. If you don't need this functionality, you can continue using operations without providing this property.
-```
 
 ## Reject an Operation
 
@@ -257,6 +259,7 @@ fun reject(operation: IOperation, reason: RejectionData) {
     }
 }
 ```
+
 
 ## Operation detail
 
@@ -593,8 +596,8 @@ class OperationUIData {
     /** Block approval when on call (for example when on a phone or Skype call) */
     val blockApprovalOnCall: Boolean?
     
-    /** UI for pre-approval operation screen */
-    val preApprovalScreen: PreApprovalScreen?
+    /** UI for multiple pre-approval screens */
+    val preApprovalScreens: List<PreApprovalScreen>?
 
     /**
      * UI for post-approval operation screen

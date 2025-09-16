@@ -6,6 +6,7 @@ This page contains Mobile Token Android SDK migration instructions.
 When updating across multiple versions, you need to perform all migration steps additively.
 <!-- end -->
 
+- [Migration from version `2.3.x` to `2.4.x`](Migration-2.4.md)
 - [Migration from version `2.2.x` to `2.3.x`](Migration-2.3.md)
 - [Migration from version `2.1.x` to `2.2.x`](Migration-2.2.md)
 - [Migration from version `1.12.x` to `2.0.x`](Migration-2.0.md)
