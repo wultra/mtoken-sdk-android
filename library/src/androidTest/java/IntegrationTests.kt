@@ -35,6 +35,7 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
+import kotlin.String
 
 /**
  * Integration tests are calling a real backend server (based on configuration inside the "${ROOT_FOLDER}/configs/integration-tests.properties" file).
@@ -179,6 +180,52 @@ class IntegrationTests {
             result.onSuccess { opFuture.complete(null) }
                 .onFailure { opFuture.completeExceptionally(it) }
         }
+        Assert.assertNull(opFuture.get(20, TimeUnit.SECONDS))
+    }
+
+    @Test
+    fun testRejectPaymentWithAdditionalData() {
+        val op = IntegrationUtils.createOperation(IntegrationUtils.Companion.Factors.F_2FA)
+
+        // Fetch the operation from the list (same as your other test)
+        val listFuture = CompletableFuture<List<UserOperation>>()
+        ops.getOperations { result ->
+            result.onSuccess { listFuture.complete(it) }
+                .onFailure { listFuture.completeExceptionally(it) }
+        }
+        val operations = listFuture.get(20, TimeUnit.SECONDS)
+        val opFromList = operations.firstOrNull { it.id == op.operationId }
+            ?: run { Assert.fail("Operation was not in the list"); return }
+
+        // Prepare rejection with additional mobileTokenData
+        opFromList.mobileTokenData = mapOf(
+            "test1" to 1,
+            "test2" to 2.3,
+            "test3" to "string",
+            "test4" to mapOf("nested" to true)
+        )
+
+        val opFuture = CompletableFuture<Any?>()
+        ops.rejectOperation(opFromList, RejectionData("POSSIBLE_FRAUD")) { result ->
+            result.onFailure { opFuture.completeExceptionally(it) }
+                .onSuccess {
+                    //TODO: uncoment when BE ready
+//                    val finalOp = IntegrationUtils.getOperation(op.operationId)
+//                    val serverMtd = finalOp.additionalData?.get("mobileTokenData") as? Map<String, Any> ?: throw Exception("mobileTokenData not found in additionalData")
+//                    val test1 = serverMtd["test1"]
+//                    val test2 = serverMtd["test2"]
+//                    val test3 = serverMtd["test3"]
+//                    val test4 = (serverMtd["test4"] as? Map<String, Any>)?.get("nested")
+//
+//                    Assert.assertEquals(1.0, test1) // server returns as Double 🤷‍♂️
+//                    Assert.assertEquals(2.3, test2)
+//                    Assert.assertEquals("string", test3)
+//                    Assert.assertEquals(true, test4)
+                    opFuture.complete(null)
+                }
+
+        }
+
         Assert.assertNull(opFuture.get(20, TimeUnit.SECONDS))
     }
 
