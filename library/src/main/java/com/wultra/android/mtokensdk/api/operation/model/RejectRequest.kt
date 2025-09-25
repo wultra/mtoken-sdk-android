@@ -20,20 +20,18 @@ import com.google.gson.annotations.SerializedName
 
 /**
  * Reject request model class.
- *
- * @property id Operation ID.
- * @property reason Rejection reason.
- * @property mobileTokenData - Optional mobile token data, structure is customer-specific.
-                             - Could be used, for example, for passing FDS data.
-                             - Available with PowerAuth server 1.10+.
  */
 internal data class RejectRequestObject(
+
+    /** Operation ID */
     @SerializedName("id")
     val id: String,
 
+    /** Rejection reason */
     @SerializedName("reason")
     val reason: String,
 
+    /** Additional mobile token data for rejection (available with PowerAuth server 1.10+) */
     @SerializedName("mobileTokenData")
     val mobileTokenData: Map<String, Any>? = null
 )

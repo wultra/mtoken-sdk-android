@@ -209,7 +209,7 @@ class IntegrationTests {
         ops.rejectOperation(opFromList, RejectionData("POSSIBLE_FRAUD")) { result ->
             result.onFailure { opFuture.completeExceptionally(it) }
                 .onSuccess {
-                    //TODO: uncoment when BE ready
+                    // TODO: uncoment when BE ready
 //                    val finalOp = IntegrationUtils.getOperation(op.operationId)
 //                    val serverMtd = finalOp.additionalData?.get("mobileTokenData") as? Map<String, Any> ?: throw Exception("mobileTokenData not found in additionalData")
 //                    val test1 = serverMtd["test1"]
@@ -223,7 +223,6 @@ class IntegrationTests {
 //                    Assert.assertEquals(true, test4)
                     opFuture.complete(null)
                 }
-
         }
 
         Assert.assertNull(opFuture.get(20, TimeUnit.SECONDS))
