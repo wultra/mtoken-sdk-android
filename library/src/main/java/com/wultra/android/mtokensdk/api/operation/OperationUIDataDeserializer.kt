@@ -19,10 +19,12 @@ package com.wultra.android.mtokensdk.api.operation
 import com.google.gson.JsonDeserializationContext
 import com.google.gson.JsonDeserializer
 import com.google.gson.JsonElement
+import com.google.gson.JsonObject
 import com.google.gson.reflect.TypeToken
 import com.wultra.android.mtokensdk.api.operation.model.OperationUIData
 import com.wultra.android.mtokensdk.api.operation.model.PostApprovalScreen
 import com.wultra.android.mtokensdk.api.operation.model.preapproval.PreApprovalScreen
+import com.wultra.android.mtokensdk.log.WMTLogger
 import java.lang.reflect.Type
 
 /**
@@ -36,19 +38,10 @@ class OperationUIDataDeserializer : JsonDeserializer<OperationUIData> {
         val flipButtons = obj.get("flipButtons")?.takeIf { it.isJsonPrimitive }?.asBoolean
         val blockApprovalOnCall = obj.get("blockApprovalOnCall")?.takeIf { it.isJsonPrimitive }?.asBoolean
 
-        // Prefer plural. If it exists & is an array, parse and return early for preApprovalScreens.
-        val listType = object : TypeToken<List<PreApprovalScreen>>() {}.type
-        val preApprovalScreens: List<PreApprovalScreen>? = when {
-            obj.has("preApprovalScreens") && obj["preApprovalScreens"].isJsonArray ->
-                ctx.deserialize(obj["preApprovalScreens"], listType)
-            obj.has("preApprovalScreen") && obj["preApprovalScreen"].isJsonObject ->
-                listOf(ctx.deserialize(obj["preApprovalScreen"], PreApprovalScreen::class.java))
-            else -> null
-        }
-
-        val postApprovalScreen: PostApprovalScreen? = obj.get("postApprovalScreen")
+        val preApprovalScreens = parsePreApprovalScreens(obj, ctx)
+        val postApprovalScreen = obj.get("postApprovalScreen")
             ?.takeIf { it.isJsonObject }
-            ?.let { el -> ctx.deserialize(el, PostApprovalScreen::class.java) }
+            ?.let { el -> safeDeserialize<PostApprovalScreen>(ctx, el, PostApprovalScreen::class.java) }
 
         return OperationUIData(
             flipButtons = flipButtons,
@@ -56,5 +49,42 @@ class OperationUIDataDeserializer : JsonDeserializer<OperationUIData> {
             preApprovalScreens = preApprovalScreens,
             postApprovalScreen = postApprovalScreen
         )
+    }
+
+    private fun parsePreApprovalScreens(
+        obj: JsonObject,
+        ctx: JsonDeserializationContext
+    ): List<PreApprovalScreen>? {
+        val listType = object : TypeToken<List<PreApprovalScreen>>() {}.type
+
+        // 1) Prefer plural (array)
+        obj.get("preApprovalScreens")?.let { el ->
+            if (el.isJsonArray) {
+                safeDeserialize<List<PreApprovalScreen>>(ctx, el, listType)?.let { return it }
+            }
+        }
+
+        // 2) Legacy singular (object → wrap as list)
+        obj.get("preApprovalScreen")?.let { el ->
+            if (el.isJsonObject) {
+                safeDeserialize<PreApprovalScreen>(ctx, el, PreApprovalScreen::class.java)?.let { single ->
+                    return listOf(single)
+                }
+            }
+        }
+
+        // 3) Nothing valid present
+        return null
+    }
+
+    private fun <T> safeDeserialize(
+        ctx: JsonDeserializationContext,
+        element: JsonElement,
+        type: Type
+    ): T? = try {
+        ctx.deserialize<T>(element, type)
+    } catch (_: Throwable) {
+        WMTLogger.d("Failed to deserialize $type from JSON: $element")
+        null
     }
 }
