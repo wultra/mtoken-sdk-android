@@ -608,15 +608,34 @@ class OperationUIData {
 }
 ```
 
-PreApprovalScreen types:
+#### PreApprovalScreens:
+
+Pre-approval screens define additional UI that can be displayed before the user decides to approve or reject an operation. They allow to display structured instructions, warnings, or interactive elements to the user.
+
+Types:
 
 - `WARNING`
 - `INFO`
-- `QR_SCAN` this type indicates that the `ProximityCheck` must be used for authorization
-- `UNKNOWN`
+- `QR_SCAN` this type indicates that the `WMTProximityCheck` must be used
+- `UNKNOWN` 
 
-PostApprovalScreen types:
-`PostApprovalScreen*` classes commonly contain `heading` and `message` and different payload data
+A pre-approval screen can contain the following building blocks:
+
+	•	Heading and message – textual content displayed at the top of the screen.
+	•	Optional metadata – id (unique identifier), backButton (show navigation back button), and image (in-app asset identifier).
+	•	Elements – structured items that form the main content of the screen:
+	   - List item – text with optional icon with style (INFO, WARNING, DANGER).
+	   - Alert – highlighted box with style (INFO, WARNING, DANGER).
+	   - Button – action element with LINK, MAIL, PHONE, or REJECT.
+	•	Controls – configuration of approve/decline actions:
+	   - Decline – BACK or REJECT, with optional text. 
+	   - Approve – SLIDER or BUTTON, with optional text and optional countdown (counter). 
+	   - Layout options – axis (HORIZONTAL or VERTICAL) and flip (swap order of controls).
+
+#### PostApprovalScreen:
+`WMTPostApprovalScreen*` classes commonly contain `heading` and `message` and different payload data
+
+Types:
 
 - `REVIEW` provides an array of operations attributes with data: type, id, label, and note
 - `REDIRECT` providing text for button, countdown, and redirection URL
