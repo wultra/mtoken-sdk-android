@@ -67,7 +67,7 @@ class PreApprovalElementButton(
     /** Textual content. */
     text: String? = null
 ) : PreApprovalElement(id, ElementType.BUTTON, icon, text) {
-    enum class ButtonAction { LINK, MAIL, PHONE, REJECT }
+    enum class ButtonAction { LINK, MAIL, PHONE }
 }
 
 /** Alert element (highlighted message with style). */
