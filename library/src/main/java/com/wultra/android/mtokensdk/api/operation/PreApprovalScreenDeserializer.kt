@@ -52,12 +52,14 @@ class PreApprovalScreenDeserializer : JsonDeserializer<PreApprovalScreen> {
 
         if (!hasNewModel && (hasLegacyItems || hasLegacyApproval)) {
             // ----- Legacy → new-model mapping -----
+            val image = "fallback_image"
+
             val elements: List<PreApprovalElement>? = when {
                 // 1) items key is present AND is JSON array
                 obj.has("items") && obj.get("items")?.isJsonArray == true -> {
                     val list = obj.get("items")!!.asJsonArray
                         .mapNotNull { it.asJsonPrimitiveOrNull()?.asString }
-                        .map { text -> PreApprovalElementListItem(text = text) }
+                        .map { text -> PreApprovalElementListItem(icon = "fallback_icon", text = text) }
                     list.ifEmpty { null }
                 }
                 // 2) items key absent or not an array → treat as null
@@ -73,6 +75,7 @@ class PreApprovalScreenDeserializer : JsonDeserializer<PreApprovalScreen> {
                 type = type,
                 heading = heading,
                 message = message,
+                image = image,
                 elements = elements,
                 controls = controls
             )
