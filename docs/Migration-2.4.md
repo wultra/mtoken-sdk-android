@@ -18,7 +18,7 @@ Version `2.4.x` introduces a new, extensible **Pre‑approval UI Template** and 
     - `image: String?` — asset identifier to be mapped in the app
 
 3. **Structured Screen Content**  
-   Each screen can include **typed `elements`** (`LISTITEM`, `ALERT`, `BUTTON`) and **configurable `controls`** (approve/decline UI).
+   Each screen can include **typed `elements`** (`LIST_ITEM`, `ALERT`, `BUTTON`) and **configurable `controls`** (approve/decline UI).
 
 4. **Configurable Controls**
     - `decline` is optional (`type: BACK | REJECT`, optional `text`)
@@ -40,7 +40,7 @@ Version `2.4.x` introduces a new, extensible **Pre‑approval UI Template** and 
     - **Replaced by:** `preApprovalScreens: List<PreApprovalScreen>`
 
 2. **Ad‑hoc Fields Removed**
-    - **Removed:** `items: [String]` → use `elements` with `type: "LISTITEM"` and `text`
+    - **Removed:** `items: [String]` → use `elements` with `type: "LIST_ITEM"` and `text`
     - **Removed:** `approvalType` → use `controls.approve.type` (`SLIDER` or `BUTTON`)
 
 3. **Legacy Fallback Behavior**
@@ -88,7 +88,7 @@ Version `2.4.x` introduces a new, extensible **Pre‑approval UI Template** and 
       "elements": [
         { "id": "e1", "type": "ALERT", "style": "INFO", "text": "Make sure the activation takes place on your device" },
         { "id": "e2", "type": "BUTTON", "action": "PHONE", "text": "Call center", "href": "+42012345678" },
-        { "id": "e3", "type": "LISTITEM", "icon": "icon-label", "text": "You activate a new app and allow access to your accounts" }
+        { "id": "e3", "type": "LIST_ITEM", "icon": "icon-label", "text": "You activate a new app and allow access to your accounts" }
       ],
       "controls": {
         "flip": true,
@@ -112,7 +112,7 @@ Version `2.4.x` introduces a new, extensible **Pre‑approval UI Template** and 
 ### Migration Checklist
 
 - Replace `preApprovalScreen` → **`preApprovalScreens`**.
-- Replace `items` → **`elements` of type `LISTITEM`**.
+- Replace `items` → **`elements` of type `LIST_ITEM`**.
 - Map `approvalType` → **`controls.approve.type`**.
 - Use `id`, `backButton`, `image` when present.
 

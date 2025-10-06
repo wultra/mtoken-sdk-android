@@ -82,7 +82,7 @@ internal class PreApprovalElementTypeAdapter : TypeAdapter<PreApprovalElement>()
         } ?: PreApprovalElement.ElementType.UNKNOWN
 
         return when (type) {
-            PreApprovalElement.ElementType.LISTITEM -> {
+            PreApprovalElement.ElementType.LIST_ITEM -> {
                 val style = styleStr?.let { runCatching { PreApprovalElement.ElementStyle.valueOf(it) }.getOrNull() }
                 PreApprovalElementListItem(id = id, style = style, icon = icon, text = text)
             }

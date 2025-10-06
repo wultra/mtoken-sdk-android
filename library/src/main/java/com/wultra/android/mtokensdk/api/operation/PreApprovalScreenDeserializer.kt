@@ -27,7 +27,7 @@ import java.lang.reflect.Type
  *
  * Legacy handling:
  *  - If "items" or "approvalType" are present, build the new-model screen ONLY from those legacy bits:
- *      * items[] -> elements = [ LISTITEM(text) ... ]
+ *      * items[] -> elements = [ LIST_ITEM(text) ... ]
  *      * approvalType == "SLIDER" -> controls.approve.type = SLIDER
  *
  * New model:

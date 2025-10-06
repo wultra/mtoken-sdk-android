@@ -25,7 +25,7 @@ open class PreApprovalElement(
     /** Unique identifier of the element. */
     val id: String?,
 
-    /** Element type (LISTITEM, ALERT, BUTTON, or UNKNOWN). */
+    /** Element type (LIST_ITEM, ALERT, BUTTON, or UNKNOWN). */
     val type: ElementType,
 
     /** Icon name (asset identifier). */
@@ -39,7 +39,7 @@ open class PreApprovalElement(
      * will be chosen during deserialization.
      */
     enum class ElementType {
-        LISTITEM, // Basic list row with optional icon + text
+        LIST_ITEM, // Basic list row with optional icon + text
         ALERT, // Highlighted alert box with style + text
         BUTTON, // Action button with action + optional href
         UNKNOWN // Forward-compat fallback
@@ -100,4 +100,4 @@ class PreApprovalElementListItem(
 
     /** Textual content. */
     text: String? = null
-) : PreApprovalElement(id, ElementType.LISTITEM, icon, text)
+) : PreApprovalElement(id, ElementType.LIST_ITEM, icon, text)

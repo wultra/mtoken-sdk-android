@@ -712,7 +712,7 @@ class OperationUIDataTests {
                         },
                         {
                             "id": "e3",
-                            "type": "LISTITEM",
+                            "type": "LIST_ITEM",
                             "icon": "icon-label",
                             "text": "You activate a new app and allow access to your accounts"
                         }
