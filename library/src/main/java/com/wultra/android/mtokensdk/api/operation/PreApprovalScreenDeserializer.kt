@@ -68,7 +68,11 @@ class PreApprovalScreenDeserializer : JsonDeserializer<PreApprovalScreen> {
 
             val controls: PreApprovalControls? =
                 if (obj.getAsStringSafe("approvalType") == "SLIDER") {
-                    PreApprovalControls(approve = PreApprovalControls.Approve(PreApprovalControls.ApproveType.SLIDER))
+                    PreApprovalControls(
+                        flip = true,
+                        decline = PreApprovalControls.Decline(PreApprovalControls.DeclineType.BACK),
+                        approve = PreApprovalControls.Approve(PreApprovalControls.ApproveType.SLIDER)
+                    )
                 } else { null }
 
             return PreApprovalScreen(
