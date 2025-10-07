@@ -205,7 +205,7 @@ class IntegrationTests {
         )
 
         val opFuture = CompletableFuture<Any?>()
-        ops.rejectOperation(opFromList, RejectionData("POSSIBLE_FRAUD")) { result ->
+        ops.rejectOperation(opFromList, RejectionData(RejectionReason.PREAPPROVAL)) { result ->
             result.onFailure { opFuture.completeExceptionally(it) }
                 .onSuccess {
                     val finalOp = IntegrationUtils.getOperation(op.operationId)
