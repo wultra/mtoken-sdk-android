@@ -47,22 +47,29 @@ open class PreApprovalElement(
     enum class ElementType {
 
         /** Basic list row. Retype the class to [PreApprovalElementListItem] */
-        @SerializedName("LIST_ITEM") LIST_ITEM,
+        @SerializedName("LIST_ITEM")
+        LIST_ITEM,
 
         /** Highlighted alert box [PreApprovalElementAlert] */
-        @SerializedName("ALERT") ALERT,
+        @SerializedName("ALERT")
+        ALERT,
 
         /** Action button with action [PreApprovalElementButton] */
-        @SerializedName("BUTTON") BUTTON,
-
+        @SerializedName("BUTTON")
+        BUTTON,
         UNKNOWN
     }
 
     /** Supported alert styles. */
     enum class ElementStyle {
-        @SerializedName("INFO") INFO,
-        @SerializedName("WARNING") WARNING,
-        @SerializedName("DANGER") DANGER
+        @SerializedName("INFO")
+        INFO,
+
+        @SerializedName("WARNING")
+        WARNING,
+
+        @SerializedName("DANGER")
+        DANGER
     }
 }
 
@@ -87,9 +94,15 @@ class PreApprovalElementButton(
     text: String? = null
 ) : PreApprovalElement(id, ElementType.BUTTON, icon, text) {
     enum class ButtonAction {
-        @SerializedName("LINK") LINK,
-        @SerializedName("MAIL") MAIL,
-        @SerializedName("PHONE") PHONE
+
+        @SerializedName("LINK")
+        LINK,
+
+        @SerializedName("MAIL")
+        MAIL,
+
+        @SerializedName("PHONE")
+        PHONE
     }
 }
 

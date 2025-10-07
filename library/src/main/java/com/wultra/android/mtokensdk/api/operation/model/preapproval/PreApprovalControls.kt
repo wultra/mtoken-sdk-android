@@ -70,19 +70,28 @@ data class PreApprovalControls(
 
     /** Axis for arranging controls. */
     enum class ButtonAxis {
-        @SerializedName("HORIZONTAL") HORIZONTAL,
-        @SerializedName("VERTICAL") VERTICAL
+        @SerializedName("HORIZONTAL")
+        HORIZONTAL,
+
+        @SerializedName("VERTICAL")
+        VERTICAL
     }
 
     /** Decline action types. */
     enum class DeclineType {
-        @SerializedName("BACK") BACK,
-        @SerializedName("REJECT") REJECT
+        @SerializedName("BACK")
+        BACK,
+
+        @SerializedName("REJECT")
+        REJECT
     }
 
     /** Approve action types. */
     enum class ApproveType {
-        @SerializedName("BUTTON") BUTTON,
-        @SerializedName("SLIDER") SLIDER
+        @SerializedName("BUTTON")
+        BUTTON,
+
+        @SerializedName("SLIDER")
+        SLIDER
     }
 }

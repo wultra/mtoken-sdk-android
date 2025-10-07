@@ -60,9 +60,14 @@ open class PreApprovalScreen(
 ) {
     enum class Type(val value: String) {
 
-        @SerializedName("INFO") INFO("INFO"),
-        @SerializedName("WARNING") WARNING("WARNING"),
-        @SerializedName("QR_SCAN") QR_SCAN("QR_SCAN"),
+        @SerializedName("INFO")
+        INFO("INFO"),
+
+        @SerializedName("WARNING")
+        WARNING("WARNING"),
+
+        @SerializedName("QR_SCAN")
+        QR_SCAN("QR_SCAN"),
         UNKNOWN("UNKNOWN")
     }
 }
