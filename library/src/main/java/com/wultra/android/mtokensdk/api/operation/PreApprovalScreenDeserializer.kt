@@ -20,6 +20,7 @@ import com.wultra.android.mtokensdk.api.operation.model.preapproval.PreApprovalC
 import com.wultra.android.mtokensdk.api.operation.model.preapproval.PreApprovalElement
 import com.wultra.android.mtokensdk.api.operation.model.preapproval.PreApprovalElementListItem
 import com.wultra.android.mtokensdk.api.operation.model.preapproval.PreApprovalScreen
+import com.wultra.android.mtokensdk.log.WMTLogger
 import java.lang.reflect.Type
 
 /**
@@ -38,9 +39,18 @@ class PreApprovalScreenDeserializer : JsonDeserializer<PreApprovalScreen> {
     override fun deserialize(json: JsonElement, typeOfT: Type, ctx: JsonDeserializationContext): PreApprovalScreen {
         val obj = json.asJsonObject
 
-        val type = obj.getAsStringSafe("type")
-            ?.let { runCatching { PreApprovalScreen.Type.valueOf(it) }.getOrDefault(PreApprovalScreen.Type.UNKNOWN) }
-            ?: PreApprovalScreen.Type.UNKNOWN
+        val typeStr = obj.getAsStringSafe("type")
+        val type: PreApprovalScreen.Type = if (typeStr != null) {
+            try {
+                PreApprovalScreen.Type.valueOf(typeStr)
+            } catch (_: Exception) {
+                WMTLogger.w("Unknown screen type '$typeStr' — using UNKNOWN")
+                PreApprovalScreen.Type.UNKNOWN
+            }
+        } else {
+            WMTLogger.w("Screen type not provided — falling back to UNKNOWN")
+            PreApprovalScreen.Type.UNKNOWN
+        }
 
         val heading = obj.getAsStringSafe("heading") ?: ""
         val message = obj.getAsStringSafe("message") ?: ""
@@ -90,11 +100,15 @@ class PreApprovalScreenDeserializer : JsonDeserializer<PreApprovalScreen> {
         val backButton = obj.getAsBooleanSafe("backButton")
         val image = obj.getAsStringSafe("image")
 
+        // Parse the "elements" array if present and valid
         val elements: List<PreApprovalElement>? = if (obj.has("elements") && obj.get("elements")?.isJsonArray == true) {
+            // Deserialize each element in the array into a PreApprovalElement
             val list = obj.get("elements")!!.asJsonArray
                 .map { el -> ctx.deserialize<PreApprovalElement>(el, PreApprovalElement::class.java) }
+            // Return null if the list is empty (to avoid useless empty arrays)
             list.ifEmpty { null }
         } else {
+            // "elements" field missing or not an array
             null
         }
 

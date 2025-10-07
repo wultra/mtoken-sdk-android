@@ -16,6 +16,8 @@
 
 package com.wultra.android.mtokensdk.api.operation.model.preapproval
 
+import com.google.gson.annotations.SerializedName
+
 /**
  * Abstract element rendered inside a [PreApprovalScreen].
  * Use [PreApprovalElementTypeAdapter] with Gson to deserialize arrays of mixed element types.
@@ -23,15 +25,19 @@ package com.wultra.android.mtokensdk.api.operation.model.preapproval
 open class PreApprovalElement(
 
     /** Unique identifier of the element. */
+    @SerializedName("id")
     val id: String?,
 
-    /** Element type (LIST_ITEM, ALERT, BUTTON, or UNKNOWN). */
+    /** Element type. */
+    @SerializedName("type")
     val type: ElementType,
 
     /** Icon name (asset identifier). */
+    @SerializedName("icon")
     val icon: String?,
 
     /** Textual content. */
+    @SerializedName("text")
     val text: String?
 ) {
     /**
@@ -39,14 +45,25 @@ open class PreApprovalElement(
      * will be chosen during deserialization.
      */
     enum class ElementType {
-        LIST_ITEM, // Basic list row with optional icon + text
-        ALERT, // Highlighted alert box with style + text
-        BUTTON, // Action button with action + optional href
-        UNKNOWN // Forward-compat fallback
+
+        /** Basic list row. Retype the class to [PreApprovalElementListItem] */
+        @SerializedName("LIST_ITEM") LIST_ITEM,
+
+        /** Highlighted alert box [PreApprovalElementAlert] */
+        @SerializedName("ALERT") ALERT,
+
+        /** Action button with action [PreApprovalElementButton] */
+        @SerializedName("BUTTON") BUTTON,
+
+        UNKNOWN
     }
 
     /** Supported alert styles. */
-    enum class ElementStyle { INFO, WARNING, DANGER }
+    enum class ElementStyle {
+        @SerializedName("INFO") INFO,
+        @SerializedName("WARNING") WARNING,
+        @SerializedName("DANGER") DANGER
+    }
 }
 
 /** Button element (action + optional href + text). */
@@ -56,9 +73,11 @@ class PreApprovalElementButton(
     id: String? = null,
 
     /** Supported button actions. */
+    @SerializedName("action")
     val action: ButtonAction? = null,
 
-    /** URL / resource reference (for `LINK`, `MAIL`, `PHONE` actions). */
+    /** URL / resource reference. */
+    @SerializedName("href")
     val href: String? = null,
 
     /** Icon name (asset identifier). */
@@ -67,7 +86,11 @@ class PreApprovalElementButton(
     /** Textual content. */
     text: String? = null
 ) : PreApprovalElement(id, ElementType.BUTTON, icon, text) {
-    enum class ButtonAction { LINK, MAIL, PHONE }
+    enum class ButtonAction {
+        @SerializedName("LINK") LINK,
+        @SerializedName("MAIL") MAIL,
+        @SerializedName("PHONE") PHONE
+    }
 }
 
 /** Alert element (highlighted message with style). */
@@ -77,6 +100,7 @@ class PreApprovalElementAlert(
     id: String? = null,
 
     /** Visual style for the alert. */
+    @SerializedName("style")
     val style: PreApprovalElement.ElementStyle? = null,
 
     /** Icon name (asset identifier). */
@@ -93,6 +117,7 @@ class PreApprovalElementListItem(
     id: String? = null,
 
     /** Visual style for the list item. */
+    @SerializedName("style")
     val style: PreApprovalElement.ElementStyle? = null,
 
     /** Icon name (asset identifier). */

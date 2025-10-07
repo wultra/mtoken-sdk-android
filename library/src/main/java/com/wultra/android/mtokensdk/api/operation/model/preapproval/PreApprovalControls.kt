@@ -16,65 +16,73 @@
 
 package com.wultra.android.mtokensdk.api.operation.model.preapproval
 
+import com.google.gson.annotations.SerializedName
+
 /**
  * Defines approve/decline control configuration on the screen.
  */
 data class PreApprovalControls(
 
-    /**
-     * Whether to flip the order of approve/decline buttons.
-     */
+    /** Whether to flip the order of approve/decline buttons. */
+    @SerializedName("flip")
     val flip: Boolean? = null,
 
-    /**
-     * Axis for arranging buttons.
-     */
+    /** Axis for arranging buttons. */
+    @SerializedName("axis")
     val axis: ButtonAxis? = null,
 
-    /**
-     * Specification of the decline control.
-     */
+    /** Specification of the decline control. */
+    @SerializedName("decline")
     val decline: Decline? = null,
 
-    /**
-     * Specification of the approve control.
-     */
+    /** Specification of the approve control. */
+    @SerializedName("approve")
     val approve: Approve? = null,
 ) {
 
-    /**
-     * Decline control specification.
-     */
+    /** Decline control specification. */
     data class Decline(
 
-        /** Type of decline action (`BACK` or `REJECT`). */
+        /** Type of decline action. */
+        @SerializedName("type")
         val type: DeclineType? = null,
 
         /** Text for the decline button. */
+        @SerializedName("text")
         val text: String? = null
     )
 
-    /**
-     * Approve control specification.
-     */
+    /** Approve control specification. */
     data class Approve(
 
-        /** Type of approve action (`SLIDER` or `BUTTON`). */
+        /** Type of approve action. */
+        @SerializedName("type")
         val type: ApproveType? = null,
 
         /** Text for the approve control. */
+        @SerializedName("text")
         val text: String? = null,
 
         /** Countdown timer (in seconds) before enabling the approve control. */
+        @SerializedName("counter")
         val counter: Int? = null
     )
 
     /** Axis for arranging controls. */
-    enum class ButtonAxis { HORIZONTAL, VERTICAL }
+    enum class ButtonAxis {
+        @SerializedName("HORIZONTAL") HORIZONTAL,
+        @SerializedName("VERTICAL") VERTICAL
+    }
 
     /** Decline action types. */
-    enum class DeclineType { BACK, REJECT }
+    enum class DeclineType {
+        @SerializedName("BACK") BACK,
+        @SerializedName("REJECT") REJECT
+    }
 
     /** Approve action types. */
-    enum class ApproveType { BUTTON, SLIDER }
+    enum class ApproveType {
+        @SerializedName("BUTTON") BUTTON,
+        @SerializedName("SLIDER") SLIDER
+    }
 }

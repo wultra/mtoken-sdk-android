@@ -16,6 +16,8 @@
 
 package com.wultra.android.mtokensdk.api.operation.model.preapproval
 
+import com.google.gson.annotations.SerializedName
+
 /**
  *  PreApprovalScreen contains data to be presented before approving operation
  *
@@ -23,50 +25,44 @@ package com.wultra.android.mtokensdk.api.operation.model.preapproval
  *  and shall be displayed before operation is confirmed
  */
 open class PreApprovalScreen(
-    /**
-     * Type of PreApprovalScreen (`WARNING`, `INFO`, `QR_SCAN` or `UNKNOWN` for future compatibility)
-     */
+
+    /** Type of the PreApprovalScreen */
+    @SerializedName("type")
     val type: Type,
 
-    /**
-     * Heading of the pre-approval screen
-     */
+    /** Heading of the pre-approval screen */
+    @SerializedName("heading")
     val heading: String,
 
-    /**
-     * Message to the user
-     */
+    /** Message to the user */
+    @SerializedName("message")
     val message: String,
 
-    /**
-     * Identifier of the screen
-     */
+    /** Identifier of the screen */
+    @SerializedName("id")
     val id: String? = null,
 
-    /**
-     * Whether the back button should be visible
-     */
+    /** Whether the back button should be visible */
+    @SerializedName("backButton")
     val backButton: Boolean? = null,
 
-    /**
-     * Image identifier
-     */
+    /** Image identifier */
+    @SerializedName("image")
     val image: String? = null,
 
-    /**
-     * Structured elements to display on the screen
-     */
+    /** Structured elements to display on the screen */
+    @SerializedName("elements")
     val elements: List<PreApprovalElement>? = null,
 
-    /**
-     * Approve/decline control specification
-     */
+    /** Approve/decline control specification */
+    @SerializedName("controls")
     val controls: PreApprovalControls? = null
 ) {
     enum class Type(val value: String) {
-        INFO("INFO"),
-        WARNING("WARNING"),
-        QR_SCAN("QR_SCAN"),
+
+        @SerializedName("INFO") INFO("INFO"),
+        @SerializedName("WARNING") WARNING("WARNING"),
+        @SerializedName("QR_SCAN") QR_SCAN("QR_SCAN"),
         UNKNOWN("UNKNOWN")
     }
 }

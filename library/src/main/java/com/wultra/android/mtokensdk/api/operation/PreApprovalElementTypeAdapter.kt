@@ -24,6 +24,7 @@ import com.wultra.android.mtokensdk.api.operation.model.preapproval.PreApprovalE
 import com.wultra.android.mtokensdk.api.operation.model.preapproval.PreApprovalElementAlert
 import com.wultra.android.mtokensdk.api.operation.model.preapproval.PreApprovalElementButton
 import com.wultra.android.mtokensdk.api.operation.model.preapproval.PreApprovalElementListItem
+import com.wultra.android.mtokensdk.log.WMTLogger
 
 /**
  * Type adapter for deserializing [PreApprovalElement] with concrete subtypes.
@@ -55,20 +56,17 @@ internal class PreApprovalElementTypeAdapter : TypeAdapter<PreApprovalElement>()
         while (reader.hasNext()) {
             token = reader.peek()
             if (token == JsonToken.NAME) {
-                when (reader.nextName()) {
+                val name = reader.nextName()
+                when (name) {
                     "type" -> typeStr = reader.nextStringOrNull()
                     "id" -> id = reader.nextStringOrNull()
                     "icon" -> icon = reader.nextStringOrNull()
                     "text" -> text = reader.nextStringOrNull()
-
-                    // alert/listItem
                     "style" -> styleStr = reader.nextStringOrNull()
-
-                    // button
                     "action" -> actionStr = reader.nextStringOrNull()
                     "href" -> href = reader.nextStringOrNull()
 
-                    else -> reader.skipValueSafe()
+                    else -> reader.skipValueSafe(name)
                 }
             } else {
                 reader.skipValueSafe()
@@ -77,9 +75,17 @@ internal class PreApprovalElementTypeAdapter : TypeAdapter<PreApprovalElement>()
 
         reader.endObject()
 
-        val type = typeStr?.let {
-            runCatching { PreApprovalElement.ElementType.valueOf(it) }.getOrDefault(PreApprovalElement.ElementType.UNKNOWN)
-        } ?: PreApprovalElement.ElementType.UNKNOWN
+        val type = if (typeStr != null) {
+            try {
+                PreApprovalElement.ElementType.valueOf(typeStr)
+            } catch (_: Exception) {
+                WMTLogger.w("Unknown type '$typeStr' — using UNKNOWN")
+                PreApprovalElement.ElementType.UNKNOWN
+            }
+        } else {
+            WMTLogger.w("Type not provided — falling back to UNKNOWN")
+            PreApprovalElement.ElementType.UNKNOWN
+        }
 
         return when (type) {
             PreApprovalElement.ElementType.LIST_ITEM -> {
@@ -114,21 +120,29 @@ internal class PreApprovalElementTypeAdapter : TypeAdapter<PreApprovalElement>()
 
     // ---- helpers ----
 
-    private fun JsonReader.nextStringOrNull(): String? =
-        if (peek() == JsonToken.NULL) { nextNull(); null } else nextString()
+    private fun JsonReader.nextStringOrNull(): String? {
+        return if (peek() == JsonToken.NULL) {
+            nextNull()
+            null
+        } else {
+            nextString()
+        }
+    }
 
-    private fun JsonReader.skipValueSafe() {
+    private fun JsonReader.skipValueSafe(key: String? = null) {
         when (peek()) {
             JsonToken.BEGIN_ARRAY -> {
+                WMTLogger.w("Skipping unexpected JSON array: '$key'")
                 beginArray()
                 while (hasNext()) skipValueSafe()
                 endArray()
             }
+
             JsonToken.BEGIN_OBJECT -> {
+                WMTLogger.w("Skipping unexpected JSON object: '$key'")
                 beginObject()
                 while (hasNext()) {
                     if (peek() == JsonToken.NAME) {
-                        nextName()
                         skipValueSafe()
                     } else {
                         skipValue()
@@ -136,7 +150,11 @@ internal class PreApprovalElementTypeAdapter : TypeAdapter<PreApprovalElement>()
                 }
                 endObject()
             }
-            else -> skipValue()
+
+            else -> {
+                WMTLogger.w("Skipping unexpected JSON value: $key")
+                skipValue()
+            }
         }
     }
 }

@@ -31,7 +31,7 @@ internal data class RejectRequestObject(
     @SerializedName("reason")
     val reason: String,
 
-    /** Additional mobile token data for rejection (available with PowerAuth server 1.10+) */
+    /** Additional mobile token data for rejection (available with PowerAuth server 2.0+) */
     @SerializedName("mobileTokenData")
     val mobileTokenData: Map<String, Any>? = null
 )
