@@ -278,8 +278,8 @@ class OperationUIDataTests {
         val first = e1.first()
         assertEquals(true, first is PreApprovalElementAlert)
         (first as PreApprovalElementAlert).let { alert ->
-            assertEquals(PreApprovalElement.ElementType.ALERT, alert.type)
-            assertEquals(PreApprovalElement.ElementStyle.INFO, alert.style)
+            assertEquals(PreApprovalElement.Type.ALERT, alert.type)
+            assertEquals(PreApprovalElement.Style.INFO, alert.style)
             assertEquals("Make sure the activation takes place on your device", alert.text)
         }
 
@@ -383,7 +383,7 @@ class OperationUIDataTests {
         val r = prepareResult(json) ?: run { fail("parse fail"); return }
         val s = r.ui?.preApprovalScreens?.firstOrNull() ?: run { fail("no screen"); return }
         val e = s.elements?.firstOrNull() ?: run { fail("no elements"); return }
-        assertEquals(PreApprovalElement.ElementType.UNKNOWN, e.type)
+        assertEquals(PreApprovalElement.Type.UNKNOWN, e.type)
         assertEquals("new-kind", e.text)
     }
 

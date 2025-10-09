@@ -16,12 +16,19 @@
 
 package com.wultra.android.mtokensdk.api.operation
 import com.google.gson.*
+import com.google.gson.reflect.TypeToken
 import com.wultra.android.mtokensdk.api.operation.model.preapproval.PreApprovalControls
 import com.wultra.android.mtokensdk.api.operation.model.preapproval.PreApprovalElement
 import com.wultra.android.mtokensdk.api.operation.model.preapproval.PreApprovalElementListItem
 import com.wultra.android.mtokensdk.api.operation.model.preapproval.PreApprovalScreen
-import com.wultra.android.mtokensdk.log.WMTLogger
+import com.wultra.android.mtokensdk.api.operation.utils.asJsonPrimitiveOrNull
+import com.wultra.android.mtokensdk.api.operation.utils.getAsBooleanSafe
+import com.wultra.android.mtokensdk.api.operation.utils.getAsStringSafe
+import com.wultra.android.mtokensdk.api.operation.utils.parseEnumWithFallback
+import com.wultra.android.mtokensdk.api.operation.utils.safeDeserializeArray
+import com.wultra.android.mtokensdk.api.operation.utils.safeDeserializeObject
 import java.lang.reflect.Type
+import kotlin.collections.ifEmpty
 
 /**
  * Gson deserializer [PreApprovalScreen].
@@ -38,84 +45,28 @@ class PreApprovalScreenDeserializer : JsonDeserializer<PreApprovalScreen> {
 
     override fun deserialize(json: JsonElement, typeOfT: Type, ctx: JsonDeserializationContext): PreApprovalScreen {
         val obj = json.asJsonObject
-
-        val typeStr = obj.getAsStringSafe("type")
-        val type: PreApprovalScreen.Type = if (typeStr != null) {
-            try {
-                PreApprovalScreen.Type.valueOf(typeStr)
-            } catch (_: Exception) {
-                WMTLogger.w("Unknown screen type '$typeStr' — using UNKNOWN")
-                PreApprovalScreen.Type.UNKNOWN
-            }
-        } else {
-            WMTLogger.w("Screen type not provided — falling back to UNKNOWN")
-            PreApprovalScreen.Type.UNKNOWN
-        }
-
+        val type = parseScreenType(obj)
         val heading = obj.getAsStringSafe("heading") ?: ""
         val message = obj.getAsStringSafe("message") ?: ""
+        val presence = detectVersion(obj)
 
-        // Presence flags
-        val hasNewModel = obj.has("elements") || obj.has("controls") || obj.has("id") || obj.has("backButton") || obj.has("image")
-        val hasLegacyItems = obj.get("items")?.isJsonArray == true
-        val hasLegacyApproval = obj.get("approvalType")?.asJsonPrimitiveOrNull()?.isString == true
-
-        if (!hasNewModel && (hasLegacyItems || hasLegacyApproval)) {
-            // ----- Legacy → new-model mapping -----
-            val image = "fallback_image"
-
-            val elements: List<PreApprovalElement>? = when {
-                // 1) items key is present AND is JSON array
-                obj.has("items") && obj.get("items")?.isJsonArray == true -> {
-                    val list = obj.get("items")!!.asJsonArray
-                        .mapNotNull { it.asJsonPrimitiveOrNull()?.asString }
-                        .map { text -> PreApprovalElementListItem(icon = "fallback_icon", text = text) }
-                    list.ifEmpty { null }
-                }
-                // 2) items key absent or not an array → treat as null
-                else -> null
-            }
-
-            val controls: PreApprovalControls? =
-                if (obj.getAsStringSafe("approvalType") == "SLIDER") {
-                    PreApprovalControls(
-                        flip = true,
-                        decline = PreApprovalControls.Decline(PreApprovalControls.DeclineType.BACK),
-                        approve = PreApprovalControls.Approve(PreApprovalControls.ApproveType.SLIDER)
-                    )
-                } else { null }
-
-            return PreApprovalScreen(
-                type = type,
-                heading = heading,
-                message = message,
-                image = image,
-                elements = elements,
-                controls = controls
-            )
+        // --- Legacy branch ---
+        if (!presence.hasNewModel && (presence.hasLegacyItems || presence.hasLegacyApproval)) {
+            return parseLegacyScreen(ctx, obj, type, heading, message)
         }
 
-        // ----- New-model parsing (preferred when present) -----
+        // --- New-model branch (preferred) ---
         val id = obj.getAsStringSafe("id")
         val backButton = obj.getAsBooleanSafe("backButton")
         val image = obj.getAsStringSafe("image")
 
-        // Parse the "elements" array if present and valid
-        val elements: List<PreApprovalElement>? = if (obj.has("elements") && obj.get("elements")?.isJsonArray == true) {
-            // Deserialize each element in the array into a PreApprovalElement
-            val list = obj.get("elements")!!.asJsonArray
-                .map { el -> ctx.deserialize<PreApprovalElement>(el, PreApprovalElement::class.java) }
-            // Return null if the list is empty (to avoid useless empty arrays)
-            list.ifEmpty { null }
-        } else {
-            // "elements" field missing or not an array
-            null
-        }
+        // Parse the elements array (if present)
+        val elements: List<PreApprovalElement>? = safeDeserializeArray(ctx, obj.get("elements"), object : TypeToken<List<PreApprovalElement>>() {}.type)
 
-        val controls: PreApprovalControls? = obj.get("controls")
-            ?.takeIf { it.isJsonObject }
-            ?.let { el -> ctx.deserialize(el, PreApprovalControls::class.java) }
+        // Parse controls object (optional)
+        val controls: PreApprovalControls? = safeDeserializeObject(ctx, obj.get("controls"), PreApprovalControls::class.java)
 
+        // --- Build the final screen instance ---
         return PreApprovalScreen(
             type = type,
             heading = heading,
@@ -128,13 +79,72 @@ class PreApprovalScreenDeserializer : JsonDeserializer<PreApprovalScreen> {
         )
     }
 
-    // helpers
-    private fun JsonObject.getAsStringSafe(name: String): String? =
-        this.get(name)?.asJsonPrimitiveOrNull()?.takeIf { it.isString }?.asString
+    // ---- helpers ----
+    private fun parseScreenType(obj: JsonObject): PreApprovalScreen.Type {
+        val typeStr = obj.getAsStringSafe("type")
+        return parseEnumWithFallback(typeStr, "PreApproval screen type")
+    }
 
-    private fun JsonObject.getAsBooleanSafe(name: String): Boolean? =
-        this.get(name)?.asJsonPrimitiveOrNull()?.takeIf { it.isBoolean }?.asBoolean
+    private data class PresenceFlags(
+        val hasNewModel: Boolean,
+        val hasLegacyItems: Boolean,
+        val hasLegacyApproval: Boolean
+    )
 
-    private fun JsonElement.asJsonPrimitiveOrNull(): JsonPrimitive? =
-        takeIf { it.isJsonPrimitive }?.asJsonPrimitive
+    private fun detectVersion(obj: JsonObject): PresenceFlags {
+        val hasNewModel = obj.has("elements") || obj.has("controls") || obj.has("id") || obj.has("backButton") || obj.has("image")
+        val hasLegacyItems = obj.get("items")?.isJsonArray == true
+        val hasLegacyApproval = obj.get("approvalType")?.asJsonPrimitiveOrNull()?.isString == true
+
+        return PresenceFlags(hasNewModel, hasLegacyItems, hasLegacyApproval)
+    }
+
+    /**
+     * Handles the conversion from the old single-screen JSON format into
+     * a new-model [PreApprovalScreen].
+     */
+    private fun parseLegacyScreen(
+        ctx: JsonDeserializationContext,
+        obj: JsonObject,
+        type: PreApprovalScreen.Type,
+        heading: String,
+        message: String
+    ): PreApprovalScreen {
+        val image = obj.getAsStringSafe("image") ?: FALLBACK_IMAGE
+
+        // create elements from legacy "items" array
+        val rawItems: List<String>? = safeDeserializeArray(ctx, obj.get("items"), object : TypeToken<List<String>>() {}.type)
+        val elements: List<PreApprovalElement>? = rawItems
+            ?.map { text -> PreApprovalElementListItem(icon = FALLBACK_ICON, text = text) }
+            ?.ifEmpty { null }
+
+        // create controls from legacy "approvalType"
+        val controls: PreApprovalControls? =
+            if (obj.getAsStringSafe("approvalType") == "SLIDER") {
+                PreApprovalControls(
+                    flip = true,
+                    decline = PreApprovalControls.Decline(PreApprovalControls.DeclineType.BACK),
+                    approve = PreApprovalControls.Approve(PreApprovalControls.ApproveType.SLIDER)
+                )
+            } else {
+                null
+            }
+
+        return PreApprovalScreen(
+            type = type,
+            heading = heading,
+            message = message,
+            image = image,
+            elements = elements,
+            controls = controls
+        )
+    }
+
+    // Static constants — fallback identifiers for legacy screens
+    companion object {
+        /** Default placeholder image for legacy Pre-approval screens */
+        private const val FALLBACK_IMAGE = "fallback_image"
+        /** Default placeholder icon for legacy list items */
+        private const val FALLBACK_ICON = "fallback_icon"
+    }
 }

@@ -24,91 +24,46 @@ import com.wultra.android.mtokensdk.api.operation.model.preapproval.PreApprovalE
 import com.wultra.android.mtokensdk.api.operation.model.preapproval.PreApprovalElementAlert
 import com.wultra.android.mtokensdk.api.operation.model.preapproval.PreApprovalElementButton
 import com.wultra.android.mtokensdk.api.operation.model.preapproval.PreApprovalElementListItem
-import com.wultra.android.mtokensdk.log.WMTLogger
+import com.wultra.android.mtokensdk.api.operation.utils.parseEnumOrNull
+import com.wultra.android.mtokensdk.api.operation.utils.parseEnumWithFallback
+import com.wultra.android.mtokensdk.api.operation.utils.readShallowStringMap
 
 /**
- * Type adapter for deserializing [PreApprovalElement] with concrete subtypes.
+ * Type adapter for deserializing [PreApprovalElement].
+ * - Creates concrete subtypes: [PreApprovalElementListItem], [PreApprovalElementAlert], [PreApprovalElementButton]
  * - Safely handles unknown fields and unknown element types.
  * - Serialization is not used -> write() is a no-op.
  */
 internal class PreApprovalElementTypeAdapter : TypeAdapter<PreApprovalElement>() {
 
     override fun read(reader: JsonReader): PreApprovalElement? {
-        var token = reader.peek()
-        if (token == JsonToken.NULL) {
-            reader.nextNull()
-            return null
-        }
+        if (reader.peek() == JsonToken.NULL) { reader.nextNull(); return null }
 
-        // We parse the object into a light map, then build the proper subtype.
-        reader.beginObject()
+        // Read once → then branch by type
+        val map = reader.readShallowStringMap()
 
-        var typeStr: String? = null
-        var id: String? = null
-        var icon: String? = null
-        var text: String? = null
-
-        // subtype-specific
-        var styleStr: String? = null
-        var actionStr: String? = null
-        var href: String? = null
-
-        while (reader.hasNext()) {
-            token = reader.peek()
-            if (token == JsonToken.NAME) {
-                val name = reader.nextName()
-                when (name) {
-                    "type" -> typeStr = reader.nextStringOrNull()
-                    "id" -> id = reader.nextStringOrNull()
-                    "icon" -> icon = reader.nextStringOrNull()
-                    "text" -> text = reader.nextStringOrNull()
-                    "style" -> styleStr = reader.nextStringOrNull()
-                    "action" -> actionStr = reader.nextStringOrNull()
-                    "href" -> href = reader.nextStringOrNull()
-
-                    else -> reader.skipValueSafe(name)
-                }
-            } else {
-                reader.skipValueSafe()
-            }
-        }
-
-        reader.endObject()
-
-        val type = if (typeStr != null) {
-            try {
-                PreApprovalElement.ElementType.valueOf(typeStr)
-            } catch (_: Exception) {
-                WMTLogger.w("Unknown type '$typeStr' — using UNKNOWN")
-                PreApprovalElement.ElementType.UNKNOWN
-            }
-        } else {
-            WMTLogger.w("Type not provided — falling back to UNKNOWN")
-            PreApprovalElement.ElementType.UNKNOWN
-        }
+        val type = parseScreenType(map["type"])
+        val id = map["id"]
+        val icon = map["icon"]
+        val text = map["text"]
 
         return when (type) {
-            PreApprovalElement.ElementType.LIST_ITEM -> {
-                val style = styleStr?.let { runCatching { PreApprovalElement.ElementStyle.valueOf(it) }.getOrNull() }
+            PreApprovalElement.Type.LIST_ITEM -> {
+                val style = map["style"]?.parseEnumOrNull<PreApprovalElement.Style>()
                 PreApprovalElementListItem(id = id, style = style, icon = icon, text = text)
             }
-            PreApprovalElement.ElementType.ALERT -> {
-                val style = styleStr?.let { runCatching { PreApprovalElement.ElementStyle.valueOf(it) }.getOrNull() }
+            PreApprovalElement.Type.ALERT -> {
+                val style = map["style"]?.parseEnumOrNull<PreApprovalElement.Style>()
                 PreApprovalElementAlert(id = id, style = style, icon = icon, text = text)
             }
-            PreApprovalElement.ElementType.BUTTON -> {
-                val action = actionStr?.let { runCatching { PreApprovalElementButton.ButtonAction.valueOf(it) }.getOrNull() }
-                PreApprovalElementButton(
-                    id = id,
-                    action = action,
-                    href = href,
-                    icon = icon,
-                    text = text
-                )
+            PreApprovalElement.Type.BUTTON -> {
+                val action = map["action"]?.parseEnumOrNull<PreApprovalElementButton.ButtonAction>()
+                val href = map["href"]
+                PreApprovalElementButton(id = id, action = action, href = href, icon = icon, text = text)
             }
-            PreApprovalElement.ElementType.UNKNOWN -> {
-                // keep base instance; allows forward-compat
-                PreApprovalElement(id = id, type = PreApprovalElement.ElementType.UNKNOWN, icon = icon, text = text)
+            PreApprovalElement.Type.UNKNOWN -> {
+                // keep base instance for forward compatibility
+                PreApprovalElement(id = id, type = PreApprovalElement.Type.UNKNOWN, icon = icon, text = text)
             }
         }
     }
@@ -119,42 +74,7 @@ internal class PreApprovalElementTypeAdapter : TypeAdapter<PreApprovalElement>()
     }
 
     // ---- helpers ----
-
-    private fun JsonReader.nextStringOrNull(): String? {
-        return if (peek() == JsonToken.NULL) {
-            nextNull()
-            null
-        } else {
-            nextString()
-        }
-    }
-
-    private fun JsonReader.skipValueSafe(key: String? = null) {
-        when (peek()) {
-            JsonToken.BEGIN_ARRAY -> {
-                WMTLogger.w("Skipping unexpected JSON array: '$key'")
-                beginArray()
-                while (hasNext()) skipValueSafe()
-                endArray()
-            }
-
-            JsonToken.BEGIN_OBJECT -> {
-                WMTLogger.w("Skipping unexpected JSON object: '$key'")
-                beginObject()
-                while (hasNext()) {
-                    if (peek() == JsonToken.NAME) {
-                        skipValueSafe()
-                    } else {
-                        skipValue()
-                    }
-                }
-                endObject()
-            }
-
-            else -> {
-                WMTLogger.w("Skipping unexpected JSON value: $key")
-                skipValue()
-            }
-        }
+    private fun parseScreenType(typeStr: String?): PreApprovalElement.Type {
+        return parseEnumWithFallback(typeStr, "PreApproval element type")
     }
 }

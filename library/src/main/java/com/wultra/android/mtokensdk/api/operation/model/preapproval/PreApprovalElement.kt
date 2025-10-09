@@ -30,7 +30,7 @@ open class PreApprovalElement(
 
     /** Element type. */
     @SerializedName("type")
-    val type: ElementType,
+    val type: Type,
 
     /** Icon name (asset identifier). */
     @SerializedName("icon")
@@ -44,7 +44,7 @@ open class PreApprovalElement(
      * Type of the element. Based on this type, a proper subclass
      * will be chosen during deserialization.
      */
-    enum class ElementType {
+    enum class Type {
 
         /** Basic list row. Retype the class to [PreApprovalElementListItem] */
         @SerializedName("LIST_ITEM")
@@ -61,7 +61,7 @@ open class PreApprovalElement(
     }
 
     /** Supported alert styles. */
-    enum class ElementStyle {
+    enum class Style {
         @SerializedName("INFO")
         INFO,
 
@@ -92,7 +92,7 @@ class PreApprovalElementButton(
 
     /** Textual content. */
     text: String? = null
-) : PreApprovalElement(id, ElementType.BUTTON, icon, text) {
+) : PreApprovalElement(id, Type.BUTTON, icon, text) {
     enum class ButtonAction {
 
         @SerializedName("LINK")
@@ -114,14 +114,14 @@ class PreApprovalElementAlert(
 
     /** Visual style for the alert. */
     @SerializedName("style")
-    val style: PreApprovalElement.ElementStyle? = null,
+    val style: PreApprovalElement.Style? = null,
 
     /** Icon name (asset identifier). */
     icon: String? = null,
 
     /** Textual content. */
     text: String? = null
-) : PreApprovalElement(id, ElementType.ALERT, icon, text)
+) : PreApprovalElement(id, Type.ALERT, icon, text)
 
 /** List item (one row with optional icon + text + optional style). */
 class PreApprovalElementListItem(
@@ -131,11 +131,11 @@ class PreApprovalElementListItem(
 
     /** Visual style for the list item. */
     @SerializedName("style")
-    val style: PreApprovalElement.ElementStyle? = null,
+    val style: PreApprovalElement.Style? = null,
 
     /** Icon name (asset identifier). */
     icon: String? = null,
 
     /** Textual content. */
     text: String? = null
-) : PreApprovalElement(id, ElementType.LIST_ITEM, icon, text)
+) : PreApprovalElement(id, Type.LIST_ITEM, icon, text)
