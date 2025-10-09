@@ -626,7 +626,7 @@ A pre-approval screen can contain the following building blocks:
 	•	Elements – structured items that form the main content of the screen:
 	   - List item – text with optional icon with style (INFO, WARNING, DANGER).
 	   - Alert – highlighted box with style (INFO, WARNING, DANGER).
-	   - Button – action element with LINK, MAIL, PHONE, or REJECT.
+	   - Button – action element with LINK, MAIL, or PHONE.
 	•	Controls – configuration of approve/decline actions:
 	   - Decline – BACK or REJECT, with optional text. 
 	   - Approve – SLIDER or BUTTON, with optional text and optional countdown (counter). 
