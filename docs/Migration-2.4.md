@@ -31,7 +31,7 @@ Version `2.4.x` introduces a new, extensible **Pre‑approval UI Template** and 
 6. **Reject method**
     - The `OperationsService` reject method accepts `mobileTokenData`, just like confirm. If applicable, these values should be attached to the operation when calling confirm/reject methods.
 
-7. ** New RejectionReason**
+7. **New RejectionReason**
     - New reject reason `PREAPPROVAL` indicates the user cancelled the operation during the Pre-Approval flow.
 
 ---
