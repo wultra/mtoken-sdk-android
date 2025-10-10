@@ -14,7 +14,9 @@
  * and limitations under the License.
  */
 
-package com.wultra.android.mtokensdk.api.operation.model
+package com.wultra.android.mtokensdk.api.operation.model.preapproval
+
+import com.google.gson.annotations.SerializedName
 
 /**
  *  PreApprovalScreen contains data to be presented before approving operation
@@ -23,39 +25,49 @@ package com.wultra.android.mtokensdk.api.operation.model
  *  and shall be displayed before operation is confirmed
  */
 open class PreApprovalScreen(
-    /**
-     * Type of PreApprovalScreen (`WARNING`, `INFO`, `QR_SCAN` or `UNKNOWN` for future compatibility)
-     */
+
+    /** Type of the PreApprovalScreen */
+    @SerializedName("type")
     val type: Type,
 
-    /**
-     * Heading of the pre-approval screen
-     */
+    /** Heading of the pre-approval screen */
+    @SerializedName("heading")
     val heading: String,
 
-    /**
-     * Message to the user
-     */
+    /** Message to the user */
+    @SerializedName("message")
     val message: String,
 
-    /**
-     * Array of items to be displayed as list of choices
-     */
-    val items: List<String>?,
+    /** Identifier of the screen */
+    @SerializedName("id")
+    val id: String? = null,
 
-    /**
-     * Type of the approval button
-     */
-    val approvalType: PreApprovalScreenConfirmAction?
+    /** Whether the back button should be visible */
+    @SerializedName("backButton")
+    val backButton: Boolean? = null,
+
+    /** Image identifier */
+    @SerializedName("image")
+    val image: String? = null,
+
+    /** Structured elements to display on the screen */
+    @SerializedName("elements")
+    val elements: List<PreApprovalElement>? = null,
+
+    /** Approve/decline control specification */
+    @SerializedName("controls")
+    val controls: PreApprovalControls? = null
 ) {
     enum class Type(val value: String) {
+
+        @SerializedName("INFO")
         INFO("INFO"),
+
+        @SerializedName("WARNING")
         WARNING("WARNING"),
+
+        @SerializedName("QR_SCAN")
         QR_SCAN("QR_SCAN"),
         UNKNOWN("UNKNOWN")
     }
-}
-
-enum class PreApprovalScreenConfirmAction {
-    SLIDER
 }

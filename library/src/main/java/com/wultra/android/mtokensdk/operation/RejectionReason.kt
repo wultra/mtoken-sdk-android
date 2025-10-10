@@ -36,5 +36,10 @@ enum class RejectionReason(val reason: String) {
     /**
      * The reason is unknown. User probably doesn't want to indicate the reason.
      */
-    UNKNOWN("UNKNOWN")
+    UNKNOWN("UNKNOWN"),
+
+    /**
+     * The operation was rejected on the PreApproval screen.
+     */
+    PREAPPROVAL("PREAPPROVAL")
 }

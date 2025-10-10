@@ -49,13 +49,18 @@ class UserOperationDeserializer : JsonDeserializer<UserOperation> {
 
         // Optional fields
         val ui = obj.get("ui")?.let { context.deserialize<OperationUIData>(it, OperationUIData::class.java) }
-        val statusReason = obj.get("statusReason")?.asString
+        val statusReason: String? = obj.get("statusReason")
+            ?.takeIf { it.isJsonPrimitive && it.asJsonPrimitive.isString }
+            ?.asString
 
         // Status handling, fallback to PENDING on legacy systems
-        val rawStatus = obj.get("status")?.asString
-        val status = if (rawStatus != null) {
-            UserOperationStatus.valueOf(rawStatus)
-        } else {
+        val rawStatus: String? = obj.get("status")
+            ?.takeIf { it.isJsonPrimitive && it.asJsonPrimitive.isString }
+            ?.asString
+
+        val status = try {
+            rawStatus?.let { UserOperationStatus.valueOf(it) } ?: UserOperationStatus.PENDING
+        } catch (_: IllegalArgumentException) {
             UserOperationStatus.PENDING
         }
 

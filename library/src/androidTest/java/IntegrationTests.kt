@@ -16,12 +16,12 @@
 
 package com.wultra.android.mtokensdk.test
 
-import com.wultra.android.mtokensdk.api.operation.model.PreApprovalScreen
 import com.wultra.android.mtokensdk.api.operation.model.ProximityCheck
 import com.wultra.android.mtokensdk.api.operation.model.ProximityCheckType
 import com.wultra.android.mtokensdk.api.operation.model.QROperationParser
 import com.wultra.android.mtokensdk.api.operation.model.UserOperation
 import com.wultra.android.mtokensdk.api.operation.model.UserOperationStatus
+import com.wultra.android.mtokensdk.api.operation.model.preapproval.PreApprovalScreen
 import com.wultra.android.mtokensdk.operation.*
 import com.wultra.android.mtokensdk.operation.RejectionData
 import com.wultra.android.mtokensdk.push.PushData
@@ -183,6 +183,50 @@ class IntegrationTests {
     }
 
     @Test
+    fun testRejectPaymentWithAdditionalData() {
+        val op = IntegrationUtils.createOperation(IntegrationUtils.Companion.Factors.F_2FA)
+
+        // Fetch the operation from the list (same as your other test)
+        val listFuture = CompletableFuture<List<UserOperation>>()
+        ops.getOperations { result ->
+            result.onSuccess { listFuture.complete(it) }
+                .onFailure { listFuture.completeExceptionally(it) }
+        }
+        val operations = listFuture.get(20, TimeUnit.SECONDS)
+        val opFromList = operations.firstOrNull { it.id == op.operationId }
+            ?: run { Assert.fail("Operation was not in the list"); return }
+
+        // Prepare rejection with additional mobileTokenData
+        opFromList.mobileTokenData = mapOf(
+            "test1" to 1,
+            "test2" to 2.3,
+            "test3" to "string",
+            "test4" to mapOf("nested" to true)
+        )
+
+        val opFuture = CompletableFuture<Any?>()
+        ops.rejectOperation(opFromList, RejectionData(RejectionReason.PREAPPROVAL)) { result ->
+            result.onFailure { opFuture.completeExceptionally(it) }
+                .onSuccess {
+                    val finalOp = IntegrationUtils.getOperation(op.operationId)
+                    val serverMtd = finalOp.additionalData?.get("mobileTokenData") as? Map<String, Any> ?: throw Exception("mobileTokenData not found in additionalData")
+                    val test1 = serverMtd["test1"]
+                    val test2 = serverMtd["test2"]
+                    val test3 = serverMtd["test3"]
+                    val test4 = (serverMtd["test4"] as? Map<String, Any>)?.get("nested")
+
+                    Assert.assertEquals(1.0, test1) // server returns as Double 🤷‍♂️
+                    Assert.assertEquals(2.3, test2)
+                    Assert.assertEquals("string", test3)
+                    Assert.assertEquals(true, test4)
+                    opFuture.complete(null)
+                }
+        }
+
+        Assert.assertNull(opFuture.get(20, TimeUnit.SECONDS))
+    }
+
+    @Test
     fun testOperationPolling() {
         Assert.assertFalse(ops.isPollingOperations())
         var loadingCount = 0
@@ -282,7 +326,7 @@ class IntegrationTests {
 
         val operation = future.get(20, TimeUnit.SECONDS)
 
-        Assert.assertEquals("Incorrect type of preapproval screen", operation.ui?.preApprovalScreen?.type, PreApprovalScreen.Type.QR_SCAN)
+        Assert.assertEquals("Incorrect type of preapproval screen", operation.ui?.preApprovalScreens?.get(0)?.type, PreApprovalScreen.Type.QR_SCAN)
 
         val totp = IntegrationUtils.getOperation(op.operationId).proximityOtp
         Assert.assertNotNull("Even with proximityCheckEnabled: true, in proximityOtp nil", totp)
