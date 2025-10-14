@@ -17,11 +17,12 @@
 package com.wultra.android.mtokensdk.api.operation.model.mobiletokendata
 
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
+import com.wultra.android.mtokensdk.api.operation.model.IOperation
 import kotlin.apply
 import kotlin.reflect.KClass
 
 /**
- * Helper for building additional data passed to the [com.wultra.android.mtokensdk.api.operation.model.IOperation].
+ * Helper for building additional data passed to the [IOperation].
  *
  * The container allows combining generic key–value pairs with structured
  * records that define their own key and value representation.

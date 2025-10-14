@@ -196,7 +196,7 @@ fun approveWithBiometrics(operation: IOperation) {
 
 With PowerAuth server 1.10+, you can pass additional customer-specific data during operation authorization using the `mobileTokenData` property. This can be useful for fraud detection systems (FDS) or other custom business logic. 
 
-You can create you own structure:
+You can create your own structure:
 
 ```kotlin
 // Create a custom operation with mobile token data

@@ -19,9 +19,10 @@ package com.wultra.android.mtokensdk.api.operation.model.mobiletokendata
 import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
+import com.wultra.android.mtokensdk.api.operation.model.preapproval.PreApprovalScreen
 
 /**
- * Helper used to document the user flow through Pre-approval Screens.
+ * Helper used to document the user flow through [PreApprovalScreen]s.
  *
  * The recorder tracks when each screen in the Pre-approval flow is opened
  * and closed, together with the user action that caused the transition.

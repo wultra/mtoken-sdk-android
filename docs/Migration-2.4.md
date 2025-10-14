@@ -34,7 +34,7 @@ Version `2.4.x` introduces a new, extensible **Pre‑approval UI Template** and 
 7. **New RejectionReason**
     - New rejection reason `PREAPPROVAL` indicates the user cancelled the operation during the Pre-Approval flow.
 
-8. **New MobileTokenData Builder
+8. **New MobileTokenData Builder**
     - Introduced MobileTokenData.Builder, a type-safe helper for composing structured data attached to operations during authorization or rejection.
     - Supports both generic key–value entries (put(key, value)) and structured records such as PreApprovalScreensRecorder.
     - The builder ensures consistent serialization and time synchronization using PowerAuthSDK.timeSynchronizationService.
