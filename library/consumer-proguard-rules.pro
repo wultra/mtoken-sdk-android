@@ -11,3 +11,6 @@
 }
 # handle R8 full mode optimizations
 -keep, allowobfuscation class com.wultra.android.mtokensdk.api.**
+
+# Keep the enum class and its field names unobfuscated
+-keepnames class com.wultra.android.mtokensdk.api.operation.model.mobiletokendata.PreApprovalScreensRecorder$ScreenCloseAction { *; }
