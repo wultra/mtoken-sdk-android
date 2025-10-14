@@ -21,8 +21,15 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 
 /**
- * Collects information about user visits to screens and produces a record
- * containing timestamps and associated actions.
+ * Helper used to document the user flow through Pre-approval Screens.
+ *
+ * The recorder tracks when each screen in the Pre-approval flow is opened
+ * and closed, together with the user action that caused the transition.
+ * Each recorded visit contains timestamps and an optional [ScreenCloseAction].
+ *
+ * When finalized via [build], the recorder produces a structured record
+ * that can be attached to a [MobileTokenData.Builder] and later serialized
+ * into `mobileTokenData` during operation authorization or rejection.
  */
 class PreApprovalScreensRecorder(
     private val parent: MobileTokenData.Builder
@@ -36,14 +43,23 @@ class PreApprovalScreensRecorder(
     override val key: String get() = KEY
 
     /** Action type recorded when a screen visit is closed. */
-    enum class ScreenAction { CONTINUE, BACK, CLOSE, REJECT, SCAN }
+    sealed class Action(val name: String) {
+        object CONTINUE : Action("CONTINUE")
+        object BACK : Action("BACK")
+        object CLOSE : Action("CLOSE")
+        object REJECT : Action("REJECT")
+        object SCAN : Action("SCAN")
+
+        // Custom user-defined action
+        class Custom(action: String) : Action(action)
+    }
 
     /** Represents a single visit entry. */
     private data class Visit(
         val screen: String,
         val opened: ZonedDateTime,
         var closed: ZonedDateTime? = null,
-        var action: ScreenAction? = null
+        var action: Action? = null
     )
 
     private var open: Visit? = null
@@ -73,7 +89,7 @@ class PreApprovalScreensRecorder(
      * Closes the current visit with the specified [action].
      * If [id] does not match the currently open screen, the call has no effect.
      */
-    fun end(id: String, action: ScreenAction) = apply {
+    fun end(id: String, action: Action) = apply {
         synchronized(mutex) {
             if (sealed) return@apply
             val live = open ?: return@apply
@@ -89,7 +105,7 @@ class PreApprovalScreensRecorder(
      * Closes any open visit and marks it with the given [action].
      * Intended for cases where the flow ends unexpectedly.
      */
-    fun closeOpenAs(action: ScreenAction) = apply {
+    fun closeOpenAs(action: Action) = apply {
         synchronized(mutex) {
             if (sealed) return@apply
             val live = open ?: return@apply
@@ -101,7 +117,7 @@ class PreApprovalScreensRecorder(
     }
 
     /** Returns the finalized list of recorded visits. */
-    override fun toValue(): Any = synchronized(mutex) { snapshot ?: emptyList<Map<String, Any>>() }
+    override fun toValue(): Any = synchronized(mutex) { snapshot ?: emptyList() }
 
     /**
      * Converts recorded data into a serializable format and

@@ -195,13 +195,13 @@ class IntegrationTests {
                         // Pre-approval flow: intro-warning -> CLOSE, intro-warning → CONTINUE, qr → SCAN, call-or-confirm → CONTINUE
                         val pre = mtdBuilder.preApproval()
                         pre.begin("intro-warning")
-                        pre.end("intro-warning", PreApprovalScreensRecorder.ScreenAction.CLOSE)
+                        pre.end("intro-warning", PreApprovalScreensRecorder.Action.CLOSE)
                         pre.begin("intro-warning")
-                        pre.end("intro-warning", PreApprovalScreensRecorder.ScreenAction.CONTINUE)
+                        pre.end("intro-warning", PreApprovalScreensRecorder.Action.CONTINUE)
                         pre.begin("qr")
-                        pre.end("qr", PreApprovalScreensRecorder.ScreenAction.SCAN)
+                        pre.end("qr", PreApprovalScreensRecorder.Action.SCAN)
                         pre.begin("call-or-confirm")
-                        pre.end("call-or-confirm", PreApprovalScreensRecorder.ScreenAction.CONTINUE)
+                        pre.end("call-or-confirm", PreApprovalScreensRecorder.Action.CONTINUE)
                         pre.build()
 
                         // Final map & assign to operation
