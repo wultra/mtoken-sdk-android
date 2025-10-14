@@ -196,12 +196,9 @@ fun approveWithBiometrics(operation: IOperation) {
 
 With PowerAuth server 1.10+, you can pass additional customer-specific data during operation authorization using the `mobileTokenData` property. This can be useful for fraud detection systems (FDS) or other custom business logic. 
 
+You can create you own structure:
 
 ```kotlin
-import com.wultra.android.mtokensdk.api.operation.model.IOperation
-import com.wultra.android.mtokensdk.api.operation.model.ProximityCheck
-import io.getlime.security.powerauth.sdk.PowerAuthAuthentication
-
 // Create a custom operation with mobile token data
 class CustomOperation(
     override val id: String,
@@ -239,9 +236,79 @@ fun approveWithFDSData() {
 }
 ```
 
+Or the SDK introduces a helper - `MobileTokenData.Builder`:
+
+### MobileTokenData Builder
+
+The MobileTokenData.Builder helps you safely compose and attach additional structured data to an operation before it is approved or rejected.
+
+- You can:
+  - Pass your map of key–values to the builder init
+  - Add generic key–value pairs using `put(key, value)`.
+  - Use predefined structured sections (records), such as `PreApprovalScreensRecorder`.
+  - Extend it with your **own record types** if needed.
+
+#### Example usage
+
+```kotlin
+val builder = MobileTokenData.Builder(powerAuthSDK, yourPredefinedMapOfKeyValues) 
+
+builder.put("deviceFingerprint", "abc123")
+builder.put("riskScore", 0.82)
+
+// Optional usage: record user flow through pre-approval screens
+val pre = MobileTokenData.preApproval(builder)
+pre.begin("intro-warning")
+pre.end("intro-warning", PreApprovalScreensRecorder.ScreenCloseAction.CONTINUE)
+pre.build() // attaches to builder
+
+// Assign created MobileTokenData to the Operation before approving/rejecting
+operation.mobileTokenData = builder.build()
+```
+
+
+> [!NOTE]
+> Once builder.build() is called, the resulting data is immutable and can be safely assigned to an operation.
+
+
+
+#### Custom record
+
+To integrate your own data section, implement the `MobileTokenDataRecord` interface:
+
+```kotlin
+class CustomRecord(private val parent: MobileTokenData.Builder): MobileTokenDataRecord {
+    override val key = "customSection"
+    private val data = mutableMapOf<String, Any>()
+
+    fun add(name: String, value: Any) = apply { data[name] = value }
+
+    override fun build() = parent.put(this) // build will put the Record to the parent Builder
+    override fun reset() = data.clear()
+    override fun toValue() = data
+}
+
+val builder = MobileTokenData.Builder(pa)
+
+val customRecord = CustomRecord(builder)
+customRecord.add("flag", true)
+customRecord.add("mode", "debug")
+customRecord.build()
+
+// And build the final map
+val mtd = builder.build() // creates the mobileTokenData
+
+// Assign created MobileTokenData to the Operation before approving/rejecting
+operation.mobileTokenData = mtd
+
+```
+
+---
+
 Similarly to approving an operation, you can also pass mobileTokenData when rejecting an operation.
 
 The `mobileTokenData` is completely optional and the structure is customer-specific. If you don't need this functionality, you can continue using operations without providing this property.
+
 
 ## Reject an Operation
 
@@ -621,16 +688,19 @@ Types:
 
 A pre-approval screen can contain the following building blocks:
 
-	•	Heading and message – textual content displayed at the top of the screen.
-	•	Optional metadata – id (unique identifier), backButton (show navigation back button), and image (in-app asset identifier).
-	•	Elements – structured items that form the main content of the screen:
-	   - List item – text with optional icon with style (INFO, WARNING, DANGER).
-	   - Alert – highlighted box with style (INFO, WARNING, DANGER).
-	   - Button – action element with LINK, MAIL, or PHONE.
-	•	Controls – configuration of approve/decline actions:
-	   - Decline – BACK or REJECT, with optional text. 
-	   - Approve – SLIDER or BUTTON, with optional text and optional countdown (counter). 
-	   - Layout options – axis (HORIZONTAL or VERTICAL) and flip (swap order of controls).
+- Heading and message – textual content displayed at the top of the screen.
+- Optional metadata
+  - id - unique identifier) 
+  - backButton - show navigation back button
+  - image - in-app asset identifier
+- Elements – structured items that form the main content of the screen:
+  - List item – text with optional icon with style (INFO, WARNING, DANGER).
+  - Alert – highlighted box with style (INFO, WARNING, DANGER).
+  - Button – action element with LINK, MAIL, or PHONE.
+- Controls – configuration of approve/decline actions:
+  - Decline – BACK or REJECT, with optional text. 
+  - Approve – SLIDER or BUTTON, with optional text and optional countdown (counter). 
+  - Layout options – axis (HORIZONTAL or VERTICAL) and flip (swap order of controls).
 
 #### PostApprovalScreen:
 `WMTPostApprovalScreen*` classes commonly contain `heading` and `message` and different payload data
