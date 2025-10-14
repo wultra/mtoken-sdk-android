@@ -21,6 +21,10 @@ import com.wultra.android.mtokensdk.api.operation.model.ProximityCheckType
 import com.wultra.android.mtokensdk.api.operation.model.QROperationParser
 import com.wultra.android.mtokensdk.api.operation.model.UserOperation
 import com.wultra.android.mtokensdk.api.operation.model.UserOperationStatus
+import com.wultra.android.mtokensdk.api.operation.model.mobiletokendata.MobileTokenData
+import com.wultra.android.mtokensdk.api.operation.model.mobiletokendata.MobileTokenData.preApproval
+import com.wultra.android.mtokensdk.api.operation.model.mobiletokendata.MobileTokenDataRecord
+import com.wultra.android.mtokensdk.api.operation.model.mobiletokendata.PreApprovalScreensRecorder
 import com.wultra.android.mtokensdk.api.operation.model.preapproval.PreApprovalScreen
 import com.wultra.android.mtokensdk.operation.*
 import com.wultra.android.mtokensdk.operation.RejectionData
@@ -142,10 +146,12 @@ class IntegrationTests {
                         authResult.onFailure { future.completeExceptionally(it) }
                             .onSuccess {
                                 val finalOp = IntegrationUtils.getOperation(op.operationId)
+                                @Suppress("UNCHECKED_CAST")
                                 val serverMtd = finalOp.additionalData?.get("mobileTokenData") as? Map<String, Any> ?: throw Exception("mobileTokenData not found in additionalData")
                                 val test1 = serverMtd["test1"]
                                 val test2 = serverMtd["test2"]
                                 val test3 = serverMtd["test3"]
+                                @Suppress("UNCHECKED_CAST")
                                 val test4 = (serverMtd["test4"] as? Map<String, Any>)?.get("nested")
 
                                 Assert.assertEquals(1.0, test1) // server returns as Double 🤷‍♂️
@@ -159,6 +165,155 @@ class IntegrationTests {
         }
         Assert.assertNull(future.get(20, TimeUnit.SECONDS))
     }
+
+    @Test
+    fun testMobileTokenDataBuilder_withPreApprovalRecorder() {
+        val op = IntegrationUtils.createOperation(IntegrationUtils.Companion.Factors.F_2FA)
+        val future = CompletableFuture<Void?>()
+
+        // Fetch detail
+        ops.getDetail(op.operationId) { result ->
+            result.onFailure { future.completeExceptionally(it) }
+                .onSuccess { detail: UserOperation ->
+                    try {
+                        // Build MobileTokenData
+                        //    - include a base map
+                        //    - add generic values
+                        //    - record a small pre-approval flow and attach it
+                        val base = mapOf("baseK" to "baseV")
+
+                        val mtdBuilder = MobileTokenData.Builder(
+                            powerAuthSDK = pa,
+                            base = base
+                        )
+
+                        // Generic additions
+                        mtdBuilder.put("g1", 42)
+                        mtdBuilder.put("g2", "hello")
+                        mtdBuilder.put("g3", mapOf("x" to true))
+
+                        // Pre-approval flow: intro-warning -> CLOSE, intro-warning → CONTINUE, qr → SCAN, call-or-confirm → CONTINUE
+                        val pre = mtdBuilder.preApproval()
+                        pre.begin("intro-warning")
+                        pre.end("intro-warning", PreApprovalScreensRecorder.ScreenAction.CLOSE)
+                        pre.begin("intro-warning")
+                        pre.end("intro-warning", PreApprovalScreensRecorder.ScreenAction.CONTINUE)
+                        pre.begin("qr")
+                        pre.end("qr", PreApprovalScreensRecorder.ScreenAction.SCAN)
+                        pre.begin("call-or-confirm")
+                        pre.end("call-or-confirm", PreApprovalScreensRecorder.ScreenAction.CONTINUE)
+                        pre.build()
+
+                        // Final map & assign to operation
+                        val clientMtd = mtdBuilder.build()
+                        detail.mobileTokenData = clientMtd
+
+                        // Authorize the operation
+                        val auth = PowerAuthAuthentication.possessionWithPassword(pin)
+                        ops.authorizeOperation(detail, auth) { authResult ->
+                            authResult
+                                .onFailure { future.completeExceptionally(it) }
+                                .onSuccess {
+                                    try {
+                                        // Read operation back from server and compare mobileTokenData
+                                        val finalOp = IntegrationUtils.getOperation(op.operationId)
+                                        @Suppress("UNCHECKED_CAST")
+                                        val serverMtd = finalOp.additionalData?.get("mobileTokenData") as? Map<String, Any>
+                                            ?: throw AssertionError("mobileTokenData not found in additionalData")
+
+                                        // Base + generics
+                                        Assert.assertEquals("baseV", serverMtd["baseK"])
+                                        // numeric may be coerced to Double on server
+                                        Assert.assertEquals(42.0, serverMtd["g1"])
+                                        Assert.assertEquals("hello", serverMtd["g2"])
+                                        val nested = serverMtd["g3"] as Map<*, *>
+                                        Assert.assertEquals(true, nested["x"])
+
+                                        // Pre-approval section
+                                        @Suppress("UNCHECKED_CAST")
+                                        val preServer = serverMtd[PreApprovalScreensRecorder.KEY] as? List<Map<String, Any>>
+                                            ?: throw AssertionError("preApprovalScreens missing")
+
+                                        Assert.assertEquals(4, preServer.size)
+
+                                        // Visit #1: intro-warning / CLOSE
+                                        val v1 = preServer[0]
+                                        Assert.assertEquals("intro-warning", v1["screen"])
+                                        Assert.assertEquals("CLOSE", v1["action"])
+                                        Assert.assertNotNull(v1["timestampOpened"])
+                                        Assert.assertNotNull(v1["timestampClosed"])
+
+                                        // Visit #1: intro-warning / CONTINUE
+                                        val v2 = preServer[1]
+                                        Assert.assertEquals("intro-warning", v2["screen"])
+                                        Assert.assertEquals("CONTINUE", v2["action"])
+                                        Assert.assertNotNull(v2["timestampOpened"])
+                                        Assert.assertNotNull(v2["timestampClosed"])
+
+                                        // Visit #2: qr / SCAN
+                                        val v3 = preServer[2]
+                                        Assert.assertEquals("qr", v3["screen"])
+                                        Assert.assertEquals("SCAN", v3["action"])
+                                        Assert.assertNotNull(v3["timestampOpened"])
+                                        Assert.assertNotNull(v3["timestampClosed"])
+
+                                        // Visit #3: call-or-confirm / CONTINUE
+                                        val v4 = preServer[3]
+                                        Assert.assertEquals("call-or-confirm", v4["screen"])
+                                        Assert.assertEquals("CONTINUE", v4["action"])
+                                        Assert.assertNotNull(v4["timestampOpened"])
+                                        Assert.assertNotNull(v4["timestampClosed"])
+
+                                        future.complete(null)
+                                    } catch (e: Throwable) {
+                                        future.completeExceptionally(e)
+                                    }
+                                }
+                        }
+                    } catch (t: Throwable) {
+                        future.completeExceptionally(t)
+                    }
+                }
+        }
+
+        // 6) Await completion
+        Assert.assertNull(future.get(40, TimeUnit.SECONDS))
+    }
+
+    @Test
+    fun testMobileTokenDataCustomRecord() {
+        class CustomRecord(private val parent: MobileTokenData.Builder) : MobileTokenDataRecord {
+            override val key = "customRecord"
+            private val data = mutableMapOf<String, Any>()
+            fun add(name: String, value: Any) = apply { data[name] = value }
+            override fun build() {
+                parent.put(this)
+            }
+            override fun reset() = data.clear()
+            override fun toValue(): Any = data
+        }
+
+        // Given a builder
+        val builder = MobileTokenData.Builder(pa)
+
+        // When we add & attach a custom record
+        CustomRecord(builder)
+            .add("flag", true)
+            .add("mode", "debug")
+            .build()
+
+        // And build the final map
+        val mtd = builder.build()
+
+        // Then the custom section is present with expected values
+        @Suppress("UNCHECKED_CAST")
+        val section = mtd["customRecord"] as? Map<String, Any>
+            ?: error("customSection missing in mobileTokenData")
+
+        Assert.assertEquals(true, section["flag"])
+        Assert.assertEquals("debug", section["mode"])
+    }
+
 
     @Test
     fun testRejectPayment() {
@@ -209,10 +364,12 @@ class IntegrationTests {
             result.onFailure { opFuture.completeExceptionally(it) }
                 .onSuccess {
                     val finalOp = IntegrationUtils.getOperation(op.operationId)
+                    @Suppress("UNCHECKED_CAST")
                     val serverMtd = finalOp.additionalData?.get("mobileTokenData") as? Map<String, Any> ?: throw Exception("mobileTokenData not found in additionalData")
                     val test1 = serverMtd["test1"]
                     val test2 = serverMtd["test2"]
                     val test3 = serverMtd["test3"]
+                    @Suppress("UNCHECKED_CAST")
                     val test4 = (serverMtd["test4"] as? Map<String, Any>)?.get("nested")
 
                     Assert.assertEquals(1.0, test1) // server returns as Double 🤷‍♂️
