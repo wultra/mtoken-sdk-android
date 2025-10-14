@@ -146,11 +146,13 @@ class IntegrationTests {
                         authResult.onFailure { future.completeExceptionally(it) }
                             .onSuccess {
                                 val finalOp = IntegrationUtils.getOperation(op.operationId)
+
                                 @Suppress("UNCHECKED_CAST")
                                 val serverMtd = finalOp.additionalData?.get("mobileTokenData") as? Map<String, Any> ?: throw Exception("mobileTokenData not found in additionalData")
                                 val test1 = serverMtd["test1"]
                                 val test2 = serverMtd["test2"]
                                 val test3 = serverMtd["test3"]
+
                                 @Suppress("UNCHECKED_CAST")
                                 val test4 = (serverMtd["test4"] as? Map<String, Any>)?.get("nested")
 
@@ -217,6 +219,7 @@ class IntegrationTests {
                                     try {
                                         // Read operation back from server and compare mobileTokenData
                                         val finalOp = IntegrationUtils.getOperation(op.operationId)
+
                                         @Suppress("UNCHECKED_CAST")
                                         val serverMtd = finalOp.additionalData?.get("mobileTokenData") as? Map<String, Any>
                                             ?: throw AssertionError("mobileTokenData not found in additionalData")
@@ -314,7 +317,6 @@ class IntegrationTests {
         Assert.assertEquals("debug", section["mode"])
     }
 
-
     @Test
     fun testRejectPayment() {
         val op = IntegrationUtils.createOperation(IntegrationUtils.Companion.Factors.F_2FA)
@@ -364,11 +366,13 @@ class IntegrationTests {
             result.onFailure { opFuture.completeExceptionally(it) }
                 .onSuccess {
                     val finalOp = IntegrationUtils.getOperation(op.operationId)
+
                     @Suppress("UNCHECKED_CAST")
                     val serverMtd = finalOp.additionalData?.get("mobileTokenData") as? Map<String, Any> ?: throw Exception("mobileTokenData not found in additionalData")
                     val test1 = serverMtd["test1"]
                     val test2 = serverMtd["test2"]
                     val test3 = serverMtd["test3"]
+
                     @Suppress("UNCHECKED_CAST")
                     val test4 = (serverMtd["test4"] as? Map<String, Any>)?.get("nested")
 

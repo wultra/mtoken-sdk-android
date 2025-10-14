@@ -65,7 +65,7 @@ class PreApprovalScreensRecorder(
     private var open: Visit? = null
     private val finalized = mutableListOf<Visit>()
     private var sealed = false
-    private var snapshot: List<Map<String, Any>>? = null   // frozen payload after build()
+    private var snapshot: List<Map<String, Any>>? = null // frozen payload after build()
 
     /** Mutex used to synchronize access to visit records. */
     private val mutex = Any()

@@ -28,7 +28,6 @@ import kotlin.reflect.KClass
  */
 object MobileTokenData {
 
-
     /**
      * Builds a map of additional data composed from generic entries
      * and structured [MobileTokenDataRecord] instances.
@@ -131,7 +130,6 @@ object MobileTokenData {
             }
         }
     }
-
 
     /**
      * Returns a [PreApprovalScreensRecorder] helper instance associated with
