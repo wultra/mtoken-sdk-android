@@ -240,7 +240,7 @@ Or the SDK introduces a helper - `MobileTokenData.Builder`:
 
 ### MobileTokenData Builder
 
-The MobileTokenData.Builder helps you safely compose and attach additional structured data to an operation before it is approved or rejected.
+The MobileTokenData.Builder helps you safely compose additional structured data to an operation before it is approved or rejected.
 
 - You can:
   - Pass your map of key–values to the builder init
