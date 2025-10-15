@@ -77,7 +77,7 @@ internal class AttributeTypeAdapter : TypeAdapter<Attribute>() {
                                     reader.nextNull()
                                     null
                                 }
-                                else -> throw IllegalStateException("Unexpected token for attribute value: ${reader.peek()} at name: $name")
+                                else -> throw IllegalStateException("Unexpected token for attribute value: $token at name: $name")
                             }
                         }
                     }
