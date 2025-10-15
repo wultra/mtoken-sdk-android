@@ -19,7 +19,16 @@ package com.wultra.android.mtokensdk.api.operation
 import com.google.gson.Gson
 import com.google.gson.TypeAdapter
 import com.google.gson.reflect.TypeToken
-import com.wultra.android.mtokensdk.api.operation.model.*
+import com.wultra.android.mtokensdk.api.operation.model.AlertAttribute
+import com.wultra.android.mtokensdk.api.operation.model.AlertType
+import com.wultra.android.mtokensdk.api.operation.model.AmountAttribute
+import com.wultra.android.mtokensdk.api.operation.model.Attribute
+import com.wultra.android.mtokensdk.api.operation.model.ConversionAttribute
+import com.wultra.android.mtokensdk.api.operation.model.ImageAttribute
+import com.wultra.android.mtokensdk.api.operation.model.KeyValueAttribute
+import com.wultra.android.mtokensdk.api.operation.model.NoteAttribute
+import com.wultra.android.mtokensdk.api.operation.model.PartyInfoAttribute
+import com.wultra.android.mtokensdk.api.operation.model.UserOperationStatus
 import com.wultra.android.mtokensdk.api.push.PushRegistrationRequest
 import com.wultra.android.mtokensdk.api.push.model.PushRegistrationRequestObject
 import com.wultra.android.mtokensdk.operation.OperationsUtils
@@ -520,5 +529,52 @@ class JsonDeserializationTests {
         val operation = typeAdapter.fromJson(json).responseObject[0]
         Assert.assertNotNull("Failed to parse JSON data", operation)
         Assert.assertEquals(UserOperationStatus.PENDING, operation.status)
+    }
+
+    @Test
+    fun `test attribute deserialization throws on invalid structure`() {
+        // Invalid: attribute params structure - array instead of an object
+        val json = """
+        {
+            "status": "OK",
+            "responseObject": [
+                {
+                    "id": "test-id",
+                    "name": "test",
+                    "data": "A1",
+                    "operationCreated": "2025-07-29T14:43:33+0000",
+                    "operationExpires": "2025-07-29T14:48:33+0000",
+                    "allowedSignatureType": {
+                        "type": "2FA",
+                        "variants": ["possession_knowledge"]
+                    },
+                    "formData": {
+                        "title": "Test",
+                        "message": "Test",
+                        "attributes": [
+                              {
+                                    "id": "operation.info",
+                                    "type": "INFO",
+                                    "params": [
+                                          {
+                                            "type": "info",
+                                            "message": "OK"
+                                          }
+                                    ]
+                              }
+                        ]
+                    }
+                }
+            ]
+        }
+        """.trimIndent()
+
+        var thrown: Throwable? = null
+        try {
+            typeAdapter.fromJson(json)
+        } catch (t: Throwable) {
+            thrown = t
+        }
+        Assert.assertNotNull("Expected exception for invalid attribute structure", thrown)
     }
 }
