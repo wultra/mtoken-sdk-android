@@ -60,8 +60,8 @@ class PreApprovalScreensRecorder(
     /** Represents a single visit entry. */
     private data class Visit(
         val screen: String,
-        val opened: ZonedDateTime,
-        var closed: ZonedDateTime? = null,
+        val timestampOpened: ZonedDateTime,
+        var timestampClosed: ZonedDateTime? = null,
         var action: Action? = null
     )
 
@@ -96,7 +96,7 @@ class PreApprovalScreensRecorder(
             if (sealed) return@apply
             val live = openVisit ?: return@apply
             if (live.screen != id) return@apply
-            live.closed = now()
+            live.timestampClosed = now()
             live.action = action
             visits += live
             openVisit = null
@@ -113,7 +113,7 @@ class PreApprovalScreensRecorder(
     }
 
     /**
-     * Returns the serialized list of visits.
+     * Returns the list of visits.
      * This call marks the record as sealed, preventing further modifications.
      */
     override fun toValue(): Any {
@@ -122,8 +122,8 @@ class PreApprovalScreensRecorder(
             return visits.map { v ->
                 buildMap {
                     put("screen", v.screen)
-                    put("timestampOpened", v.opened)
-                    v.closed?.let { put("timestampClosed", it) }
+                    put("timestampOpened", v.timestampOpened)
+                    v.timestampClosed?.let { put("timestampClosed", it) }
                     v.action?.let { put("action", it.name) }
                 }
             }

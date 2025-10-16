@@ -257,7 +257,10 @@ builder.put("deviceFingerprint", "abc123")
 builder.put("riskScore", 0.82)
 
 // Optional usage: record user flow through pre-approval screens
-val pre = MobileTokenData.preApproval(builder)
+// The PowerAuthSDK instance provides a timeSynchronizationService used
+// to create accurate, server-aligned timestamps for each recorded event.
+val pre = builder.preApproval(powerAuthSDK)
+
 pre.begin("intro-warning")
 pre.end("intro-warning", PreApprovalScreensRecorder.ScreenCloseAction.CONTINUE)
 pre.build() // attaches to builder

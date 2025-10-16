@@ -36,9 +36,8 @@ Version `2.4.x` introduces a new, extensible **Pre‑approval UI Template** and 
 
 8. **New MobileTokenData Builder**
     - Introduced MobileTokenData.Builder, a type-safe helper for composing structured data attached to operations during authorization or rejection.
-    - Supports both generic key–value entries (put(key, value)) and structured records such as PreApprovalScreensRecorder.
+    - Supports both generic key–value entries `put(key, value)` and structured records such as PreApprovalScreensRecorder.
     - You can also define your own record types by extending MobileTokenDataRecord.
-    - The builder ensures consistent serialization and time synchronization using PowerAuthSDK.timeSynchronizationService.
     - Once build() is called, the resulting map is immutable and can be directly assigned to operation.mobileTokenData.
 
 ---

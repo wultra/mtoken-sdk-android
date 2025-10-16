@@ -169,7 +169,7 @@ class IntegrationTests {
     }
 
     @Test
-    fun testMobileTokenDataBuilder_withPreApprovalRecorder() {
+    fun testMobileTokenDataBuilderWithPreApprovalRecorder() {
         val op = IntegrationUtils.createOperation(IntegrationUtils.Companion.Factors.F_2FA)
         val future = CompletableFuture<Void?>()
 
