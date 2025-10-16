@@ -34,7 +34,6 @@ object MobileTokenData {
      * and structured [MobileTokenDataRecord] instances.
      */
     class Builder(
-        internal val powerAuthSDK: PowerAuthSDK,
         base: Map<String, Any>? = null
     ) {
 
@@ -136,5 +135,5 @@ object MobileTokenData {
      * Returns a [PreApprovalScreensRecorder] helper instance associated with
      * this [Builder]. The instance is created on first access and cached.
      */
-    fun MobileTokenData.Builder.preApproval(): PreApprovalScreensRecorder = helper { PreApprovalScreensRecorder(this) }
+    fun MobileTokenData.Builder.preApproval(powerAuthSDK: PowerAuthSDK): PreApprovalScreensRecorder = helper { PreApprovalScreensRecorder(powerAuthSDK, this) }
 }

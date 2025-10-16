@@ -185,7 +185,6 @@ class IntegrationTests {
                         val base = mapOf("baseK" to "baseV")
 
                         val mtdBuilder = MobileTokenData.Builder(
-                            powerAuthSDK = pa,
                             base = base
                         )
 
@@ -195,7 +194,7 @@ class IntegrationTests {
                         mtdBuilder.put("g3", mapOf("x" to true))
 
                         // Pre-approval flow: intro-warning -> CLOSE, intro-warning → CONTINUE, qr → SCAN, call-or-confirm → CONTINUE
-                        val pre = mtdBuilder.preApproval()
+                        val pre = mtdBuilder.preApproval(pa)
                         pre.begin("intro-warning")
                         pre.end("intro-warning", PreApprovalScreensRecorder.Action.CLOSE)
                         pre.begin("intro-warning")
@@ -285,19 +284,17 @@ class IntegrationTests {
 
     @Test
     fun testMobileTokenDataCustomRecord() {
-        class CustomRecord(private val parent: MobileTokenData.Builder) : MobileTokenDataRecord {
+        class CustomRecord(override val dataBuilder: MobileTokenData.Builder) : MobileTokenDataRecord(dataBuilder) {
             override val key = "customRecord"
             private val data = mutableMapOf<String, Any>()
             fun add(name: String, value: Any) = apply { data[name] = value }
-            override fun build() {
-                parent.put(this)
-            }
+
             override fun reset() = data.clear()
             override fun toValue(): Any = data
         }
 
         // Given a builder
-        val builder = MobileTokenData.Builder(pa)
+        val builder = MobileTokenData.Builder()
 
         // When we add & attach a custom record
         CustomRecord(builder)

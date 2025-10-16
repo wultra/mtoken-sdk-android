@@ -240,7 +240,7 @@ Or the SDK introduces a helper - `MobileTokenData.Builder`:
 
 ### MobileTokenData Builder
 
-The MobileTokenData.Builder helps you safely compose additional structured data to an operation before it is approved or rejected.
+The `MobileTokenData.Builder` helps you safely compose additional structured data to an operation before it is approved or rejected.
 
 - You can:
   - Pass your map of key–values to the builder init
@@ -251,7 +251,7 @@ The MobileTokenData.Builder helps you safely compose additional structured data 
 #### Example usage
 
 ```kotlin
-val builder = MobileTokenData.Builder(powerAuthSDK, yourPredefinedMapOfKeyValues) 
+val builder = MobileTokenData.Builder(yourPredefinedMapOfKeyValues)
 
 builder.put("deviceFingerprint", "abc123")
 builder.put("riskScore", 0.82)
@@ -266,29 +266,25 @@ pre.build() // attaches to builder
 operation.mobileTokenData = builder.build()
 ```
 
-
 > [!NOTE]
-> Once builder.build() is called, the resulting data is immutable and can be safely assigned to an operation.
-
-
+> Once `builder.build()` is called, the resulting data is immutable and can be safely assigned to an operation.
 
 #### Custom record
 
-To integrate your own data section, implement the `MobileTokenDataRecord` interface:
+To integrate your own data section, you can extend the `MobileTokenDataRecord` abstract class like this:
 
 ```kotlin
-class CustomRecord(private val parent: MobileTokenData.Builder): MobileTokenDataRecord {
-    override val key = "customSection"
-    private val data = mutableMapOf<String, Any>()
+class CustomRecord(private val dataBuilder: MobileTokenData.Builder) : MobileTokenDataRecord(dataBuilder) {
+  override val key = "customSection"
+  private val data = mutableMapOf<String, Any>()
 
-    fun add(name: String, value: Any) = apply { data[name] = value }
+  fun add(name: String, value: Any) = apply { data[name] = value }
 
-    override fun build() = parent.put(this) // build will put the Record to the parent Builder
-    override fun reset() = data.clear()
-    override fun toValue() = data
+  override fun toValue() = data
+  override fun reset() = data.clear()
 }
 
-val builder = MobileTokenData.Builder(pa)
+val builder = MobileTokenData.Builder()
 
 val customRecord = CustomRecord(builder)
 customRecord.add("flag", true)

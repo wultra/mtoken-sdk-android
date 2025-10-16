@@ -16,32 +16,47 @@
 
 package com.wultra.android.mtokensdk.api.operation.model.mobiletokendata
 
-import com.wultra.android.mtokensdk.api.operation.model.mobiletokendata.MobileTokenData.Builder
-
 /**
- * A single top-level record that contributes one key-value entry
+ * Base class for a single top-level record contributing one key–value entry
  * to the final `mobileTokenData` map.
  *
- * Implementations may represent either:
+ * Subclasses represent either:
  *  - a **finalized record** (immutable key/value pair), or
- *  - a **recorder** that collects data over time and finalizes it in [build].
+ *  - a **recorder** that collects data over time and finalizes itself in [build].
  */
-interface MobileTokenDataRecord {
+abstract class MobileTokenDataRecord protected constructor(
+    /** Reference to the parent builder this record belongs to. */
+    protected open val dataBuilder: MobileTokenData.Builder
+) {
 
     /** Key under which this record will be stored in `mobileTokenData`. */
-    val key: String
-
-    /** Returns the value object that will be serialized into the final map. */
-    fun toValue(): Any
+    abstract val key: String
 
     /**
-     * Finalizes the record. For recorders, this should capture any
-     * collected data, freeze internal state, and attach itself to
-     * the parent [Builder] via [Builder.put]. This method must be
-     * idempotent.
+     * Clears internal state so the record can be reused.
+     * Subclasses may override to implement their own reset logic.
+     * The default implementation does nothing.
      */
-    fun build()
+    open fun reset() {}
 
-    /** Clears internal state so the record can be built again. */
-    fun reset()
+    /**
+     * Attaches this record to the parent builder.
+     *
+     * This method is **final** to ensure every record is properly
+     * added to the parent builder before serialization.
+     *
+     * It is safe (and expected) to call [build] multiple times;
+     * subsequent calls will replace the existing record entry.
+     */
+    fun build() {
+        dataBuilder.put(this)
+    }
+
+    /**
+     * Produces the record’s value object that will be serialized into
+     * the final `mobileTokenData` map.
+     *
+     * Called automatically by [MobileTokenData.Builder.build].
+     */
+    abstract fun toValue(): Any
 }
