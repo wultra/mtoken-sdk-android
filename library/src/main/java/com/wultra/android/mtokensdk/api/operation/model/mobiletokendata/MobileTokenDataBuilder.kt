@@ -62,15 +62,24 @@ object MobileTokenData {
             }
         }
 
+        /** Removes a generic key–value entry. Returns true if the key existed. */
+        fun removeGeneric(key: String): Boolean = synchronized(mutex) {
+            generic.remove(key) != null
+        }
+
+        /** Clears all generic key–value entries (does not touch records). */
+        fun clearGeneric() = apply {
+            synchronized(mutex) { generic.clear() }
+        }
+
         /**
          * Adds or replaces a finalized [MobileTokenDataRecord].
          * If another record with the same [MobileTokenDataRecord.key] exists, it is replaced.
          */
-        fun put(mobileTokenDataRecord: MobileTokenDataRecord) = apply {
+        fun put(record: MobileTokenDataRecord) = apply {
             synchronized(mutex) {
-                val i = records.indexOfFirst { it.key == mobileTokenDataRecord.key }
-                if (i >= 0) records.removeAt(i)
-                records += mobileTokenDataRecord
+                records.removeAll { it.key == record.key }
+                records += record
             }
         }
 
@@ -100,13 +109,7 @@ object MobileTokenData {
 
         /** Removes a finalized record by key. Returns true if removed. */
         fun removeRecord(key: String): Boolean = synchronized(mutex) {
-            val i = records.indexOfFirst { it.key == key }
-            if (i >= 0) {
-                records.removeAt(i)
-                return true
-            } else {
-                return false
-            }
+            records.removeAll { it.key == key }
         }
 
         /** Removes the given record (by its key). Returns true if removed. */
