@@ -41,45 +41,50 @@ internal class AttributeTypeAdapter : TypeAdapter<Attribute>() {
         var inPartyInfo = false
         val partyInfoMap = mutableMapOf<String, String>()
 
-        do {
+        loop@ while (true) {
             token = reader.peek()
-            if (token == JsonToken.NULL) {
-                reader.nextNull()
-                return null
-            }
-            if (token == JsonToken.BEGIN_OBJECT) {
-                if (attrMap["type"] == "PARTY_INFO") {
-                    inPartyInfo = true
+            when (token) {
+                JsonToken.NULL -> {
+                    reader.nextNull()
+                    return null
                 }
-                reader.beginObject()
-            }
-            if (token == JsonToken.END_OBJECT) {
-                if (inPartyInfo) {
-                    inPartyInfo = false
-                    reader.endObject()
-                } else {
-                    reader.endObject()
-                    break
+                JsonToken.BEGIN_OBJECT -> {
+                    if (attrMap["type"] == "PARTY_INFO") {
+                        inPartyInfo = true
+                    }
+                    reader.beginObject()
                 }
-            }
-            if (token == JsonToken.NAME) {
-                val name = reader.nextName()
-                if (inPartyInfo) {
-                    partyInfoMap[name] = reader.nextString()
-                } else {
-                    if (name != "partyInfo") {
-                        attrMap[name] = when (reader.peek()) {
-                            JsonToken.STRING -> reader.nextString()
-                            JsonToken.NUMBER -> BigDecimal(reader.nextDouble())
-                            JsonToken.BOOLEAN -> reader.nextBoolean()
-                            JsonToken.NULL -> null
-                            else -> null
+                JsonToken.END_OBJECT -> {
+                    if (inPartyInfo) {
+                        inPartyInfo = false
+                        reader.endObject()
+                    } else {
+                        reader.endObject()
+                        break@loop
+                    }
+                }
+                JsonToken.NAME -> {
+                    val name = reader.nextName()
+                    if (inPartyInfo) {
+                        partyInfoMap[name] = reader.nextString()
+                    } else {
+                        if (name != "partyInfo") {
+                            attrMap[name] = when (reader.peek()) {
+                                JsonToken.STRING -> reader.nextString()
+                                JsonToken.NUMBER -> BigDecimal(reader.nextDouble())
+                                JsonToken.BOOLEAN -> reader.nextBoolean()
+                                JsonToken.NULL -> {
+                                    reader.nextNull()
+                                    null
+                                }
+                                else -> throw IllegalStateException("Unexpected token for attribute value: $token at name: $name")
+                            }
                         }
                     }
                 }
+                else -> throw IllegalStateException("Unexpected token: $token at path: ${reader.path}")
             }
-        } while (true)
-
+        }
         val type = try { Attribute.Type.valueOf(attrMap["type"] as? String ?: "UNKNOWN") } catch (e: Throwable) { Attribute.Type.UNKNOWN }
         val id: String = attrMap["id"] as? String ?: return null
         val label: String = attrMap["label"] as? String ?: return null
