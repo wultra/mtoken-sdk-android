@@ -243,63 +243,71 @@ Or the SDK introduces a helper - `MobileTokenData.Builder`:
 The `MobileTokenData.Builder` helps you safely compose additional structured data to an operation before it is approved or rejected.
 
 - You can:
-  - Pass your map of key–values to the builder init
-  - Add generic key–value pairs using `put(key, value)`.
-  - Use predefined structured sections (records), such as `PreApprovalScreensRecorder`.
-  - Extend it with your **own record types** if needed.
+  - Initialize it with optional initialData key–value entries.
+  - Add or replace key–value pairs using `put(key, value)`.
+  - Use predefined structured records (e.g. `PreApprovalScreensRecorder`) via `put(record)`.
+  - Extend it with your **own record types** conforming to `MobileTokenDataRecord`.
 
 #### Example usage
 
 ```kotlin
-val builder = MobileTokenData.Builder(yourPredefinedMapOfKeyValues)
+// Optional initial data entries (e.g., FDS hints)
+val initialData = mapOf("deviceFingerprint" to "abc123")
 
-builder.put("deviceFingerprint", "abc123")
+// Create the builder (optionally with initial data)
+val builder = MobileTokenData.Builder(initialData)
+
+// You can add generic entries
 builder.put("riskScore", 0.82)
 
-// Optional usage: record user flow through pre-approval screens
+// You can record the Pre-approval flow over time
 // The PowerAuthSDK instance provides a timeSynchronizationService used
 // to create accurate, server-aligned timestamps for each recorded event.
-val pre = builder.preApproval(powerAuthSDK)
+val screenRecorder = PreApprovalScreensRecorder(powerAuthSDK)
 
-pre.begin("intro-warning")
-pre.end("intro-warning", PreApprovalScreensRecorder.ScreenCloseAction.CONTINUE)
-pre.build() // attaches to builder
+// Display UI for the PreApproval screen and record that it was shown
+screenRecorder.begin(screen.id)
+// Record when user leaves the PreApproval screen
+screenRecorder.end(screen.id, PreApprovalScreensRecorder.Action.CONTINUE)
+
+// ... repeat for the whole screens flow from the PreApprovalScreens array    
+
+// When your PreApproval flow is finished pass the WMTPreApprovalScreensRecorder to the WMTMobileTokenData.Builder    
+builder.put(screenRecorder)
 
 // Assign created MobileTokenData to the Operation before approving/rejecting
 operation.mobileTokenData = builder.build()
 ```
 
-> [!NOTE]
-> Once `builder.build()` is called, the resulting data is immutable and can be safely assigned to an operation.
-
 #### Custom record
 
-To integrate your own data section, you can extend the `MobileTokenDataRecord` abstract class like this:
+To integrate your own data section, implement `MobileTokenDataRecord` interface:
 
 ```kotlin
-class CustomRecord(private val dataBuilder: MobileTokenData.Builder) : MobileTokenDataRecord(dataBuilder) {
+class CustomRecord : MobileTokenDataRecord {
   override val key = "customSection"
   private val data = mutableMapOf<String, Any>()
 
   fun add(name: String, value: Any) = apply { data[name] = value }
 
-  override fun toValue() = data
-  override fun reset() = data.clear()
+  override fun build(): Any = HashMap(data) // return a value snapshot
 }
 
 val builder = MobileTokenData.Builder()
+val record = CustomRecord()
+  .add("flag", true)
+  .add("mode", "debug")
 
-val customRecord = CustomRecord(builder)
-customRecord.add("flag", true)
-customRecord.add("mode", "debug")
-customRecord.build()
+// Either pass the whole record…
+builder.put(record)
+// …or manually by key/value
+// builder.put(record.key, record.build())
 
 // And build the final map
 val mtd = builder.build() // creates the mobileTokenData
 
 // Assign created MobileTokenData to the Operation before approving/rejecting
 operation.mobileTokenData = mtd
-
 ```
 
 ---

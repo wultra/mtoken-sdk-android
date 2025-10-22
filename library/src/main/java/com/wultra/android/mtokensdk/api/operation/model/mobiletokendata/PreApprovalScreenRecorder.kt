@@ -19,66 +19,52 @@ package com.wultra.android.mtokensdk.api.operation.model.mobiletokendata
 import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
-import com.wultra.android.mtokensdk.api.operation.model.preapproval.PreApprovalScreen
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
 
 /**
- * Helper used to document the user flow through [PreApprovalScreen]s.
- *
- * The recorder tracks when each screen in the Pre-approval flow is opened
- * and closed, together with the user action that caused the transition.
- * Each recorded visit contains timestamps and an optional [Action].
- *
- * When finalized via [build], the recorder produces a structured record
- * that can be attached to a [MobileTokenData.Builder] and later serialized
- * into `mobileTokenData` during operation authorization or rejection.
+ * Records user navigation through Pre-approval screens.
+ * Each “visit” captures an opening timestamp and, when closed,
+ * a closing timestamp and the action that ended the visit.
+ * Timestamps use PowerAuth time sync when available.
  */
 class PreApprovalScreensRecorder(
-    private val powerAuthSDK: PowerAuthSDK,
-    override val dataBuilder: MobileTokenData.Builder
-) : MobileTokenDataRecord(dataBuilder) {
-    companion object {
-        /** Key under which this record is stored in the resulting map. */
-        const val KEY = "preApprovalScreens"
-    }
+    /** Time source (used only for synchronized timestamps). */
+    private val powerAuthSDK: PowerAuthSDK
+) : MobileTokenDataRecord {
 
-    /** Key of this record. */
+    companion object { const val KEY = "preApprovalScreens" }
     override val key: String get() = KEY
 
-    /** Action type recorded when a screen visit is closed. */
+    /** Extensible action set (serialized via [name]). */
     sealed class Action(val name: String) {
         object CONTINUE : Action("CONTINUE")
         object BACK : Action("BACK")
         object CLOSE : Action("CLOSE")
         object REJECT : Action("REJECT")
         object SCAN : Action("SCAN")
-
-        // Custom user-defined action
         class Custom(action: String) : Action(action)
     }
 
-    /** Represents a single visit entry. */
+    /** One screen visit within the Pre-approval flow. */
     private data class Visit(
         val screen: String,
         val timestampOpened: ZonedDateTime,
         var timestampClosed: ZonedDateTime? = null,
-        var action: Action? = null
+        var action: String? = null
     )
 
-    private var openVisit: Visit? = null
-    private val visits = mutableListOf<Visit>()
-    private var sealed = false
-
-    /** Mutex used to synchronize access to visit records. */
+    /** Synchronization primitive that protects recorder state. */
     private val mutex = Any()
+    /** Currently open visit (if any). */
+    private var openVisit: Visit? = null
 
-    /**
-     * Starts a new visit entry for the specified [id].
-     * If another visit is already open, it is finalized first without closed and action.
-     */
+    /** Finalized visits accumulated by the recorder. */
+    private val visits = mutableListOf<Visit>()
+
+    /** Open a visit for [id]. If another is open, append it as-is (no close/action). */
     fun begin(id: String) = apply {
+        if (id.isEmpty()) return@apply
         synchronized(mutex) {
-            if (sealed || id.isEmpty()) return@apply
             openVisit?.let { live ->
                 if (live.screen == id) return@apply
                 visits += live
@@ -87,57 +73,34 @@ class PreApprovalScreensRecorder(
         }
     }
 
-    /**
-     * Ends the current visit with the specified [action].
-     * If [id] does not match the currently open screen, the call has no effect.
-     */
+    /** Close the current visit (if id matches) and record [action]. */
     fun end(id: String, action: Action) = apply {
         synchronized(mutex) {
-            if (sealed) return@apply
             val live = openVisit ?: return@apply
             if (live.screen != id) return@apply
             live.timestampClosed = now()
-            live.action = action
+            live.action = action.name
             visits += live
             openVisit = null
         }
     }
 
-    /** Clears collected visits and allows the recorder to be used again. */
-    override fun reset() {
+    /** Reset collected visits. */
+    fun reset() = apply {
         synchronized(mutex) {
             openVisit = null
             visits.clear()
-            sealed = false
         }
     }
 
-    /**
-     * Returns the list of visits.
-     * This call marks the record as sealed, preventing further modifications.
-     */
-    override fun toValue(): Any {
-        synchronized(mutex) {
-            sealed = true
-            return visits.map { v ->
-                buildMap {
-                    put("screen", v.screen)
-                    put("timestampOpened", v.timestampOpened)
-                    v.timestampClosed?.let { put("timestampClosed", it) }
-                    v.action?.let { put("action", it.name) }
-                }
-            }
-        }
-    }
+    /** Record value: snapshot of visits. */
+    override fun build(): Any = synchronized(mutex) { visits.toList() }
 
-    /** Returns PowerAuthSDK synchronized current date-time using the system clock */
+    /** PowerAuth-synchronized current time (fallback: system clock). */
     private fun now(): ZonedDateTime {
         val ts = powerAuthSDK.timeSynchronizationService
         return if (ts.isTimeSynchronized) {
-            ZonedDateTime.ofInstant(
-                Instant.ofEpochMilli(ts.currentTime),
-                ZoneId.systemDefault()
-            )
+            ZonedDateTime.ofInstant(Instant.ofEpochMilli(ts.currentTime), ZoneId.systemDefault())
         } else ZonedDateTime.now()
     }
 }

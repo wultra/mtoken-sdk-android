@@ -35,10 +35,10 @@ Version `2.4.x` introduces a new, extensible **Pre‑approval UI Template** and 
     - New rejection reason `PREAPPROVAL` indicates the user cancelled the operation during the Pre-Approval flow.
 
 8. **New MobileTokenData Builder**
-    - Introduced MobileTokenData.Builder, a type-safe helper for composing structured data attached to operations during authorization or rejection.
-    - Supports both generic key–value entries `put(key, value)` and structured records such as PreApprovalScreensRecorder.
-    - You can also define your own record types by extending MobileTokenDataRecord.
-    - Once build() is called, the resulting map is immutable and can be directly assigned to operation.mobileTokenData.
+    - Introduced MobileTokenData.Builder, a helper for composing structured data attached to operations during authorization or rejection.
+    - Supports both generic key–value entries (builder.put(key, value)) and structured records (builder.put(record)), e.g. PreApprovalScreensRecorder.
+    - Structured records implement MobileTokenDataRecord (stable key, build(): Any that returns the value to store).
+    - builder.build() returns a Map<String, Any> snapshot you assign to operation.mobileTokenData.
 
 ---
 

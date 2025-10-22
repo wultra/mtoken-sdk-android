@@ -17,46 +17,21 @@
 package com.wultra.android.mtokensdk.api.operation.model.mobiletokendata
 
 /**
- * Base class for a single top-level record contributing one key–value entry
+ * A single top-level record that contributes one `key: value` entry
  * to the final `mobileTokenData` map.
  *
- * Subclasses represent either:
- *  - a **finalized record** (immutable key/value pair), or
- *  - a **recorder** that collects data over time and finalizes itself in [build].
+ * Contract:
+ *  - [key] must be stable for the lifetime of the instance.
+ *  - [build] should be idempotent — repeated calls return compatible values.
  */
-abstract class MobileTokenDataRecord protected constructor(
-    /** Reference to the parent builder this record belongs to. */
-    protected open val dataBuilder: MobileTokenData.Builder
-) {
+interface MobileTokenDataRecord {
 
-    /** Key under which this record will be stored in `mobileTokenData`. */
-    abstract val key: String
+    /** Key under which this record will be stored in the final map. */
+    val key: String
 
     /**
-     * Clears internal state so the record can be reused.
-     * Subclasses may override to implement their own reset logic.
-     * The default implementation does nothing.
+     * Produces the value to be stored for `key`.
+     * Called by the builder during `put(record)`.
      */
-    open fun reset() {}
-
-    /**
-     * Attaches this record to the parent builder.
-     *
-     * This method is **final** to ensure every record is properly
-     * added to the parent builder before serialization.
-     *
-     * It is safe (and expected) to call [build] multiple times;
-     * subsequent calls will replace the existing record entry.
-     */
-    fun build() {
-        dataBuilder.put(this)
-    }
-
-    /**
-     * Produces the record’s value object that will be serialized into
-     * the final `mobileTokenData` map.
-     *
-     * Called automatically by [MobileTokenData.Builder.build].
-     */
-    abstract fun toValue(): Any
+    fun build(): Any
 }

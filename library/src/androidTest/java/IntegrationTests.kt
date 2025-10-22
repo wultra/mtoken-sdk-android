@@ -22,7 +22,6 @@ import com.wultra.android.mtokensdk.api.operation.model.QROperationParser
 import com.wultra.android.mtokensdk.api.operation.model.UserOperation
 import com.wultra.android.mtokensdk.api.operation.model.UserOperationStatus
 import com.wultra.android.mtokensdk.api.operation.model.mobiletokendata.MobileTokenData
-import com.wultra.android.mtokensdk.api.operation.model.mobiletokendata.MobileTokenData.preApproval
 import com.wultra.android.mtokensdk.api.operation.model.mobiletokendata.MobileTokenDataRecord
 import com.wultra.android.mtokensdk.api.operation.model.mobiletokendata.PreApprovalScreensRecorder
 import com.wultra.android.mtokensdk.api.operation.model.preapproval.PreApprovalScreen
@@ -185,7 +184,7 @@ class IntegrationTests {
                         val base = mapOf("baseK" to "baseV")
 
                         val mtdBuilder = MobileTokenData.Builder(
-                            base = base
+                            initialData = base
                         )
 
                         // Generic additions
@@ -194,16 +193,16 @@ class IntegrationTests {
                         mtdBuilder.put("g3", mapOf("x" to true))
 
                         // Pre-approval flow: intro-warning -> CLOSE, intro-warning → CONTINUE, qr → SCAN, call-or-confirm → CONTINUE
-                        val pre = mtdBuilder.preApproval(pa)
-                        pre.begin("intro-warning")
-                        pre.end("intro-warning", PreApprovalScreensRecorder.Action.CLOSE)
-                        pre.begin("intro-warning")
-                        pre.end("intro-warning", PreApprovalScreensRecorder.Action.CONTINUE)
-                        pre.begin("qr")
-                        pre.end("qr", PreApprovalScreensRecorder.Action.SCAN)
-                        pre.begin("call-or-confirm")
-                        pre.end("call-or-confirm", PreApprovalScreensRecorder.Action.CONTINUE)
-                        pre.build()
+                        val recorder = PreApprovalScreensRecorder(pa)
+                            .begin("intro-warning")
+                            .end("intro-warning", PreApprovalScreensRecorder.Action.CLOSE)
+                            .begin("intro-warning")
+                            .end("intro-warning", PreApprovalScreensRecorder.Action.CONTINUE)
+                            .begin("qr")
+                            .end("qr", PreApprovalScreensRecorder.Action.SCAN)
+                            .begin("call-or-confirm")
+                            .end("call-or-confirm", PreApprovalScreensRecorder.Action.CONTINUE)
+                        mtdBuilder.put(recorder)
 
                         // Final map & assign to operation
                         val clientMtd = mtdBuilder.build()
@@ -284,23 +283,23 @@ class IntegrationTests {
 
     @Test
     fun testMobileTokenDataCustomRecord() {
-        class CustomRecord(override val dataBuilder: MobileTokenData.Builder) : MobileTokenDataRecord(dataBuilder) {
+        class CustomRecord : MobileTokenDataRecord {
             override val key = "customRecord"
             private val data = mutableMapOf<String, Any>()
             fun add(name: String, value: Any) = apply { data[name] = value }
-
-            override fun reset() = data.clear()
-            override fun toValue(): Any = data
+            override fun build(): Any {
+                return data
+            }
         }
 
         // Given a builder
         val builder = MobileTokenData.Builder()
 
         // When we add & attach a custom record
-        CustomRecord(builder)
-            .add("flag", true)
-            .add("mode", "debug")
-            .build()
+        val recorder = CustomRecord()
+        recorder.add("flag", true)
+        recorder.add("mode", "debug")
+        builder.put(recorder.key, recorder.build())
 
         // And build the final map
         val mtd = builder.build()

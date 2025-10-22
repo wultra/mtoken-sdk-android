@@ -16,127 +16,64 @@
 
 package com.wultra.android.mtokensdk.api.operation.model.mobiletokendata
 
-import io.getlime.security.powerauth.sdk.PowerAuthSDK
 import com.wultra.android.mtokensdk.api.operation.model.IOperation
 import kotlin.apply
-import kotlin.reflect.KClass
 
 /**
- * Helper for building additional data passed to the [IOperation].
+ * Helper for composing additional data passed with an [IOperation].
  *
- * The container allows combining generic key–value pairs with structured
- * records that define their own key and value representation.
+ * The builder combines generic key–value pairs with structured records
+ * that contribute a single top-level entry.
  */
 object MobileTokenData {
 
     /**
      * Builds a map of additional data composed from generic entries
      * and structured [MobileTokenDataRecord] instances.
+     *
+     * Thread-safe: all mutations are synchronized.
+     * Replacement semantics: putting the same key overwrites the prior value.
      */
     class Builder(
-        base: Map<String, Any>? = null
+        /** Optional initial entries inserted into the builder. */
+        initialData: Map<String, Any>? = null
     ) {
+        /** Thread-safe backing map for mobileTokenData. */
+        private val mobileTokenData = LinkedHashMap<String, Any>().apply {
+            if (initialData != null) putAll(initialData)
+        }
 
-        /** Base content used as the initial state of the builder. */
-        private val baseMap = LinkedHashMap<String, Any>().apply { if (base != null) putAll(base) }
+        /** Synchronization primitive guarding internal state. */
+        private val mutex = Any()
 
-        /** Generic key–value entries added directly by the application. */
-        private val generic = LinkedHashMap<String, Any>()
-
-        /** Finalized record objects to be written into the output map. */
-        private val records = mutableListOf<MobileTokenDataRecord>()
-
-        /** Cached helper instances keyed by their class type. */
-        val helpers = mutableMapOf<KClass<out MobileTokenDataRecord>, MobileTokenDataRecord>()
-
-        /** Mutex used to synchronize access to mutable internal state. */
-        val mutex = Any()
-
-        /**
-         * Adds or replaces a generic key–value entry.
-         * If a key already exists, its value is replaced.
-         */
+        /** Adds or replaces a generic key–value entry. */
         fun put(key: String, value: Any) = apply {
-            synchronized(mutex) {
-                generic[key] = value
-            }
+            synchronized(mutex) { mobileTokenData[key] = value }
         }
 
-        /** Removes a generic key–value entry. Returns true if the key existed. */
-        fun removeGeneric(key: String): Boolean = synchronized(mutex) {
-            generic.remove(key) != null
-        }
-
-        /** Clears all generic key–value entries (does not touch records). */
-        fun clearGeneric() = apply {
-            synchronized(mutex) { generic.clear() }
-        }
-
-        /**
-         * Adds or replaces a finalized [MobileTokenDataRecord].
-         * If another record with the same [MobileTokenDataRecord.key] exists, it is replaced.
-         */
+        /** Adds or replaces a structured record under its declared [key]. */
         fun put(record: MobileTokenDataRecord) = apply {
-            synchronized(mutex) {
-                records.removeAll { it.key == record.key }
-                records += record
-            }
+            val value = record.build()
+            put(record.key, value)
         }
 
-        /**
-         * Returns an existing helper instance of type [T] or creates a new one
-         * using [factory] if none is cached.
-         */
-        inline fun <reified T : MobileTokenDataRecord> helper(noinline factory: () -> T): T {
-            val k = T::class
-            synchronized(mutex) {
-                @Suppress("UNCHECKED_CAST")
-                return (helpers[k] as? T) ?: factory().also { helpers[k] = it }
-            }
+        /** Removes an entry by its key. Returns true if removed. */
+        fun remove(key: String): Boolean = synchronized(mutex) {
+            mobileTokenData.remove(key) != null
         }
 
+        /** Removes a record by its key. Returns true if removed. */
+        fun remove(record: MobileTokenDataRecord): Boolean = remove(record.key)
+
+        /** Removes all entries. */
+        fun clear() = apply { synchronized(mutex) { mobileTokenData.clear() } }
+
         /**
-         * Creates and returns the final immutable data map containing
-         * all base entries, generic entries, and finalized records.
+         * Returns a snapshot of the collected data (copy).
+         * Safe to assign to `operation.mobileTokenData`.
          */
         fun build(): Map<String, Any> = synchronized(mutex) {
-            LinkedHashMap<String, Any>(baseMap.size + generic.size + records.size).apply {
-                putAll(baseMap)
-                putAll(generic)
-                for (r in records) put(r.key, r.toValue())
-            }
-        }
-
-        /** Removes a finalized record by key. Returns true if removed. */
-        fun removeRecord(key: String): Boolean = synchronized(mutex) {
-            records.removeAll { it.key == key }
-        }
-
-        /** Removes the given record (by its key). Returns true if removed. */
-        fun remove(record: MobileTokenDataRecord): Boolean = removeRecord(record.key)
-
-        /**
-         * Removes the record and calls its reset() to clear internal state,
-         * keeping any cached helper instance reusable.
-         */
-        fun reset(record: MobileTokenDataRecord) = apply {
-            synchronized(mutex) {
-                remove(record)
-                record.reset()
-            }
-        }
-
-        /** Removes all finalized records. */
-        fun clearAllRecords() = apply {
-            synchronized(mutex) {
-                records.clear()
-            }
+            mobileTokenData.toMap()
         }
     }
-
-    /**
-     * Returns a [PreApprovalScreensRecorder] helper instance associated with
-     * this [Builder]. The instance is created on first access and cached.
-     */
-    fun MobileTokenData.Builder.preApproval(powerAuthSDK: PowerAuthSDK): PreApprovalScreensRecorder = helper { PreApprovalScreensRecorder(powerAuthSDK, this) }
 }
