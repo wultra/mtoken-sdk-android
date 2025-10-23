@@ -16,6 +16,7 @@
 
 package com.wultra.android.mtokensdk.api.operation.model.mobiletokendata
 
+import com.wultra.android.mtokensdk.log.WMTLogger
 import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -73,15 +74,27 @@ class PreApprovalScreensRecorder(
         }
     }
 
-    /** Close the current visit (if id matches) and record [action]. */
+    /** Closes the current or last unclosed visit and records [action]. */
     fun end(id: String, action: Action) = apply {
         synchronized(mutex) {
-            val live = openVisit ?: return@apply
-            if (live.screen != id) return@apply
-            live.timestampClosed = now()
-            live.action = action.name
-            visits += live
-            openVisit = null
+
+            // Currently open visit matches this id
+            openVisit?.let { live ->
+                if (live.screen == id) {
+                    live.timestampClosed = now()
+                    live.action = action.name
+                    visits += live
+                    openVisit = null
+                    return@apply
+                }
+            }
+
+            // No openVisit, but last visit with same id has no timestampClosed and action
+            val last = visits.lastOrNull()
+            if (last != null && last.screen == id && (last.timestampClosed == null && last.action == null)) {
+                last.timestampClosed = now()
+                last.action = action.name
+            }
         }
     }
 
@@ -94,7 +107,17 @@ class PreApprovalScreensRecorder(
     }
 
     /** Record value: snapshot of visits. */
-    override fun build(): Any = synchronized(mutex) { visits.toList() }
+    override fun build(): Any = synchronized(mutex) {
+        // If a visit is still open, close it now (no action)
+        openVisit?.let { live ->
+            WMTLogger.w("PreApprovalScreensRecorder is building unended visit for screen: ${live.screen}, ending it automatically with no action.")
+            live.timestampClosed = now()
+            visits += live
+            openVisit = null
+        }
+
+        visits.toList()
+    }
 
     /** PowerAuth-synchronized current time (fallback: system clock). */
     private fun now(): ZonedDateTime {
