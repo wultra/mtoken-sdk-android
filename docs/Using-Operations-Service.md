@@ -364,7 +364,7 @@ Each recorded “visit” contains:
 The `PreApprovalScreensRecorder` exposes few methods for recording the user flow:
  
  - `begin(id: String)` – starts a new visit for the given screen ID.
-If another visit is already open, it is automatically finalized (without a closing timestamp or action).
+If another visit is already open, it is automatically added to the list (without a closing timestamp or action).
  - `end(id: String, action: Action)` – closes the current visit if the given id matches.
 If no visit is open, but the most recent recorded visit has the same id and is still unclosed, it is finalized instead.
  - `reset()` - resets recorded visits

@@ -17,7 +17,6 @@
 package com.wultra.android.mtokensdk.api.operation.model.mobiletokendata
 
 import com.wultra.android.mtokensdk.api.operation.model.IOperation
-import kotlin.apply
 
 /**
  * Helper for composing additional data passed with an [IOperation].
