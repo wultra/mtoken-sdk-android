@@ -42,7 +42,7 @@ All sources are licensed using the Apache 2.0 license. You can use them with no 
 
 ## Contact
 
-If you need any assistance, do not hesitate to drop us a line at [hello@wultra.com](mailto:hello@wultra.com) or our official [gitter.im/wultra](https://gitter.im/wultra) channel.
+If you need any assistance, do not hesitate to drop us a line at [hello@wultra.com](mailto:hello@wultra.com).
 
 ### Security Disclosure
 
