@@ -195,7 +195,7 @@ fun approveWithBiometrics(operation: IOperation) {
 
 ## Reject an Operation
 
-To reject an operation use `IOperationsService.rejectOperation`. Operation rejection is confirmed by the possession factor so there is no need for creating  `PowerAuthAuthentication ` object. You can simply use it with the following example.
+To reject an operation use `IOperationsService.rejectOperation`. Operation rejection is confirmed by the possession factor so there is no need for creating `PowerAuthAuthentication` object. You can simply use it with the following example.
 
 ```kotlin
 // Reject operation with some reason

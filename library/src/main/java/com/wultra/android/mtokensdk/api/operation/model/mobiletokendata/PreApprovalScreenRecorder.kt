@@ -33,7 +33,7 @@ class PreApprovalScreensRecorder(
     private val powerAuthSDK: PowerAuthSDK
 ) : MobileTokenDataRecord {
 
-    companion object { const val KEY = "preApprovalScreens" }
+    private companion object { const val KEY = "preApprovalScreens" }
     override val key: String get() = KEY
 
     /** Extensible action set (serialized via [name]). */

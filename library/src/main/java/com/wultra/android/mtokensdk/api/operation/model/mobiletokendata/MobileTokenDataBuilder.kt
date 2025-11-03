@@ -35,12 +35,10 @@ object MobileTokenData {
      */
     class Builder(
         /** Optional initial entries inserted into the builder. */
-        initialData: Map<String, Any>? = null
+        initialData: Map<String, Any> = emptyMap<String, Any>()
     ) {
         /** Thread-safe backing map for mobileTokenData. */
-        private val mobileTokenData = LinkedHashMap<String, Any>().apply {
-            if (initialData != null) putAll(initialData)
-        }
+        private val mobileTokenData = LinkedHashMap(initialData)
 
         /** Synchronization primitive guarding internal state. */
         private val mutex = Any()
