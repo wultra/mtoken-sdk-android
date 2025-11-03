@@ -232,7 +232,7 @@ class IntegrationTests {
 
                                         // Pre-approval section
                                         @Suppress("UNCHECKED_CAST")
-                                        val preServer = serverMtd[PreApprovalScreensRecorder.KEY] as? List<Map<String, Any>>
+                                        val preServer = serverMtd["preApprovalScreens"] as? List<Map<String, Any>>
                                             ?: throw AssertionError("preApprovalScreens missing")
 
                                         Assert.assertEquals(4, preServer.size)
