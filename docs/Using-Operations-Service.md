@@ -621,16 +621,19 @@ Types:
 
 A pre-approval screen can contain the following building blocks:
 
-	•	Heading and message – textual content displayed at the top of the screen.
-	•	Optional metadata – id (unique identifier), backButton (show navigation back button), and image (in-app asset identifier).
-	•	Elements – structured items that form the main content of the screen:
-	   - List item – text with optional icon with style (INFO, WARNING, DANGER).
-	   - Alert – highlighted box with style (INFO, WARNING, DANGER).
-	   - Button – action element with LINK, MAIL, or PHONE.
-	•	Controls – configuration of approve/decline actions:
-	   - Decline – BACK or REJECT, with optional text. 
-	   - Approve – SLIDER or BUTTON, with optional text and optional countdown (counter). 
-	   - Layout options – axis (HORIZONTAL or VERTICAL) and flip (swap order of controls).
+- Heading and message – textual content displayed at the top of the screen.
+- Optional metadata
+  - id - unique identifier
+  - backButton - show navigation back button
+  - image - in-app asset identifier
+- Elements – structured items that form the main content of the screen:
+  - List item – text with optional icon with style (INFO, WARNING, DANGER).
+  - Alert – highlighted box with style (INFO, WARNING, DANGER).
+  - Button – action element with LINK, MAIL, or PHONE, plus optional actionSettings string describing an additional behavior (e.g. "REJECT").
+- Controls – configuration of approve/decline actions:
+  - Decline – BACK or REJECT, with optional text.
+  - Approve – SLIDER or BUTTON, with optional text and optional countdown (counter).
+  - Layout options – axis (HORIZONTAL or VERTICAL) and flip (swap order of controls).
 
 #### PostApprovalScreen:
 `WMTPostApprovalScreen*` classes commonly contain `heading` and `message` and different payload data

@@ -21,6 +21,7 @@ import com.wultra.android.mtokensdk.api.operation.model.*
 import com.wultra.android.mtokensdk.api.operation.model.preapproval.PreApprovalControls
 import com.wultra.android.mtokensdk.api.operation.model.preapproval.PreApprovalElement
 import com.wultra.android.mtokensdk.api.operation.model.preapproval.PreApprovalElementAlert
+import com.wultra.android.mtokensdk.api.operation.model.preapproval.PreApprovalElementButton
 import com.wultra.android.mtokensdk.api.operation.model.preapproval.PreApprovalElementListItem
 import com.wultra.android.mtokensdk.api.operation.model.preapproval.PreApprovalScreen
 import com.wultra.android.mtokensdk.operation.JSONValue
@@ -275,12 +276,36 @@ class OperationUIDataTests {
         val e1 = s1.elements
         assertNotNull(e1)
         assertEquals(3, e1!!.size)
+
+        // Alert element (first)
         val first = e1.first()
         assertEquals(true, first is PreApprovalElementAlert)
         (first as PreApprovalElementAlert).let { alert ->
             assertEquals(PreApprovalElement.Type.ALERT, alert.type)
             assertEquals(PreApprovalElement.Style.INFO, alert.style)
             assertEquals("Make sure the activation takes place on your device", alert.text)
+        }
+
+        // Button element (second)
+        val second = e1[1]
+        assertEquals(true, second is PreApprovalElementButton)
+        (second as PreApprovalElementButton).let { btn ->
+            assertEquals(PreApprovalElement.Type.BUTTON, btn.type)
+            assertEquals("e2", btn.id)
+            assertEquals(PreApprovalElementButton.ButtonAction.PHONE, btn.action)
+            assertEquals("REJECT", btn.actionSettings)
+            assertEquals("+42012345678", btn.href)
+            assertEquals("Call center", btn.text)
+        }
+
+        // List item element (third)
+        val third = e1[2]
+        assertEquals(true, third is PreApprovalElementListItem)
+        (third as PreApprovalElementListItem).let { item ->
+            assertEquals(PreApprovalElement.Type.LIST_ITEM, item.type)
+            assertEquals("e3", item.id)
+            assertEquals("icon-label", item.icon)
+            assertEquals("You activate a new app and allow access to your accounts", item.text)
         }
 
         // Screen2 (QR_SCAN)
@@ -707,6 +732,7 @@ class OperationUIDataTests {
                             "id": "e2",
                             "type": "BUTTON",
                             "action": "PHONE",
+                            "actionSettings": "REJECT",
                             "text": "Call center",
                             "href": "+42012345678"
                         },
@@ -778,7 +804,7 @@ class OperationUIDataTests {
             ]
         }
     }
-"""
+    """
 
     private val legacyPreApproval = {
         """

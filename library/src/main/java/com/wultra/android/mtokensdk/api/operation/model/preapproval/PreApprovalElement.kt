@@ -73,7 +73,7 @@ open class PreApprovalElement(
     }
 }
 
-/** Button element (action + optional href + text). */
+/** Button element (action + actionSettings + optional href + text). */
 class PreApprovalElementButton(
 
     /** Unique identifier of the element. */
@@ -82,6 +82,10 @@ class PreApprovalElementButton(
     /** Supported button actions. */
     @SerializedName("action")
     val action: ButtonAction? = null,
+
+    /** Custom extended behavior or secondary action for the button, for example "REJECT". */
+    @SerializedName("actionSettings")
+    val actionSettings: String? = null,
 
     /** URL / resource reference. */
     @SerializedName("href")
