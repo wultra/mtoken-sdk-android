@@ -32,10 +32,6 @@ open class PreApprovalElement(
     @SerializedName("type")
     val type: Type,
 
-    /** Icon name (asset identifier). */
-    @SerializedName("icon")
-    val icon: String?,
-
     /** Textual content. */
     @SerializedName("text")
     val text: String?
@@ -91,12 +87,9 @@ class PreApprovalElementButton(
     @SerializedName("href")
     val href: String? = null,
 
-    /** Icon name (asset identifier). */
-    icon: String? = null,
-
     /** Textual content. */
     text: String? = null
-) : PreApprovalElement(id, Type.BUTTON, icon, text) {
+) : PreApprovalElement(id, Type.BUTTON, text) {
     enum class ButtonAction {
 
         @SerializedName("LINK")
@@ -120,12 +113,9 @@ class PreApprovalElementAlert(
     @SerializedName("style")
     val style: PreApprovalElement.Style? = null,
 
-    /** Icon name (asset identifier). */
-    icon: String? = null,
-
     /** Textual content. */
     text: String? = null
-) : PreApprovalElement(id, Type.ALERT, icon, text)
+) : PreApprovalElement(id, Type.ALERT, text)
 
 /** List item (one row with optional icon + text + optional style). */
 class PreApprovalElementListItem(
@@ -138,8 +128,9 @@ class PreApprovalElementListItem(
     val style: PreApprovalElement.Style? = null,
 
     /** Icon name (asset identifier). */
-    icon: String? = null,
+    @SerializedName("icon")
+    val icon: String? = null,
 
     /** Textual content. */
     text: String? = null
-) : PreApprovalElement(id, Type.LIST_ITEM, icon, text)
+) : PreApprovalElement(id, Type.LIST_ITEM, text)

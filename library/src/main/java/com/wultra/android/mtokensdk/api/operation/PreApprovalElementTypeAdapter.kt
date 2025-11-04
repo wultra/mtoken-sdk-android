@@ -54,17 +54,17 @@ internal class PreApprovalElementTypeAdapter : TypeAdapter<PreApprovalElement>()
             }
             PreApprovalElement.Type.ALERT -> {
                 val style = map["style"]?.parseEnumOrNull<PreApprovalElement.Style>()
-                PreApprovalElementAlert(id = id, style = style, icon = icon, text = text)
+                PreApprovalElementAlert(id = id, style = style, text = text)
             }
             PreApprovalElement.Type.BUTTON -> {
                 val action = map["action"]?.parseEnumOrNull<PreApprovalElementButton.ButtonAction>()
                 val actionSettings = map["actionSettings"]
                 val href = map["href"]
-                PreApprovalElementButton(id = id, action = action, actionSettings = actionSettings, href = href, icon = icon, text = text)
+                PreApprovalElementButton(id = id, action = action, actionSettings = actionSettings, href = href, text = text)
             }
             PreApprovalElement.Type.UNKNOWN -> {
                 // keep base instance for forward compatibility
-                PreApprovalElement(id = id, type = PreApprovalElement.Type.UNKNOWN, icon = icon, text = text)
+                PreApprovalElement(id = id, type = PreApprovalElement.Type.UNKNOWN, text = text)
             }
         }
     }
