@@ -7,6 +7,7 @@
 - [Start Periodic Polling](#start-periodic-polling)
 - [Approve an Operation](#approve-an-operation)
 - [Reject an Operation](#reject-an-operation)
+- [Mobile Token Data](#mobile-token-data)
 - [Operation detail](#operation-detail)
 - [Claim the Operation](#claim-the-operation)
 - [Off-line Authorization](#off-line-authorization)
@@ -192,60 +193,9 @@ fun approveWithBiometrics(operation: IOperation) {
 }
 ```
 
-### Passing Additional Mobile Token Data
-
-With PowerAuth server 1.10+, you can pass additional customer-specific data during operation authorization using the `mobileTokenData` property. This can be useful for fraud detection systems (FDS) or other custom business logic. 
-
-
-```kotlin
-import com.wultra.android.mtokensdk.api.operation.model.IOperation
-import com.wultra.android.mtokensdk.api.operation.model.ProximityCheck
-import io.getlime.security.powerauth.sdk.PowerAuthAuthentication
-
-// Create a custom operation with mobile token data
-class CustomOperation(
-    override val id: String,
-    override val data: String,
-    override var proximityCheck: ProximityCheck? = null,
-    override var mobileTokenData: Map<String, Any>? = null
-) : IOperation
-
-// Approve operation with additional FDS data
-fun approveWithFDSData() {
-    val fdsData: Map<String, Any> = mapOf(
-        "deviceFingerprint" to "abc123def456",
-        "riskScore" to 0.8,
-        "location" to mapOf(
-            "latitude" to 50.0755,
-            "longitude" to 14.4378
-        )
-    )
-    
-    val operation = CustomOperation(
-        id = "operationId123",
-        data = "operationData",
-        mobileTokenData = fdsData
-    )
-    
-    val auth = PowerAuthAuthentication.possessionWithPassword("password123")
-    
-    operationsService.authorizeOperation(operation, auth) { result ->
-        result.onSuccess {
-            // show success UI
-        }.onFailure { error ->
-            // show error UI
-        }
-    }
-}
-```
-
-Similarly to approving an operation, you can also pass mobileTokenData when rejecting an operation.
-
-The `mobileTokenData` is completely optional and the structure is customer-specific. If you don't need this functionality, you can continue using operations without providing this property.
-
 ## Reject an Operation
 
-To reject an operation use `IOperationsService.rejectOperation`. Operation rejection is confirmed by the possession factor so there is no need for creating  `PowerAuthAuthentication ` object. You can simply use it with the following example.
+To reject an operation use `IOperationsService.rejectOperation`. Operation rejection is confirmed by the possession factor so there is no need for creating `PowerAuthAuthentication` object. You can simply use it with the following example.
 
 ```kotlin
 // Reject operation with some reason
@@ -260,6 +210,192 @@ fun reject(operation: IOperation, reason: RejectionData) {
 }
 ```
 
+## Mobile Token Data
+
+With PowerAuth Server **1.10+**, you can pass additional, customer-specific metadata during operation authorization using the `mobileTokenData` property.
+Since PowerAuth Server **2.0+** you can pass additional mobileTokenData to reject method as well.
+
+This feature is especially useful for **fraud detection systems (FDS)**, customer risk evaluation, or other backend-specific business logic.
+
+You can provide this data in two ways:
+
+---
+
+### Direct Map Approach
+
+If you already have a static set of key–value pairs to attach, you can directly construct a `Map<String, Any>` and assign it to your operation:
+
+```kotlin
+// Example: directly attaching a static map of metadata
+val fdsData = mapOf(
+    "deviceFingerprint" to "abc123def456",
+    "riskScore" to 0.8,
+    "location" to mapOf(
+        "latitude" to 50.0755,
+        "longitude" to 14.4378
+    )
+)
+
+val operation = CustomOperation(
+    id = "operationId123",
+    data = "operationData",
+    mobileTokenData = fdsData
+)
+
+val auth = PowerAuthAuthentication.possessionWithPassword("password123")
+
+operationsService.authorizeOperation(operation, auth) { result ->
+    result.onSuccess {
+        // Operation approved successfully
+    }.onFailure {
+        // Handle network or SDK error
+    }
+}
+```
+
+---
+
+### Builder-Based Approach
+
+For **more dynamic, structured, or multi-step** data, use the helper `MobileTokenData.Builder`.
+
+The builder provides a safe, thread-synchronized API for collecting and organizing data before finalizing it into a map for submission.
+
+### MobileTokenData Builder
+
+The `MobileTokenData.Builder` helps you safely compose structured data for an operation before it’s approved or rejected.
+
+- **Initialize** it with optional `initialData` map.
+- **Add generic entries** using `put(key, value)`.
+- **Attach structured records** such as `PreApprovalScreensRecorder` using `put(record)`.
+- **Extend** it with your own record types by implementing the `MobileTokenDataRecord` interface.
+
+#### Example
+
+```kotlin
+// Optional initial data entries (e.g. FDS hints)
+val initialData = mapOf("deviceFingerprint" to "abc123")
+
+// Create the builder
+val builder = MobileTokenData.Builder(initialData)
+
+// Add generic entries
+builder.put("riskScore", 0.82)
+
+// Assign to the operation
+operation.mobileTokenData = builder.build()
+```
+
+---
+
+## Record Helpers
+
+Sometimes, additional data attached to `mobileTokenData` is not just a few key–value pairs.
+It can represent **structured sections of information** (for example, a timeline of user actions or device events).
+
+To support these cases, the SDK defines the **`MobileTokenDataRecord` interface**.
+
+#### The `MobileTokenDataRecord` Interface
+
+A `MobileTokenDataRecord` represents a single top-level entry in the final `mobileTokenData` map.  
+It defines **two key responsibilities**:
+
+1. Provide a stable `key` — the top-level field name under which your record will appear.
+2. Implement `build()` — a method that returns the **value** (any serializable object) for that key.
+
+```kotlin
+interface MobileTokenDataRecord {
+    /** Top-level key under which this record is stored. */
+    val key: String
+
+    /** Produces the value object to store for this key. */
+    fun build(): Any
+}
+```
+
+This lets you encapsulate structured or time-dependent data, keep your `mobileTokenData` composition organized, and reuse record instances when needed.
+
+---
+
+### Example: Custom Record
+
+You can implement your own record for any structured data section — for example, to log environment variables or app configuration info.
+
+```kotlin
+class CustomRecord : MobileTokenDataRecord {
+    override val key = "customSection"
+    private val data = mutableMapOf<String, Any>()
+
+    fun add(name: String, value: Any) = apply { data[name] = value }
+
+    override fun build(): Any = data // return a value snapshot
+}
+```
+
+Usage example:
+
+```kotlin
+val builder = MobileTokenData.Builder()
+val record = CustomRecord()
+    .add("flag", true)
+    .add("mode", "debug")
+
+// Either pass the whole record…
+builder.put(record)
+// …or manually by key/value
+// builder.put(record.key, record.build())
+
+operation.mobileTokenData = builder.build()
+```
+
+---
+
+#### Predefined Record Helper: `PreApprovalScreensRecorder`
+
+The SDK includes a predefined implementation, `PreApprovalScreensRecorder`, which records how users navigate through **Pre-Approval screens**.
+
+Each recorded “visit” contains:
+
+- Screen identifier (`screen`)
+- Opening timestamp
+- Closing timestamp
+- User action (`CONTINUE`, `CLOSE`, `REJECT`, `SCAN`, etc.)
+
+The `PreApprovalScreensRecorder` exposes few methods for recording the user flow:
+ 
+ - `begin(id: String)` – starts a new visit for the given screen ID.
+If another visit is already open, it is automatically added to the list (without a closing timestamp or action).
+ - `end(id: String, action: Action)` – closes the current visit if the given id matches.
+If no visit is open, but the most recent recorded visit has the same id and is still unclosed, it is finalized instead.
+ - `reset()` - resets recorded visits
+
+Timestamps are aligned with server time via `PowerAuthSDK.timeSynchronizationService`.
+
+```kotlin
+// Create MobileTokenData.Builder instance
+val builder = MobileTokenData.Builder()
+
+// The PowerAuthSDK instance provides a timeSynchronizationService used
+// to create accurate, server-aligned timestamps for each recorded event.
+val screenRecorder = PreApprovalScreensRecorder(powerAuthSDK)
+
+// Display UI for the PreApproval screen and record that it was shown
+screenRecorder.begin(screen.id)
+// Record when user leaves the PreApproval screen
+screenRecorder.end(screen.id, PreApprovalScreensRecorder.Action.CONTINUE)
+
+// ... repeat for all the screens from the operations.ui.preApprovalScreens list
+
+// When your PreApproval flow is finished pass the WMTPreApprovalScreensRecorder to the WMTMobileTokenData.Builder    
+builder.put(screenRecorder)
+
+// Assign created MobileTokenData to the Operation before approving/rejecting
+operation.mobileTokenData = builder.build()
+```
+
+The `mobileTokenData` is completely optional and the structure is customer-specific. If you don't need this functionality, you can continue using operations without providing this property.
+
+---
 
 ## Operation detail
 
@@ -621,16 +757,19 @@ Types:
 
 A pre-approval screen can contain the following building blocks:
 
-	•	Heading and message – textual content displayed at the top of the screen.
-	•	Optional metadata – id (unique identifier), backButton (show navigation back button), and image (in-app asset identifier).
-	•	Elements – structured items that form the main content of the screen:
-	   - List item – text with optional icon with style (INFO, WARNING, DANGER).
-	   - Alert – highlighted box with style (INFO, WARNING, DANGER).
-	   - Button – action element with LINK, MAIL, or PHONE.
-	•	Controls – configuration of approve/decline actions:
-	   - Decline – BACK or REJECT, with optional text. 
-	   - Approve – SLIDER or BUTTON, with optional text and optional countdown (counter). 
-	   - Layout options – axis (HORIZONTAL or VERTICAL) and flip (swap order of controls).
+- Heading and message – textual content displayed at the top of the screen.
+- Optional metadata
+  - id - unique identifier) 
+  - backButton - show navigation back button
+  - image - in-app asset identifier
+- Elements – structured items that form the main content of the screen:
+  - List item – text with optional icon with style (INFO, WARNING, DANGER).
+  - Alert – highlighted box with style (INFO, WARNING, DANGER).
+  - Button – action element with LINK, MAIL, or PHONE.
+- Controls – configuration of approve/decline actions:
+  - Decline – BACK or REJECT, with optional text. 
+  - Approve – SLIDER or BUTTON, with optional text and optional countdown (counter). 
+  - Layout options – axis (HORIZONTAL or VERTICAL) and flip (swap order of controls).
 
 #### PostApprovalScreen:
 `WMTPostApprovalScreen*` classes commonly contain `heading` and `message` and different payload data
