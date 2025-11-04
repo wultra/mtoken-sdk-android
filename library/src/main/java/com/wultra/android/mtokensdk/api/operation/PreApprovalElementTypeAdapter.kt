@@ -58,8 +58,9 @@ internal class PreApprovalElementTypeAdapter : TypeAdapter<PreApprovalElement>()
             }
             PreApprovalElement.Type.BUTTON -> {
                 val action = map["action"]?.parseEnumOrNull<PreApprovalElementButton.ButtonAction>()
+                val actionSettings = map["actionSettings"]
                 val href = map["href"]
-                PreApprovalElementButton(id = id, action = action, href = href, icon = icon, text = text)
+                PreApprovalElementButton(id = id, action = action, actionSettings = actionSettings, href = href, icon = icon, text = text)
             }
             PreApprovalElement.Type.UNKNOWN -> {
                 // keep base instance for forward compatibility

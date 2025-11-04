@@ -95,8 +95,8 @@ Version `2.4.x` introduces a new, extensible **Pre‑approval UI Template** and 
       "heading": "Watch out!",
       "message": "You may become a victim of an attack.",
       "elements": [
-        { "id": "e1", "type": "ALERT", "style": "INFO", "text": "Make sure the activation takes place on your device" },
-        { "id": "e2", "type": "BUTTON", "action": "PHONE", "text": "Call center", "href": "+42012345678" },
+        { "id": "e1", "type": "ALERT", "style": "INFO", "text": "Make sure the activation takes place on your device" }, 
+        { "id": "e2", "type": "BUTTON", "action": "PHONE", "actionSettings": "REJECT", "text": "Call center", "href": "+42012345678" },
         { "id": "e3", "type": "LIST_ITEM", "icon": "icon-label", "text": "You activate a new app and allow access to your accounts" }
       ],
       "controls": {
