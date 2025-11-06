@@ -248,10 +248,10 @@ class OperationUIDataTests {
         val result = prepareResult(preApprovalScreensResponse)
         assertNotNull("Failed to parse JSON data", result)
 
-        // New apps: array should be present with 2 screens
+        // New apps: array should be present with 3 screens
         val screens = result!!.ui?.preApprovalScreens
         assertNotNull("preApprovalScreens missing", screens)
-        assertEquals("preApprovalScreens has wrong count", 2, screens!!.size)
+        assertEquals("preApprovalScreens has wrong count", 3, screens!!.size)
 
         // Screen1 (WARNING)
         val s1 = screens[0]
@@ -318,6 +318,10 @@ class OperationUIDataTests {
         assertEquals("You may become a victim of an attack.", s2.message)
         assertEquals(null, s2.controls)
         assertEquals(null, s2.elements)
+
+        // Screen3 (Log test of incorrect elements structure)
+        val s3 = screens[2]
+        assertEquals(null, s3.elements)
 
         // Sanity: top-level flags still parsed
         assertEquals(true, result.ui?.flipButtons)
@@ -763,6 +767,15 @@ class OperationUIDataTests {
                     "image": null,
                     "heading": "Watch out!",
                     "message": "You may become a victim of an attack."
+                },
+                {
+                    "id": "id3",
+                    "type": "WARNING",
+                    "heading": "Watch out!",
+                    "message": "You may become a victim of an attack.",
+                    "elements": {
+                        "incorrect": "structure"
+                    }
                 }
             ],
             "preApprovalScreen": {

@@ -123,14 +123,16 @@ internal fun <T> safeDeserializeObject(
     element: JsonElement?,
     type: Type
 ): T? {
-    if (element == null || !element.isJsonObject) {
-        WMTLogger.w("Expected JSON object for $type but got: $element")
+    if (element == null) return null
+
+    if (!element.isJsonObject) {
+        WMTLogger.e("Expected JSON object for $type but got: $element")
         return null
     }
     return try {
         ctx.deserialize<T>(element, type)
     } catch (_: Throwable) {
-        WMTLogger.d("Failed to deserialize $type from JSON: $element")
+        WMTLogger.e("Failed to deserialize $type from JSON: $element")
         null
     }
 }
@@ -140,8 +142,10 @@ internal fun <T> safeDeserializeArray(
     element: JsonElement?,
     type: Type
 ): T? {
-    if (element == null || !element.isJsonArray) {
-        WMTLogger.w("Expected JSON array for $type but got: $element")
+    if (element == null) return null
+
+    if (!element.isJsonArray) {
+        WMTLogger.e("Expected JSON array for $type but got: $element")
         return null
     }
     return try {
@@ -149,7 +153,7 @@ internal fun <T> safeDeserializeArray(
         // Automatically collapse empty arrays to null if the type is a collection
         if (deserialized is Collection<*> && deserialized.isEmpty()) null else deserialized
     } catch (_: Throwable) {
-        WMTLogger.d("Failed to deserialize $type from JSON: $element")
+        WMTLogger.e("Failed to deserialize $type from JSON: $element")
         null
     }
 }
