@@ -22,6 +22,8 @@ plugins {
     id("org.jetbrains.dokka")
 }
 
+apply<com.wultra.plugin.WultraAndroidReleasePlugin>()
+
 android {
 
     namespace = "com.wultra.android.mtokensdk"
@@ -99,5 +101,3 @@ dependencies {
     androidTestImplementation("androidx.test:core:1.6.1")
     androidTestImplementation(platform("org.jetbrains.kotlin:kotlin-bom:${Constants.BuildScript.kotlinVersion}"))
 }
-
-apply("android-release-aar.gradle")
