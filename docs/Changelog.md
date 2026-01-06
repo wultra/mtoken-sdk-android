@@ -1,6 +1,6 @@
 # Changelog
 
-## X.X.X
+## 2.4.0
 - Added multiple PreApprovalScreens support [(#207)](https://github.com/wultra/mtoken-sdk-android/issues/207).
 - Fixed handling of the unexpected attributes payload [(#217)](https://github.com/wultra/mtoken-sdk-android/issues/217).
 
