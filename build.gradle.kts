@@ -26,7 +26,7 @@ buildscript {
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${Constants.BuildScript.kotlinVersion}")
         classpath("org.jetbrains.dokka:dokka-gradle-plugin:${Constants.BuildScript.dokkaVersion}")
         // releasing
-        classpath("io.github.gradle-nexus:publish-plugin:${Constants.BuildScript.publishVersion}")
+        classpath("com.wultra.gradle:android-release-gradle-plugin:1.+") // Wultra releasing plugin (latest 1.x version)
         // tests
         classpath("com.github.bjoernq:unmockplugin:0.7.9")
     }
