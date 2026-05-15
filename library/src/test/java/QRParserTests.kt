@@ -61,8 +61,8 @@ class QRParserTests {
             assert(operation.flags.flipButtons) { "flip buttons flag missing" }
             assert(operation.flags.fraudWarning) { "fraud warning flag missing" }
             assertEquals("AD8bOO0Df73kNaIGb3Vmpg==", operation.nonce)
-            assertEquals("MEYCIQDby1Uq+MaxiAAGzKmE/McHzNOUrvAP2qqGBvSgcdtyjgIhAMo1sgqNa1pPZTFBhhKvCKFLGDuHuTTYexdmHFjUUIJW", operation.signature.signatureString)
-            assertEquals(QROperationSignature.SigningKey.MASTER, operation.signature.signingKey)
+            assertEquals("MEYCIQDby1Uq+MaxiAAGzKmE/McHzNOUrvAP2qqGBvSgcdtyjgIhAMo1sgqNa1pPZTFBhhKvCKFLGDuHuTTYexdmHFjUUIJW", operation.signature.dataSource)
+            assertEquals(QROperationSignature.KeyType.MASTER, operation.signature.keyType)
             assert(operation.signedData.contentEquals(expectedSignedData))
 
             // Operation data
@@ -141,6 +141,54 @@ class QRParserTests {
             }
         } catch (e: Exception) {
             fail("This should be parsed. $e")
+        }
+    }
+
+    /*
+     * MAC personalized key type
+     */
+
+    @Test
+    fun `test MAC personalized signature`() {
+        // 32-byte base64 payload (KMAC output length)
+        val macSignature = "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8="
+        val code = makeCode(signingKey = "2", signature = macSignature)
+        /* ktlint-disable indent */
+        val expectedSignedData = (
+            "5ff1b1ed-a3cc-45a3-8ab0-ed60950312b6\n" +
+            "Payment\n" +
+            "Please confirm this payment\n" +
+            "A1*A100CZK*ICZ2730300000001165254011*D20180425*Thello world\n" +
+            "BCFX\n" +
+            "AD8bOO0Df73kNaIGb3Vmpg==\n" +
+            "2"
+        ).toByteArray()
+        /* ktlint-enable */
+
+        try {
+            val operation = QROperationParser.parse(code)
+            assertEquals(QROperationSignature.KeyType.MAC_PERSONALIZED, operation.signature.keyType)
+            assertEquals(32, operation.signature.data.size)
+            assertEquals(macSignature, operation.signature.dataSource)
+            assert(operation.signedData.contentEquals(expectedSignedData))
+        } catch (e: Exception) {
+            fail("This should be parsed. $e")
+        }
+    }
+
+    @Test
+    fun `test MAC personalized signature bad length`() {
+        // ECDSA-sized payload (>= 64 bytes) is invalid for the MAC key type, which requires exactly 32 bytes.
+        try {
+            QROperationParser.parse(
+                makeCode(
+                    signingKey = "2",
+                    signature = "MEYCIQDby1Uq+MaxiAAGzKmE/McHzNOUrvAP2qqGBvSgcdtyjgIhAMo1sgqNa1pPZTFBhhKvCKFLGDuHuTTYexdmHFjUUIJW"
+                )
+            )
+            fail("MAC personalized with ECDSA-sized payload should not be accepted")
+        } catch (e: Exception) {
+            // expected
         }
     }
 
@@ -224,7 +272,7 @@ class QRParserTests {
             }
         }
 
-        listOf("", "2", "X").forEach {
+        listOf("", "3", "X").forEach {
             try {
                 QROperationParser.parse(makeCode(signingKey = it))
                 fail("Signing key $it should not be accepted")

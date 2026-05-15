@@ -19,13 +19,20 @@ package com.wultra.android.mtokensdk.api.operation.model
 import android.annotation.SuppressLint
 import android.util.Base64
 import com.wultra.android.mtokensdk.log.WMTLogger
+import io.getlime.security.powerauth.sdk.PowerAuthSDK
 import java.math.BigDecimal
 import java.text.SimpleDateFormat
 
 /**
- * Parser for QR operation
+ * Parser for QR operation data encoded in a scanned QR code.
+ *
+ * When created with a [PowerAuthSDK] instance, the parser automatically verifies the
+ * operation's digital signature during [parse]. If verification fails, the
+ * parse throws an [IllegalArgumentException] with a signature verification message.
+ * When created without one (using the parameterless constructor), signature verification
+ * is left to the caller.
  */
-class QROperationParser {
+class QROperationParser(private val powerAuth: PowerAuthSDK? = null) {
 
     companion object {
 
@@ -44,6 +51,10 @@ class QROperationParser {
         /**
          * Process loaded payload from a scanned offline QR.
          *
+         * This static method creates a parser without automatic signature verification.
+         * The caller is responsible for verifying the operation's signature after parsing,
+         * for example by calling [QROperation.verifySignature].
+         *
          * @param string String parsed from QR code
          *
          * @throws IllegalArgumentException When there is no operation in provided string.
@@ -51,54 +62,7 @@ class QROperationParser {
          */
         @Throws(IllegalArgumentException::class)
         fun parse(string: String): QROperation {
-            try {
-                // Split string by newline
-                val attributes = string.split("\n")
-
-                if (attributes.count() < minimumAttributeFields) {
-                    throw IllegalArgumentException("QR operation needs to have at least $minimumAttributeFields attributes")
-                }
-
-                // Acquire all attributes
-                val operationId = attributes[0]
-                val title = parseAttributeText(attributes[1])
-                val message = parseAttributeText(attributes[2])
-                val dataString = attributes[3]
-                val flagsString = attributes[4]
-                val totp = if (attributes.size > minimumAttributeFields) attributes[5] else null
-
-                // Signature and nonce are always located at last lines
-                val nonce = attributes[attributes.lastIndex - 1]
-                val signatureString = attributes[attributes.lastIndex]
-
-                // Validate operationId
-                if (operationId.isEmpty()) {
-                    throw IllegalArgumentException("QR operation ID is empty!.")
-                }
-
-                val signature = parseSignature(signatureString)
-
-                // validate nonce
-                val nonceByteArray = Base64.decode(nonce, Base64.DEFAULT)
-                if (nonceByteArray.size != 16) {
-                    throw IllegalArgumentException("Invalid nonce data")
-                }
-
-                // Parse operation data fields
-                val formData = parseOperationData(dataString)
-
-                // Rebuild signed data, without pure signature string
-                val signedData = string.substring(0, string.length - signature.signatureString.length).toByteArray()
-
-                // Parse flags
-                val flags = parseOperationFlags(flagsString)
-                val isNewerFormat = attributes.count() > currentAttributeFields
-
-                return QROperation(operationId, title, message, formData, nonce, flags, totp, signedData, signature, isNewerFormat)
-            } catch (e: IllegalArgumentException) {
-                WMTLogger.e(e.message ?: "Payload is not a valid QR operation")
-                throw e
-            }
+            return QROperationParser().parse(string)
         }
 
         private fun parseAttributeText(text: String): String {
@@ -113,15 +77,26 @@ class QROperationParser {
          */
         private fun parseSignature(signaturePayload: String): QROperationSignature {
             if (signaturePayload.isEmpty()) {
+                WMTLogger.e("QROperationParser: Signature string is empty")
                 throw IllegalArgumentException("Empty offline operation signature")
             }
-            val signingKey = QROperationSignature.SigningKey.fromTypeValue(signaturePayload[0]) ?: throw IllegalArgumentException("Invalid offline operation signature key")
+            val keyType = QROperationSignature.KeyType.fromTypeValue(signaturePayload[0])
+            if (keyType == null) {
+                WMTLogger.e("QROperationParser: Unknown signing key type '${signaturePayload[0]}'")
+                throw IllegalArgumentException("Invalid offline operation signature key")
+            }
             val signatureBase64 = signaturePayload.substring(1)
-            val signatureByteArray = Base64.decode(signatureBase64, Base64.DEFAULT)
-            if (signatureByteArray.size < 64 || signatureByteArray.size > 255) {
+            val signatureByteArray = try {
+                Base64.decode(signatureBase64, Base64.DEFAULT)
+            } catch (e: Exception) {
+                WMTLogger.e("QROperationParser: Signature is not a valid Base64 string")
                 throw IllegalArgumentException("Invalid offline operation signature data")
             }
-            return QROperationSignature(signingKey, signatureByteArray, signatureBase64)
+            if (!keyType.validate(signatureByteArray)) {
+                WMTLogger.e("QROperationParser: Signature data length (${signatureByteArray.size} bytes) is invalid for key type '$keyType'")
+                throw IllegalArgumentException("Invalid offline operation signature data")
+            }
+            return QROperationSignature(keyType, signatureByteArray, signatureBase64)
         }
 
         /**
@@ -130,20 +105,30 @@ class QROperationParser {
         private fun parseOperationData(string: String): QROperationData {
             val stringFields = splitOperationData(string)
             if (stringFields.isEmpty()) {
+                WMTLogger.e("QROperationParser: Operation data string is empty")
                 throw IllegalArgumentException("No fields at all")
             }
 
             // Get and check version
             val versionString = stringFields.first()
-            val versionChar = versionString.firstOrNull() ?: throw IllegalArgumentException("First fields is empty string")
+            val versionChar = versionString.firstOrNull()
+            if (versionChar == null) {
+                WMTLogger.e("QROperationParser: Version string is empty")
+                throw IllegalArgumentException("First fields is empty string")
+            }
             if (versionChar < 'A' || versionChar > 'Z') {
+                WMTLogger.e("QROperationParser: Invalid version character '$versionChar', expected A-Z")
                 throw IllegalArgumentException("Version has to be an one capital letter")
             }
             val version = QROperationData.Version.parse(versionChar)
 
-            val templateId = versionString.substring(1).toIntOrNull() ?: throw IllegalArgumentException("TemplateID is not an integer")
-
+            val templateId = versionString.substring(1).toIntOrNull()
+            if (templateId == null) {
+                WMTLogger.e("QROperationParser: Template ID is not a valid integer in '$versionString'")
+                throw IllegalArgumentException("TemplateID is not an integer")
+            }
             if (templateId < 0 || templateId > 99) {
+                WMTLogger.e("QROperationParser: Template ID $templateId is out of range 0-99")
                 throw IllegalArgumentException("TemplateID is out of range.")
             }
 
@@ -187,7 +172,7 @@ class QROperationParser {
         }
 
         /**
-         * Parses input string into array of Field enumerations. Returns nil if some field has
+         * Parses input string into array of Field enumerations.
          */
         private fun parseDataFields(fields: ArrayList<String>): ArrayList<QROperationData.QROperationDataField> {
 
@@ -223,6 +208,7 @@ class QROperationParser {
             }
 
             if (result.count() > maximumDataFields) {
+                WMTLogger.e("QROperationParser: Too many data fields (${result.count()}), maximum is $maximumDataFields")
                 throw IllegalArgumentException("Too many fields")
             }
             return result
@@ -231,11 +217,17 @@ class QROperationParser {
         private fun parseAmount(string: String): QROperationData.AmountField {
             val value = string.substring(1)
             if (value.length < 4) {
+                WMTLogger.e("QROperationParser: Amount field '$string' is too short (need at least number + 3-char currency)")
                 throw IllegalArgumentException("Insufficient length for number+currency")
             }
             val currency = value.substring(value.lastIndex - 2).uppercase()
             val amountString = value.substring(0, value.lastIndex - 2)
-            val amount = BigDecimal(amountString)
+            val amount = try {
+                BigDecimal(amountString)
+            } catch (e: NumberFormatException) {
+                WMTLogger.e("QROperationParser: Amount '$amountString' is not a valid decimal number")
+                throw IllegalArgumentException("Amount is not a valid number")
+            }
             return QROperationData.AmountField(amount, currency)
         }
 
@@ -245,6 +237,7 @@ class QROperationParser {
             val ibanBic = string.substring(1)
             val components = ibanBic.split(",").filter { it.isNotEmpty() }
             if (components.count() > 2 || components.count() == 0) {
+                WMTLogger.e("QROperationParser: IBAN field '$string' has unsupported format (expected IBAN or IBAN,BIC)")
                 throw IllegalArgumentException("Unsupported format")
             }
             val iban = components[0]
@@ -252,12 +245,14 @@ class QROperationParser {
             val allowedChars = "01234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ"
             for (c in iban) {
                 if (!allowedChars.contains(c)) {
+                    WMTLogger.e("QROperationParser: IBAN '$iban' contains invalid characters")
                     throw IllegalArgumentException("Invalid character in IBAN")
                 }
             }
             if (bic != null) {
                 for (c in bic) {
                     if (!allowedChars.contains(c)) {
+                        WMTLogger.e("QROperationParser: BIC '$bic' contains invalid characters")
                         throw IllegalArgumentException("Invalid character in BIC")
                     }
                 }
@@ -277,18 +272,100 @@ class QROperationParser {
         private fun parseDate(string: String): QROperationData.DateField {
             val dateString = string.substring(1)
             if (dateString.length != 8) {
+                WMTLogger.e("QROperationParser: Date field '$string' has invalid length (expected 8 characters in YYYYMMDD format)")
                 throw IllegalArgumentException("Date needs to be 8 characters long")
             }
             try {
                 val date = dateFormatter.parse(dateString) ?: throw IllegalArgumentException("Date cannot been processed")
                 return QROperationData.DateField(date)
             } catch (t: Throwable) {
+                WMTLogger.e("QROperationParser: Date '$dateString' is not a valid YYYYMMDD date")
                 throw IllegalArgumentException("Unparseable date")
             }
         }
 
         private fun parseOperationFlags(string: String): QROperationFlags {
             return QROperationFlags(string.contains("B"), string.contains("X"), string.contains("F"), string.contains("C"))
+        }
+    }
+
+    /**
+     * Process loaded payload from a scanned offline QR.
+     *
+     * If this parser was created with a [PowerAuthSDK] instance, the parsed operation's
+     * signature is automatically verified before returning. A verification failure produces
+     * an [IllegalArgumentException].
+     *
+     * @param string String parsed from QR code
+     *
+     * @throws IllegalArgumentException When there is no operation in provided string or signature verification fails.
+     * @return Parsed operation.
+     */
+    @Throws(IllegalArgumentException::class)
+    fun parse(string: String): QROperation {
+        try {
+            // Split string by newline
+            val attributes = string.split("\n")
+
+            if (attributes.count() < minimumAttributeFields) {
+                WMTLogger.e("QROperationParser: Not enough attribute fields (${attributes.count()}), minimum is $minimumAttributeFields")
+                throw IllegalArgumentException("QR operation needs to have at least $minimumAttributeFields attributes")
+            }
+
+            // Acquire all attributes
+            val operationId = attributes[0]
+            val title = parseAttributeText(attributes[1])
+            val message = parseAttributeText(attributes[2])
+            val dataString = attributes[3]
+            val flagsString = attributes[4]
+            val totp = if (attributes.size > minimumAttributeFields) attributes[5] else null
+
+            // Signature and nonce are always located at last lines
+            val nonce = attributes[attributes.lastIndex - 1]
+            val signatureString = attributes[attributes.lastIndex]
+
+            // Validate operationId
+            if (operationId.isEmpty()) {
+                WMTLogger.e("QROperationParser: Operation ID is empty")
+                throw IllegalArgumentException("QR operation ID is empty!.")
+            }
+
+            val signature = parseSignature(signatureString)
+
+            // validate nonce
+            val nonceByteArray = Base64.decode(nonce, Base64.DEFAULT)
+            if (nonceByteArray.size != 16) {
+                WMTLogger.e("QROperationParser: Invalid nonce (not a valid 16-byte Base64 string)")
+                throw IllegalArgumentException("Invalid nonce data")
+            }
+
+            // Parse operation data fields
+            val formData = parseOperationData(dataString)
+
+            // Rebuild signed data, without pure signature string
+            // Note that the signatureString in the QR operation contains type as a first character which is not part of the signature!
+            val signedData = string.substring(0, string.length - signature.dataSource.length).toByteArray()
+
+            // Parse flags
+            val flags = parseOperationFlags(flagsString)
+            val isNewerFormat = attributes.count() > currentAttributeFields
+
+            val operation = QROperation(operationId, title, message, formData, nonce, flags, totp, signedData, signature, isNewerFormat)
+
+            // Verify signature when PowerAuthSDK is available
+            powerAuth?.let {
+                try {
+                    operation.verifySignature(it)
+                } catch (e: Exception) {
+                    WMTLogger.e("QROperationParser: Signature verification failed: $e")
+                    throw IllegalArgumentException("Signature verification failed", e)
+                }
+            }
+
+            return operation
+        } catch (e: IllegalArgumentException) {
+            WMTLogger.e(e.message ?: "Payload is not a valid QR operation")
+            throw e
         }
     }
 }

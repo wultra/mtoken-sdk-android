@@ -464,16 +464,26 @@ In case the user is not online, you can use off-line authorizations. In this ope
 
 ### Processing Scanned QR Operation
 
+You can verify the QR operation signature automatically during parsing by passing a `PowerAuthSDK` instance to the parser. If the signature is invalid, parsing throws an `IllegalArgumentException`:
+
+```kotlin
+@Throws(IllegalArgumentException::class)
+fun onQROperationScanned(scannedCode: String): QROperation {
+    val parser = QROperationParser(powerAuth = this.powerAuthSDK)
+    // operation is parsed and signature is verified
+    return parser.parse(scannedCode)
+}
+```
+
+Alternatively, you can create a parser without `PowerAuthSDK` and verify the signature manually:
+
 ```kotlin
 @Throws(IllegalArgumentException::class)
 fun onQROperationScanned(scannedCode: String): QROperation {
     // retrieve parsed operation
     val operation = QROperationParser.parse(scannedCode)
     // verify the signature against the powerauth instance
-    val verified = this.powerAuthSDK.verifyServerSignedData(operation.signedData, operation.signature.signature, operation.signature.isMaster())
-    if (!verified) {
-        throw IllegalArgumentException("Invalid offline operation")
-    }
+    operation.verifySignature(this.powerAuthSDK)
     return operation
 }
 ```

@@ -3,6 +3,13 @@
 ## X.X.X
 - Added multiple PreApprovalScreens support [(#207)](https://github.com/wultra/mtoken-sdk-android/issues/207).
 - Fixed handling of the unexpected attributes payload [(#217)](https://github.com/wultra/mtoken-sdk-android/issues/217).
+- Added handling of `mtoken.statusChange` push notifications in `PushParser`.
+- Reworked QR operation signature representation to support post-quantum-ready offline signatures:
+    - Renamed `QROperationSignature.SigningKey` to `QROperationSignature.KeyType` and `signingKey` property to `keyType`.
+    - Added new `MAC_PERSONALIZED` key type for KMAC-based MAC signatures (32-byte payload).
+    - Replaced the Base64 `signatureString: String` property with raw `data: ByteArray`.
+    - Added `QROperation.verifySignature(powerAuth)` convenience method that verifies the signature using the proper PowerAuth key based on `keyType`.
+    - `QROperationParser` can now accept an optional `PowerAuthSDK` instance via the constructor to automatically verify the operation signature during parsing. Invalid signatures produce an `IllegalArgumentException`.
 
 ## 2.3.0
 - Added Alert Attribute [(#186](https://github.com/wultra/mtoken-sdk-android/issues/186)

@@ -16,6 +16,8 @@
 
 package com.wultra.android.mtokensdk.api.operation.model
 
+import io.getlime.security.powerauth.core.CoreSignatureKeyId
+import io.getlime.security.powerauth.sdk.PowerAuthSDK
 import java.math.BigDecimal
 import java.util.*
 
@@ -47,7 +49,7 @@ data class QROperation(
     /** Data for signature validation */
     val signedData: ByteArray,
 
-    /** ECDSA signature calculated from [signedData] */
+    /** Signature calculated from [signedData]. */
     val signature: QROperationSignature,
 
     /** QR code uses a string in newer format that this class implements. This may be used as warning in UI */
@@ -59,6 +61,24 @@ data class QROperation(
         } else {
             "$operationId&${operationData.sourceString}&$totp".toByteArray(Charsets.UTF_8)
         }
+    }
+
+    /**
+     * Verifies the signature of the QR operation against the server's public keys
+     * held by the provided [PowerAuthSDK] instance.
+     *
+     * The method picks the correct verification key based on [QROperationSignature.keyType]
+     * and validates [QROperationSignature.data] against [signedData].
+     *
+     * Call this after parsing the QR code and before presenting the operation to the user,
+     * so the user is never asked to confirm an operation whose signature cannot be verified.
+     *
+     * @param powerAuth The [PowerAuthSDK] instance used to verify the signature.
+     * @throws Exception if the signature is invalid or cannot be verified.
+     */
+    @Throws(Exception::class)
+    fun verifySignature(powerAuth: PowerAuthSDK) {
+        powerAuth.verifyDigitalSignature(signedData, signature.data, signature.keyType.powerAuthKeyId)
     }
 }
 
@@ -152,37 +172,74 @@ data class QROperationData(
 
 /** Model class for offline QR operation signature. */
 data class QROperationSignature(
-    /** Defines which key has been used for ECDSA signature calculation.*/
-    val signingKey: SigningKey,
+    /** Defines which key has been used for signature calculation. */
+    val keyType: KeyType,
 
     /** Raw signature data */
     @Suppress("ArrayInDataClass")
-    val signature: ByteArray,
+    val data: ByteArray,
 
-    /** Signature in Base64 format */
-    val signatureString: String
+    /** Original Base64 data source as received from the payload */
+    val dataSource: String
 ) {
 
-    /** Defines which key was used for ECDSA signature calculation */
-    enum class SigningKey(val typeValue: Char) {
-        /** Master server key was used for ECDSA signature calculation */
+    @Deprecated("Use keyType instead", replaceWith = ReplaceWith("keyType"))
+    val signingKey: KeyType get() = keyType
+
+    @Deprecated("Use data instead", replaceWith = ReplaceWith("data"))
+    val signature: ByteArray get() = data
+
+    @Deprecated("Use dataSource instead", replaceWith = ReplaceWith("dataSource"))
+    val signatureString: String get() = dataSource
+
+    /** Defines which key was used for signature calculation */
+    enum class KeyType(val typeValue: Char) {
+        /** Master server key was used for signature calculation */
         MASTER('0'),
 
-        /** Personalized server's private key was used for ECDSA signature calculation */
-        PERSONALIZED('1');
+        /** Personalized server's private key was used for signature calculation */
+        PERSONALIZED('1'),
+
+        /** KMAC-based symmetric key for MAC verification */
+        MAC_PERSONALIZED('2');
+
+        /** PowerAuth signature key identifier that corresponds to this key type. */
+        val powerAuthKeyId: Int
+            get() = when (this) {
+                MASTER -> CoreSignatureKeyId.MASTER_EC
+                PERSONALIZED -> CoreSignatureKeyId.SERVER_EC
+                MAC_PERSONALIZED -> CoreSignatureKeyId.MAC_PERSONALIZED
+            }
+
+        /** Validates the key length for the given signature data. */
+        fun validate(signatureData: ByteArray): Boolean {
+            return when (this) {
+                MAC_PERSONALIZED -> signatureData.size == 32
+                MASTER, PERSONALIZED -> signatureData.size in 64..255
+            }
+        }
 
         companion object {
-            private val map = mutableMapOf<Char, SigningKey>()
+            private val map = mutableMapOf<Char, KeyType>()
             init {
                 for (type in values()) {
                     map[type.typeValue] = type
                 }
             }
-            fun fromTypeValue(typeValue: Char): SigningKey? {
+            fun fromTypeValue(typeValue: Char): KeyType? {
                 return map[typeValue]
             }
         }
     }
 
-    fun isMaster() = signingKey == SigningKey.MASTER
+    @Deprecated("Use keyType == KeyType.MASTER instead", replaceWith = ReplaceWith("keyType == KeyType.MASTER"))
+    fun isMaster() = keyType == KeyType.MASTER
+
+    companion object {
+        @Deprecated("Use KeyType.fromTypeValue instead", replaceWith = ReplaceWith("KeyType.fromTypeValue(typeValue)"))
+        object SigningKey {
+            val MASTER = KeyType.MASTER
+            val PERSONALIZED = KeyType.PERSONALIZED
+        }
+    }
 }

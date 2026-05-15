@@ -40,6 +40,7 @@ class PushParser {
                 "mtoken.operationInit" -> parseOperationCreated(notificationData)
                 "mtoken.operationFinished" -> parseOperationFinished(notificationData)
                 "mtoken.inboxMessage.new" -> parseInboxMessageReceived(notificationData)
+                "mtoken.statusChange" -> parseActivationStatusChange(notificationData)
                 else -> null
             }
         }
@@ -62,6 +63,11 @@ class PushParser {
         private fun parseInboxMessageReceived(notificationData: Map<String, String>): PushMessage? {
             val inboxId = notificationData["inboxId"] ?: return null
             return PushMessageInboxReceived(inboxId, notificationData)
+        }
+
+        private fun parseActivationStatusChange(notificationData: Map<String, String>): PushMessage {
+            val activationId = notificationData["activationId"]
+            return PushMessageActivationStatusChanged(activationId, notificationData)
         }
     }
 }
@@ -149,6 +155,17 @@ class PushMessageOperationFinished(
 class PushMessageInboxReceived(
     /** Id of the inbox message. */
     val id: String,
+
+    /** Original data on which was the push message constructed. */
+    originalData: Map<String, String>
+): PushMessage(originalData)
+
+/**
+ * Created when the activation status has changed (for example, the activation was blocked or removed).
+ */
+class PushMessageActivationStatusChanged(
+    /** Id of the activation whose status changed. May be null if not included in the push payload. */
+    val activationId: String?,
 
     /** Original data on which was the push message constructed. */
     originalData: Map<String, String>

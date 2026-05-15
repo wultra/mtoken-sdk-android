@@ -17,6 +17,7 @@
 package com.wultra.android.mtokensdk.api.operation
 
 import com.wultra.android.mtokensdk.push.PushMessage
+import com.wultra.android.mtokensdk.push.PushMessageActivationStatusChanged
 import com.wultra.android.mtokensdk.push.PushMessageOperationCreated
 import com.wultra.android.mtokensdk.push.PushMessageOperationFinished
 import com.wultra.android.mtokensdk.push.PushParser
@@ -105,6 +106,29 @@ class PushTests {
     @Test
     fun `test inbox new message`() {
         Assert.assertNotNull(makePush("mtoken.inboxMessage.new", null, null, null, "666"))
+    }
+
+    @Test
+    fun `test status change with activationId`() {
+        val map = mutableMapOf<String, String>()
+        map["messageType"] = "mtoken.statusChange"
+        map["activationId"] = "act-123"
+        val push = PushParser.parseNotification(map)
+        Assert.assertNotNull(push)
+        Assert.assertTrue(push is PushMessageActivationStatusChanged)
+        val statusPush = push as PushMessageActivationStatusChanged
+        Assert.assertEquals("act-123", statusPush.activationId)
+    }
+
+    @Test
+    fun `test status change without activationId`() {
+        val map = mutableMapOf<String, String>()
+        map["messageType"] = "mtoken.statusChange"
+        val push = PushParser.parseNotification(map)
+        Assert.assertNotNull(push)
+        Assert.assertTrue(push is PushMessageActivationStatusChanged)
+        val statusPush = push as PushMessageActivationStatusChanged
+        Assert.assertNull(statusPush.activationId)
     }
 
     private fun makePush(type: String?, id: String?, name: String?, opResult: String?, inboxId: String? = null): PushMessage? {
