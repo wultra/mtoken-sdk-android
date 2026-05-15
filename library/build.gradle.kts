@@ -81,23 +81,23 @@ dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
     // Bundled
     implementation("org.jetbrains.kotlin:kotlin-stdlib:${Constants.BuildScript.kotlinVersion}")
-    implementation("androidx.annotation:annotation:1.8.2")
-    implementation("com.google.code.gson:gson:2.11.0")
+    implementation("androidx.annotation:annotation:1.10.0")
+    implementation("com.google.code.gson:gson:2.14.0")
     implementation("com.squareup.okhttp3:okhttp:4.9.3")
-    implementation("com.wultra.android.powerauth:powerauth-networking:1.5.0")
+    implementation("com.wultra.android.powerauth:powerauth-networking:2.0.0-SNAPSHOT")
 
     // Dependencies
-    compileOnly("com.wultra.android.powerauth:powerauth-sdk:1.9.5")
-    compileOnly("io.getlime.core:rest-model-base:1.9.0")
+    compileOnly("com.wultra.android.powerauth:powerauth-sdk:2.0.0-SNAPSHOT")
+    compileOnly("io.getlime.core:rest-model-base:1.12.0")
 
     // TestDependencies
     testImplementation("junit:junit:4.13.2")
 
     // Android tests
-    androidTestImplementation("com.wultra.android.powerauth:powerauth-sdk:1.9.5")
-    androidTestImplementation("com.wultra.android.powerauth:powerauth-networking:1.5.0")
-    androidTestImplementation("androidx.test:runner:1.6.2")
+    androidTestImplementation("com.wultra.android.powerauth:powerauth-sdk:2.0.0-SNAPSHOT")
+    androidTestImplementation("com.wultra.android.powerauth:powerauth-networking:2.0.0-SNAPSHOT")
+    androidTestImplementation("androidx.test:runner:1.7.0")
     androidTestImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test:core:1.6.1")
+    androidTestImplementation("androidx.test:core:1.7.0")
     androidTestImplementation(platform("org.jetbrains.kotlin:kotlin-bom:${Constants.BuildScript.kotlinVersion}"))
 }

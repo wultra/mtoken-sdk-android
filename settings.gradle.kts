@@ -4,6 +4,7 @@ dependencyResolutionManagement {
         google()
         mavenLocal()
         mavenCentral()
+        maven(url = "https://central.sonatype.com/repository/maven-snapshots/")
     }
 }
 include(":library")
