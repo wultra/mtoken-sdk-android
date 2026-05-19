@@ -26,7 +26,7 @@ class PushParser {
         /**
          * When you receive a push notification, you can test it here if it's a "WMT" notification.
          *
-         * Return type can be [PushMessageOperationCreated], [PushMessageOperationFinished] or [PushMessageInboxReceived]
+         * Return type can be [PushMessageOperationCreated], [PushMessageOperationFinished], [PushMessageInboxReceived] or [PushMessageActivationStatusChanged]
          *
          * @param notificationData: data of received notification.
          * @return parsed known [PushMessage] or null
