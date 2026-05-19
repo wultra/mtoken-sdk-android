@@ -7,7 +7,8 @@
 - Reworked QR operation signature representation to support post-quantum-ready offline signatures:
     - Renamed `QROperationSignature.SigningKey` to `QROperationSignature.KeyType` and `signingKey` property to `keyType`.
     - Added new `MAC_PERSONALIZED` key type for KMAC-based MAC signatures (32-byte payload).
-    - Replaced the Base64 `signatureString: String` property with raw `data: ByteArray`.
+    - Replaced the Base64 `signatureString: String` property with `dataSource`, which now exposes the Base64 form of the signature data.
+    - Added `data: ByteArray` for the raw signature bytes, corresponding to the previous `signature: ByteArray` property.
     - Added `QROperation.verifySignature(powerAuth)` convenience method that verifies the signature using the proper PowerAuth key based on `keyType`.
     - `QROperationParser` can now accept an optional `PowerAuthSDK` instance via the constructor to automatically verify the operation signature during parsing. Invalid signatures produce an `IllegalArgumentException`.
 
