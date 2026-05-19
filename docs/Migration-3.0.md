@@ -76,12 +76,12 @@ The `QROperationParser` source file has been renamed (removed trailing space). I
 
 ### Networking Endpoint Types
 
-The underlying networking library will rename endpoint types in its 2.0 release:
+The underlying networking library renamed endpoint types:
 
 | Old (deprecated) | New |
 |---|---|
 | `EndpointSignedWithToken` | `EndpointAuthenticatedWithToken` |
 | `EndpointSigned` | `EndpointAuthenticated` |
 
-The old names will continue to compile (as typealiases) but will emit deprecation warnings. If you subclass or extend the SDK's API layer, update your endpoint declarations once you upgrade to networking library 2.0.
+The old names still compile (as typealiases) but emit deprecation warnings. If you subclass or extend the SDK's API layer, update your endpoint declarations.
 
