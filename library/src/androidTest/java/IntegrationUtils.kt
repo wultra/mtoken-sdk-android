@@ -33,6 +33,7 @@ import com.wultra.android.mtokensdk.oidc.OIDCService
 import io.getlime.security.powerauth.core.ActivationCodeUtil
 import io.getlime.security.powerauth.networking.response.CreateActivationResult
 import io.getlime.security.powerauth.networking.response.ICreateActivationListener
+import io.getlime.security.powerauth.networking.response.IPersistActivationListener
 import io.getlime.security.powerauth.sdk.PowerAuthClientConfiguration
 import io.getlime.security.powerauth.sdk.PowerAuthConfiguration
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
@@ -151,8 +152,22 @@ class IntegrationUtils {
 
             // COMMIT ACTIVATION LOCALLY
 
-            val result = pa.persistActivationWithPassword(context, pin)
-            Log.d("prepare activation", "commitActivationWithPassword result: $result")
+            val persistFuture = CompletableFuture<Any>()
+            pa.persistActivationWithPassword(context, pin, object : IPersistActivationListener {
+                override fun onPersistActivationSucceeded() {
+                    persistFuture.complete(null)
+                }
+
+                override fun onPersistActivationFailed(throwable: Throwable) {
+                    persistFuture.completeExceptionally(throwable)
+                }
+
+                override fun onPersistActivationCancelled(userCancel: Boolean) {
+                    persistFuture.completeExceptionally(Exception("Persist activation cancelled"))
+                }
+            })
+            persistFuture.get(10, TimeUnit.SECONDS)
+            Log.d("prepare activation", "commitActivationWithPassword succeeded")
 
             // COMMIT ACTIVATION ON THE SERVER
             val bodyCommit = """
