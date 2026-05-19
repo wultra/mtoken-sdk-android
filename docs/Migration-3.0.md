@@ -61,7 +61,7 @@ You can also verify manually using the operation helper:
 
 ```kotlin
 // Before (2.4.x)
-val isValid = powerAuth.verifyServerSignedData(op.signedData, op.signature.signatureString.toByteArray(), op.signature.signingKey == SigningKey.MASTER)
+val isValid = powerAuth.verifyServerSignedData(op.signedData, op.signature.signature, op.signature.signingKey == SigningKey.MASTER)
 
 // After (3.0.x) — manual verification
 op.verifySignature(powerAuth)
