@@ -19,7 +19,7 @@ package com.wultra.android.mtokensdk.api.operation.model
 import io.getlime.security.powerauth.core.CoreSignatureKeyId
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
 import java.math.BigDecimal
-import java.util.*
+import java.util.Date
 
 /**
  * QR operation model class.
