@@ -113,7 +113,7 @@ class PushMessageOperationFinished(
 
     /** Action which finished the operation. */
     enum class Result {
-        /** Operation was successfully confirmed. */
+        /** The operation was successfully confirmed. */
         SUCCESS,
 
         /** Operation failed to confirm. */
@@ -122,12 +122,12 @@ class PushMessageOperationFinished(
         /** Operation expired */
         TIMEOUT,
 
-        /** Operation was cancelled by the user. */
+        /** Operation was canceled by the user. */
         CANCELED,
 
         /**
          * mToken authentication method was removed from the user.
-         * This is very rare case.
+         * This is a very rare case.
          */
         METHOD_NOT_AVAILABLE,
 
@@ -164,7 +164,7 @@ class PushMessageInboxReceived(
  * Created when the activation status has changed (for example, the activation was blocked or removed).
  */
 class PushMessageActivationStatusChanged(
-    /** Id of the activation whose status changed. May be null if not included in the push payload. */
+    /** ID of the activation whose status changed. May be null if not included in the push payload. */
     val activationId: String?,
 
     /** Original data on which was the push message constructed. */

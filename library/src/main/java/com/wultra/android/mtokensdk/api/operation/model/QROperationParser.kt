@@ -36,10 +36,10 @@ class QROperationParser(private val powerAuth: PowerAuthSDK? = null) {
 
     companion object {
 
-        // Minimum lines in input string supported by this parser
+        // Minimum lines in the input string supported by this parser
         private const val minimumAttributeFields = 7
 
-        // Current number of lines in input string, supported by this parser
+        // Current number of lines in the input string, supported by this parser
         private const val currentAttributeFields = 8
 
         // Maximum number of operation data fields supported in this version.
@@ -53,11 +53,11 @@ class QROperationParser(private val powerAuth: PowerAuthSDK? = null) {
          *
          * This static method creates a parser without automatic signature verification.
          * The caller is responsible for verifying the operation's signature after parsing,
-         * for example by calling [QROperation.verifySignature].
+         * for example, by calling [QROperation.verifySignature].
          *
          * @param string String parsed from QR code
          *
-         * @throws IllegalArgumentException When there is no operation in provided string.
+         * @throws IllegalArgumentException When there is no operation in the provided string.
          * @return Parsed operation.
          */
         @Throws(IllegalArgumentException::class)
@@ -73,7 +73,7 @@ class QROperationParser(private val powerAuth: PowerAuthSDK? = null) {
         }
 
         /**
-         * Returns operation signature object if provided string contains valid key type and signature.
+         * Returns an operation signature object if the provided string contains a valid key type and signature.
          */
         private fun parseSignature(signaturePayload: String): QROperationSignature {
             if (signaturePayload.isEmpty()) {
@@ -140,8 +140,8 @@ class QROperationParser(private val powerAuth: PowerAuthSDK? = null) {
         }
 
         /**
-         * Splits input string into array of strings, representing array of form fields.
-         * It's expected that input string contains asterisk separated list of fields.
+         * Splits an input string into an array of strings, representing an array of form fields.
+         * It's expected that the input string contains an asterisk separated list of fields.
          */
         private fun splitOperationData(string: String): ArrayList<String> {
             // Split string by '*'
@@ -152,32 +152,32 @@ class QROperationParser(private val powerAuth: PowerAuthSDK? = null) {
             var appendNext = false
             for (substring in components) {
                 if (appendNext) {
-                    // Previous string ended with backslash
+                    // The previous string ended with backslash
                     var prev = fields.lastOrNull()
                     if (prev != null) {
-                        // Remove backslash from last stored value and append this new sequence
+                        // Remove backslash from the last stored value and append this new sequence
                         prev = prev.substring(0, prev.lastIndex)
                         prev = "$prev*$substring"
-                        // Replace last element with updated string
+                        // Replace the last element with an updated string
                         fields[fields.count() - 1] = prev
                     }
                 } else {
-                    // Just append this string into final array
+                    // Just append this string into a final array
                     fields.add(substring)
                 }
-                // Check if current sequence ends with backslash
+                // Check if the current sequence ends with backslash
                 appendNext = substring.lastOrNull() == '\\'
             }
             return fields
         }
 
         /**
-         * Parses input string into array of Field enumerations.
+         * Parses input string into an array of Field enumerations.
          */
         private fun parseDataFields(fields: ArrayList<String>): ArrayList<QROperationData.QROperationDataField> {
 
             val result = arrayListOf<QROperationData.QROperationDataField>()
-            // Skip version, which is first item in the array
+            // Skip version, which is the first item in the array
             for (stringField in fields.subList(1, fields.lastIndex + 1)) {
                 // Parse each field string
                 val typeId = stringField.firstOrNull()

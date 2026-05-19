@@ -43,7 +43,7 @@ data class QROperation(
     /** Flags associated with the operation */
     val flags: QROperationFlags,
 
-    /** Additional Time-based one time password for proximity check */
+    /** Additional Time-based one-time password for proximity check */
     val totp: String?,
 
     /** Data for signature validation */
@@ -52,7 +52,7 @@ data class QROperation(
     /** Signature calculated from [signedData]. */
     val signature: QROperationSignature,
 
-    /** QR code uses a string in newer format that this class implements. This may be used as warning in UI */
+    /** QR code uses a string in a newer format that this class implements. This may be used as a warning in UI. */
     val isNewerFormat: Boolean
 ) {
     fun dataForOfflineSigning(): ByteArray {
@@ -86,16 +86,16 @@ data class QROperation(
  * Flags associated with the operation
  */
 data class QROperationFlags(
-    /** If true, then 2FA signature with biometric factor can be used for operation confirmation.*/
+    /** If true, then 2FA signature with a biometric factor can be used for operation confirmation.*/
     val biometricsAllowed: Boolean,
 
-    /** If confirm/reject buttons should be flipped in the UI. This can be useful to test users attention. */
+    /** If confirmed/rejected, buttons should be flipped in the UI. This can be useful to test users' attention. */
     val flipButtons: Boolean,
 
     /** When the operation is considered a "potential fraud" on the server, a warning UI should be displayed to the user. */
     val fraudWarning: Boolean,
 
-    /** Block confirmation when call is active. */
+    /** Block confirmation when the call is active. */
     val blockWhenOnCall: Boolean
 ) {
     @Deprecated(replaceWith = ReplaceWith("biometricsAllowed"), message = "Use biometricsAllowed instead")
@@ -103,7 +103,7 @@ data class QROperationFlags(
 }
 
 /**
- * defines operation data in QR operation
+ * Defines operation data in QR operation.
  */
 data class QROperationData(
 
@@ -159,8 +159,8 @@ data class QROperationData(
     data class TextField(val text: String): QROperationDataField()
 
     /**
-     * Fallback for forward compatibility. If newer version of operation data
-     * contains new field type, then this case can be used for it's representation.
+     * Fallback for forward compatibility. If a newer version of operation data
+     * contains a new field type, then this case can be used for its representation.
      */
     data class FallbackField(val text: String, val type: Char): QROperationDataField()
 
@@ -222,7 +222,7 @@ data class QROperationSignature(
         companion object {
             private val map = mutableMapOf<Char, KeyType>()
             init {
-                for (type in values()) {
+                for (type in entries) {
                     map[type.typeValue] = type
                 }
             }

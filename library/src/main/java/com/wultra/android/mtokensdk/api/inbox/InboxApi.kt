@@ -73,7 +73,7 @@ internal class InboxApi(
     }
 
     /**
-     * Get paged message list.
+     * Get a paged message list.
      */
     fun list(request: InboxGetListRequest, listener: IApiCallResponseListener<InboxGetListResponse>) {
         post(request, getMessageList, null, okHttpInterceptor, listener)
@@ -87,7 +87,7 @@ internal class InboxApi(
     }
 
     /**
-     * Set message as read.
+     * Set the message as read.
      */
     fun read(request: InboxSetMessageReadRequest, listener: IApiCallResponseListener<StatusResponse>) {
         post(request, setMessageRead, null, okHttpInterceptor, listener)

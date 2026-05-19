@@ -22,7 +22,6 @@ import com.wultra.android.mtokensdk.inbox.InboxService
 import com.wultra.android.mtokensdk.log.WMTLogger
 import com.wultra.android.mtokensdk.oidc.OIDCService
 import com.wultra.android.mtokensdk.operation.OperationsService
-import com.wultra.android.mtokensdk.operation.OperationsUtils
 import com.wultra.android.mtokensdk.push.PushService
 import com.wultra.android.powerauth.networking.UserAgent
 import com.wultra.android.powerauth.networking.ssl.SSLValidationStrategy
@@ -32,12 +31,12 @@ import okhttp3.OkHttpClient
 
 /**
  * Convenience factory method to create a WultraMobileToken instance
- * from given PowerAuthSDK instance from default values.
+ * from a given PowerAuthSDK instance from default values.
  *
  * @param appContext Application Context
  * @param okHttpClient HTTP client instance for networking
  * @param acceptLanguage The language code to set for the `Accept-Language` header.
- * @param tokenProvider PowerAuthToken provider. If null is provided, default internal implementation is provided.
+ * @param tokenProvider PowerAuthToken provider. If null is provided, a default internal implementation is provided.
  * @param userAgent Default user agent for each request.
  * @param gsonBuilder Custom GSON builder for deserialization of request. If you want to provide your own
  * deserialization logic, we recommend adding it to the instance obtained from the [OperationsUtils.defaultGsonBuilder].
@@ -70,7 +69,7 @@ fun PowerAuthSDK.createWultraMobileToken(
  * @param appContext Application Context
  * @param okHttpClient OkHttpClient for API communication
  * @param acceptLanguage The language code to set for the `Accept-Language` header.
- * @param tokenProvider PowerAuthToken provider. If null is provided, default internal implementation is provided.
+ * @param tokenProvider PowerAuthToken provider. If null is provided, a default internal implementation is provided.
  * @param userAgent Default user agent used for each request.
  * @param gsonBuilder GSON builder for deserialization of request.
  *
@@ -184,10 +183,10 @@ class WultraMobileToken(
     val oidc: OIDCService get() = oidcBacking.lazy
 
     /**
-     * Sets the accept language for the outgoing request headers for `operations`, `push`, and `inbox` objects.
+     * Sets the acceptance language for the outgoing request headers for `operations`, `push`, and `inbox` objects.
      * The value can be further modified in each object individually.
      *
-     ** Standard RFC "Accept-Language"**: [RFC 7231, Section 5.3.5](https://tools.ietf.org/html/rfc7231#section-5.3.5)
+     ** Standard RFC "Accept-Language" **: [RFC 7231, Section 5.3.5](https://tools.ietf.org/html/rfc7231#section-5.3.5)
      *
      * Response texts are based on this setting. For example, when `"de"` is set, the server
      * will return operation texts in German (if available).
