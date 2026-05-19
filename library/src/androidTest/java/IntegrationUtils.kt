@@ -153,19 +153,23 @@ class IntegrationUtils {
             // COMMIT ACTIVATION LOCALLY
 
             val persistFuture = CompletableFuture<Any>()
-            pa.persistActivationWithPassword(context, pin, object : IPersistActivationListener {
-                override fun onPersistActivationSucceeded() {
-                    persistFuture.complete(null)
-                }
+            pa.persistActivationWithPassword(
+                context,
+                pin,
+                object : IPersistActivationListener {
+                    override fun onPersistActivationSucceeded() {
+                        persistFuture.complete(null)
+                    }
 
-                override fun onPersistActivationFailed(throwable: Throwable) {
-                    persistFuture.completeExceptionally(throwable)
-                }
+                    override fun onPersistActivationFailed(throwable: Throwable) {
+                        persistFuture.completeExceptionally(throwable)
+                    }
 
-                override fun onPersistActivationCancelled(userCancel: Boolean) {
-                    persistFuture.completeExceptionally(Exception("Persist activation cancelled"))
+                    override fun onPersistActivationCancelled(userCancel: Boolean) {
+                        persistFuture.completeExceptionally(Exception("Persist activation cancelled"))
+                    }
                 }
-            })
+            )
             persistFuture.get(10, TimeUnit.SECONDS)
             Log.d("prepare activation", "commitActivationWithPassword succeeded")
 
