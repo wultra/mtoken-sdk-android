@@ -47,6 +47,7 @@ data class QROperation(
     val totp: String?,
 
     /** Data for signature validation */
+    @Suppress("ArrayInDataClass")
     val signedData: ByteArray,
 
     /** Signature calculated from [signedData]. */
@@ -78,7 +79,7 @@ data class QROperation(
      */
     @Throws(Exception::class)
     fun verifySignature(powerAuth: PowerAuthSDK) {
-        powerAuth.verifyDigitalSignature(signedData, signature.data, signature.keyType.powerAuthKeyId)
+        powerAuth.verifyDigitalSignature(signature.data, signedData, signature.keyType.powerAuthKeyId)
     }
 }
 
