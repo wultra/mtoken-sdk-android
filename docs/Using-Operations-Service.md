@@ -21,7 +21,7 @@
 
 The Operations Service is responsible for fetching the operation list and for approving or rejecting operations.
 
-An operation can be anything you need to be approved or rejected by the user. It can be for example money transfer, login request, access approval, ...
+An operation can be anything you need to be approved or rejected by the user. For example, it can be a money transfer, a login request, an access approval, ...
 
 <!-- begin box warning -->
 Note: Before using Operations Service, you need to have a `PowerAuthSDK` object available and initialized with a valid activation. Without a valid PowerAuth activation, all endpoints will return an error.
@@ -37,7 +37,7 @@ See: [Example Usage](./Example-Usage)
 
 ### Customized initialization
 
-In case you need to create more customized instance. You can do so with an initializer.
+In case you need to create a more customized instance, you can do so with an initializer.
 
 
 ```kotlin
@@ -72,7 +72,7 @@ For these, if null is provided, default internal implementation is provided.
 
 ## Retrieve Pending Operations
 
-To fetch the list with pending operations, implement the `IOperationsService` API, you can call:
+To fetch the list of pending operations, implement the `IOperationsService` API, you can call:
 
 ```kotlin
 operationsService.getOperations {
@@ -84,7 +84,7 @@ operationsService.getOperations {
 }
 ```
 
-After you retrieve the pending operations, you can render them in the UI, for example, as a list of items with a detail of the operation shown after a tap.
+After you retrieve the pending operations, you can render them in the UI, for example, as a list of items with the operation details shown after a tap.
 
 <!-- begin box warning -->
 Note: The language of the UI data inside the operation depends on the configuration of the `IOperationsService.acceptLanguage`.
@@ -195,7 +195,7 @@ fun approveWithBiometrics(operation: IOperation) {
 
 ## Reject an Operation
 
-To reject an operation use `IOperationsService.rejectOperation`. Operation rejection is confirmed by the possession factor so there is no need for creating `PowerAuthAuthentication` object. You can simply use it with the following example.
+To reject an operation use `IOperationsService.rejectOperation`. Operation rejection is confirmed by the possession factor so there is no need to create a `PowerAuthAuthentication` object. You can simply use it with the following example.
 
 ```kotlin
 // Reject operation with some reason
@@ -416,7 +416,7 @@ fun getDetail(operationId: String) {
 
 ## Claim the Operation
 
-To claim a non-persolized operation use `IOperationsService.claim`. 
+To claim a non-personalized operation use `IOperationsService.claim`. 
 
 A non-personalized operation refers to an operation that is initiated without a specific userId. In this state, the operation is not tied to a particular user. 
 
@@ -756,7 +756,7 @@ class OperationUIData {
 
 #### PreApprovalScreens:
 
-Pre-approval screens define additional UI that can be displayed before the user decides to approve or reject an operation. They allow to display structured instructions, warnings, or interactive elements to the user.
+Pre-approval screens define additional UI that can be displayed before the user decides to approve or reject an operation. They allow displaying structured instructions, warnings, or interactive elements to the user.
 
 Types:
 

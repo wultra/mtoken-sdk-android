@@ -35,6 +35,6 @@ data class OIDCConfig(
     /** OAuth 2.0 redirect URI, the endpoint to which the OAuth 2.0 server can send responses. */
     val redirectUri: String,
 
-    /** If PKCE(Proof Key for Code Exchange) extension should be used */
+    /** If the PKCE (Proof Key for Code Exchange) extension should be used. */
     val pkceEnabled: Boolean
 )

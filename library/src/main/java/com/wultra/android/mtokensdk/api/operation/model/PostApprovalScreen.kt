@@ -20,11 +20,11 @@ import com.google.gson.annotations.SerializedName
 import com.wultra.android.mtokensdk.operation.JSONValue
 
 /**
- *  PostApproval classes define behaviour of screens after approval of the operation
- *  PostApprovalScreen is the base class for Post Approval screens classes
+ * PostApproval classes define the behavior of screens after approval of the operation.
+ * PostApprovalScreen is the base class for post-approval screen classes.
  *
- * `type` define different kind of data which can be passed with operation
- *  and shall be displayed before operation is confirmed
+ * `type` defines the different kinds of data that can be passed with an operation
+ * and shall be displayed after the operation is confirmed.
  */
 
 open class PostApprovalScreen(

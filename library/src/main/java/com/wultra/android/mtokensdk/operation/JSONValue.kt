@@ -20,7 +20,7 @@ import com.google.gson.JsonElement
 import com.google.gson.JsonParser
 
 /**
- * JSONValue - helper class for deserializing generic or unknown post-approval screens
+ * JSONValue - helper class for deserializing generic or unknown post-approval screens.
  */
 sealed class JSONValue {
     data class JSONString(val value: String) : JSONValue()

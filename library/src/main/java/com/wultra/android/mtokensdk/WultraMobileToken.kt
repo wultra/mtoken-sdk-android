@@ -31,7 +31,7 @@ import okhttp3.OkHttpClient
 
 /**
  * Convenience factory method to create a WultraMobileToken instance
- * from a given PowerAuthSDK instance from default values.
+ * from a given PowerAuthSDK instance with default values.
  *
  * @param appContext Application Context
  * @param okHttpClient HTTP client instance for networking

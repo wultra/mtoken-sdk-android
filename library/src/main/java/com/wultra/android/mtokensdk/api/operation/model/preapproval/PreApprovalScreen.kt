@@ -19,10 +19,10 @@ package com.wultra.android.mtokensdk.api.operation.model.preapproval
 import com.google.gson.annotations.SerializedName
 
 /**
- *  PreApprovalScreen contains data to be presented before approving operation
+ * PreApprovalScreen contains data to be presented before approving an operation.
  *
- * `type` define different kind of data which can be passed with operation
- *  and shall be displayed before operation is confirmed
+ * `type` defines the different kinds of data that can be passed with an operation
+ * and shall be displayed before the operation is confirmed.
  */
 open class PreApprovalScreen(
 

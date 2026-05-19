@@ -31,7 +31,7 @@ import java.lang.reflect.Type
 import kotlin.collections.ifEmpty
 
 /**
- * Gson deserializer [PreApprovalScreen].
+ * Gson deserializer for [PreApprovalScreen].
  *
  * Legacy handling:
  *  - If "items" or "approvalType" are present, build the new-model screen ONLY from those legacy bits:

@@ -24,7 +24,7 @@ import com.wultra.android.mtokensdk.operation.JSONValue
 import java.lang.reflect.Type
 
 /**
- * Gson deserializer [PostApprovalScreen]
+ * Gson deserializer for [PostApprovalScreen].
  *
  * Based on "type" it returns [PostApprovalScreenReview], [PostApprovalScreenRedirect]
  * or [PostApprovalScreenGeneric]

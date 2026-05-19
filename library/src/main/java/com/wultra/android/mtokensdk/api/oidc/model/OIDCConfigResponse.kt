@@ -27,7 +27,7 @@ internal data class OIDCConfigResponse(
     @SerializedName("redirectUri")
     val redirectUri: String,
 
-    /** If PKCE(Proof Key for Code Exchange) extension should be used */
+    /** If the PKCE (Proof Key for Code Exchange) extension should be used. */
     @SerializedName("pkceEnabled")
     val pkceEnabled: Boolean
 )

@@ -29,7 +29,7 @@ import kotlin.math.max
  * Expiration Watcher is a utility class that can notify you when an operation expires.
  * In the happy scenario when the operation expires, a notification is sent to the phone.
  * In some cases this might fail (as push messages are not guaranteed to be delivered) and then
- * it comes very handy to be notified internally and act upon it.
+ * it is very handy to be notified internally and act upon it.
  *
  * The default behavior of the expiration is based on the system date and time (by using `now()`).
  * So if the user chooses to change it, it might not work. If you have for example your server time, you can provide
@@ -39,13 +39,13 @@ import kotlin.math.max
  * of operation expiration verification is reloading the operation from the server.
  *
  * To prevent spamming of the utility by the wrong configuration of the time or desynchronization of the
- * server and the client, minimum report time between 2 reports is 5 seconds.
+ * server and the client, the minimum report time between two reports is 5 seconds.
  */
 class OperationExpirationWatcher {
 
     /**
-     * Provider of the current date and time provider. Default implementation
-     * current system time.
+     * Provider of the current date and time. Default implementation uses
+     * the current system time.
      */
     var currentDateProvider: CurrentDateProvider = OffsetDateProvider()
 
@@ -140,7 +140,7 @@ class OperationExpirationWatcher {
     }
 
     /**
-     * Stop watching all operation
+     * Stop watching all operations
      * @return Operations that are watched
      */
     fun removeAll(): List<ExpirableOperation> {
