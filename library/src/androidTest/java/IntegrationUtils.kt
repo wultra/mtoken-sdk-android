@@ -152,13 +152,13 @@ class IntegrationUtils {
 
             // COMMIT ACTIVATION LOCALLY
 
-            val persistFuture = CompletableFuture<Any>()
+            val persistFuture = CompletableFuture<Unit>()
             pa.persistActivationWithPassword(
                 context,
                 pin,
                 object : IPersistActivationListener {
                     override fun onPersistActivationSucceeded() {
-                        persistFuture.complete(null)
+                        persistFuture.complete(Unit)
                     }
 
                     override fun onPersistActivationFailed(throwable: Throwable) {
@@ -166,7 +166,7 @@ class IntegrationUtils {
                     }
 
                     override fun onPersistActivationCancelled(userCancel: Boolean) {
-                        persistFuture.completeExceptionally(Exception("Persist activation cancelled"))
+                        persistFuture.completeExceptionally(Exception("Persist activation cancelled by user: $userCancel"))
                     }
                 }
             )
