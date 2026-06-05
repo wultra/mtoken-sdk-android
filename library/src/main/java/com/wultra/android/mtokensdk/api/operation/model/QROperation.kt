@@ -47,6 +47,7 @@ data class QROperation(
     val totp: String?,
 
     /** Data for signature validation */
+    @Suppress("ArrayInDataClass")
     val signedData: ByteArray,
 
     /** Signature calculated from [signedData] */
@@ -86,16 +87,16 @@ data class QROperation(
  * Flags associated with the operation
  */
 data class QROperationFlags(
-    /** If true, then 2FA signature with biometric factor can be used for operation confirmation.*/
+    /** If true, then 2FA signature with a biometric factor can be used for operation confirmation.*/
     val biometricsAllowed: Boolean,
 
-    /** If confirm/reject buttons should be flipped in the UI. This can be useful to test users attention. */
+    /** If true, confirm / reject buttons are flipped in the UI. This can be useful to test users' attention. */
     val flipButtons: Boolean,
 
     /** When the operation is considered a "potential fraud" on the server, a warning UI should be displayed to the user. */
     val fraudWarning: Boolean,
 
-    /** Block confirmation when call is active. */
+    /** Block confirmation when the call is active. */
     val blockWhenOnCall: Boolean
 ) {
     @Deprecated(replaceWith = ReplaceWith("biometricsAllowed"), message = "Use biometricsAllowed instead")
@@ -159,8 +160,8 @@ data class QROperationData(
     data class TextField(val text: String): QROperationDataField()
 
     /**
-     * Fallback for forward compatibility. If newer version of operation data
-     * contains new field type, then this case can be used for it's representation.
+     * Fallback for forward compatibility. If a newer version of operation data
+     * contains a new field type, then this case can be used for its representation.
      */
     data class FallbackField(val text: String, val type: Char): QROperationDataField()
 
