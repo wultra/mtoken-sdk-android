@@ -292,6 +292,91 @@ class QRParserTests {
     }
 
     @Test
+    fun `test current format with TOTP`() {
+        val code = makeCode(otherAttrs = listOf("12345678"))
+
+        /* ktlint-disable indent */
+        val expectedSignedData = (
+            "5ff1b1ed-a3cc-45a3-8ab0-ed60950312b6\n" +
+            "Payment\n" +
+            "Please confirm this payment\n" +
+            "A1*A100CZK*ICZ2730300000001165254011*D20180425*Thello world\n" +
+            "BCFX\n" +
+            "12345678\n" +
+            "AD8bOO0Df73kNaIGb3Vmpg==\n" +
+            "0"
+        ).toByteArray()
+        /* ktlint-enable */
+
+        val operation = QROperationParser.parse(code)
+        assertEquals("5ff1b1ed-a3cc-45a3-8ab0-ed60950312b6", operation.operationId)
+        assertEquals("Payment", operation.title)
+        assertEquals("Please confirm this payment", operation.message)
+        assertTrue(operation.flags.biometricsAllowed)
+        assertTrue(operation.flags.blockWhenOnCall)
+        assertTrue(operation.flags.flipButtons)
+        assertTrue(operation.flags.fraudWarning)
+        assertEquals("12345678", operation.totp)
+        assertEquals("AD8bOO0Df73kNaIGb3Vmpg==", operation.nonce)
+        assertEquals("MEYCIQDby1Uq+MaxiAAGzKmE/McHzNOUrvAP2qqGBvSgcdtyjgIhAMo1sgqNa1pPZTFBhhKvCKFLGDuHuTTYexdmHFjUUIJW", operation.signature.dataSource)
+        assertEquals(QROperationSignature.KeyType.MASTER, operation.signature.keyType)
+        assertTrue(operation.signedData.contentEquals(expectedSignedData))
+
+        // Operation data
+        assertEquals(QROperationData.Version.V1, operation.operationData.version)
+        assertEquals(1, operation.operationData.templateId)
+        assertEquals(4, operation.operationData.fields.count())
+        assertEquals("A1*A100CZK*ICZ2730300000001165254011*D20180425*Thello world", operation.operationData.sourceString)
+    }
+
+    @Test
+    fun `test MAC personalized signature`() {
+        // 32-byte base64 payload (KMAC output length)
+        val macSignature = "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8="
+        val code = makeCode(signingKey = "2", signature = macSignature)
+
+        /* ktlint-disable indent */
+        val expectedSignedData = (
+            "5ff1b1ed-a3cc-45a3-8ab0-ed60950312b6\n" +
+            "Payment\n" +
+            "Please confirm this payment\n" +
+            "A1*A100CZK*ICZ2730300000001165254011*D20180425*Thello world\n" +
+            "BCFX\n" +
+            "AD8bOO0Df73kNaIGb3Vmpg==\n" +
+            "2"
+        ).toByteArray()
+        /* ktlint-enable */
+
+        val operation = QROperationParser.parse(code)
+        assertEquals(QROperationSignature.KeyType.MAC_PERSONALIZED, operation.signature.keyType)
+        assertEquals(32, operation.signature.data.size)
+        assertTrue(operation.signedData.contentEquals(expectedSignedData))
+    }
+
+    @Test
+    fun `test MAC personalized signature bad length`() {
+        // ECDSA-sized payload (>= 64 bytes) is invalid for MAC key type which requires exactly 32 bytes
+        val e = assertThrows(QROperationParseException::class.java) {
+            QROperationParser.parse(
+                makeCode(
+                    signingKey = "2",
+                    signature = "MEYCIQDby1Uq+MaxiAAGzKmE/McHzNOUrvAP2qqGBvSgcdtyjgIhAMo1sgqNa1pPZTFBhhKvCKFLGDuHuTTYexdmHFjUUIJW"
+                )
+            )
+        }
+        assertEquals(QRParseError.INVALID_SIGNATURE, e.reason)
+    }
+
+    @Test
+    fun `test some missing flags`() {
+        val operation = QROperationParser.parse(makeCode(flags = "FX"))
+        assertFalse(operation.flags.biometricsAllowed)
+        assertFalse(operation.flags.blockWhenOnCall)
+        assertTrue(operation.flags.flipButtons)
+        assertTrue(operation.flags.fraudWarning)
+    }
+
+    @Test
     fun `test invalid format too few fields`() {
         val e = assertThrows(QROperationParseException::class.java) {
             QROperationParser.parse("only\nthree\nfields")

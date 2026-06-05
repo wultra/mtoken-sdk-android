@@ -33,6 +33,7 @@ import com.wultra.android.mtokensdk.oidc.OIDCService
 import io.getlime.security.powerauth.core.ActivationCodeUtil
 import io.getlime.security.powerauth.networking.response.CreateActivationResult
 import io.getlime.security.powerauth.networking.response.ICreateActivationListener
+import io.getlime.security.powerauth.sdk.PowerAuthAlgorithm
 import io.getlime.security.powerauth.sdk.PowerAuthClientConfiguration
 import io.getlime.security.powerauth.sdk.PowerAuthConfiguration
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
@@ -98,7 +99,7 @@ class IntegrationUtils {
         }
 
         @Throws
-        fun prepareActivation(pin: String, userId: String? = null): Pair<PowerAuthSDK, WultraMobileToken> {
+        fun prepareActivation(pin: String, userId: String? = null, @PowerAuthAlgorithm algorithm: Int = PowerAuthAlgorithm.DEFAULT): Pair<PowerAuthSDK, WultraMobileToken> {
 
             // Be sure that each activation has its own user
             activationName = userId ?: UUID.randomUUID().toString()
@@ -108,7 +109,7 @@ class IntegrationUtils {
 
             // CREATE PA INSTANCE
 
-            val cfg = PowerAuthConfiguration.Builder("tests", enrollmentUrl, sdkConfig).build()
+            val cfg = PowerAuthConfiguration.Builder("tests", enrollmentUrl, sdkConfig).algorithm(algorithm).build()
             val clientCfg = PowerAuthClientConfiguration.Builder().allowUnsecuredConnection(true).build()
             val pa = PowerAuthSDK.Builder(cfg).clientConfiguration(clientCfg).build(context)
             val wmt = pa.createWultraMobileToken(context)
