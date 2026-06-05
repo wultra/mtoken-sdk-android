@@ -90,7 +90,7 @@ dependencies {
     implementation("com.wultra.android.powerauth:powerauth-networking:2.0.0-SNAPSHOT")
 
     // Dependencies
-    compileOnly("com.wultra.android.powerauth:powerauth-sdk:1.9.6")
+    compileOnly("com.wultra.android.powerauth:powerauth-sdk:2.0.0-SNAPSHOT")
     compileOnly("io.getlime.core:rest-model-base:1.12.0")
 
     // TestDependencies
