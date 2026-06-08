@@ -81,8 +81,8 @@ class QROperationParser(private val powerAuth: PowerAuthSDK? = null) {
      */
     @Throws(QROperationParseException::class)
     fun parse(string: String): QROperation {
-        // Split string by newline
-        val attributes = string.split("\n")
+        // Split string by newline (supports both LF and CRLF)
+        val attributes = string.split(Regex("\r?\n"))
 
         if (attributes.count() < MINIMUM_ATTRIBUTE_FIELDS) {
             throw parseError(
