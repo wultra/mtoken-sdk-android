@@ -28,6 +28,8 @@ import org.junit.After
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.TimeUnit
 
 /**
  * Integration tests for [QROperationParser] initialized with a [PowerAuthSDK] instance.
@@ -55,7 +57,7 @@ class QROperationParserIntegrationTests {
 
     /**
      * Parsing with a valid [PowerAuthSDK] verifies the signature automatically
-     * and the full authorize + OTP flow succeeds.
+     * and the full authorized + OTP flow succeeds.
      */
     @Test
     fun testParseWithPowerAuth() {
@@ -68,7 +70,14 @@ class QROperationParserIntegrationTests {
         Assert.assertEquals(op.operationId, qrOperation.operationId)
 
         val auth = PowerAuthAuthentication.possessionWithPassword(pin)
-        val otp = ops.authorizeOfflineOperation(qrOperation, auth)
+        val authCompletion = CompletableFuture<String>()
+        ops.authorizeOfflineOperation(qrOperation, auth, callback = { result ->
+            result.fold(
+                onSuccess = { otp -> authCompletion.complete(otp) },
+                onFailure = { e -> authCompletion.completeExceptionally(e) }
+            )
+        })
+        val otp = authCompletion.get(10, TimeUnit.SECONDS)
         val verified = IntegrationUtils.verifyQROperation(op, qrData, otp)
         Assert.assertTrue("OTP should be valid after parsing with PowerAuth-backed parser", verified.otpValid)
     }
@@ -161,7 +170,7 @@ class QROperationParserLegacyP256IntegrationTests {
     /**
      * With [PowerAuthAlgorithm.LEGACY_P256], the QR operation is signed with a personalized
      * ECDSA key. The parser must report [QROperationSignature.KeyType.PERSONALIZED] key type
-     * and the full authorize + OTP verification flow must succeed.
+     * and the full authorized + OTP verification flow must succeed.
      */
     @Test
     fun testParseWithLegacyP256() {
@@ -179,7 +188,14 @@ class QROperationParserLegacyP256IntegrationTests {
         )
 
         val auth = PowerAuthAuthentication.possessionWithPassword(pin)
-        val otp = ops.authorizeOfflineOperation(qrOperation, auth)
+        val future = CompletableFuture<String>()
+        ops.authorizeOfflineOperation(qrOperation, auth, callback = { result ->
+            result.fold(
+                onSuccess = { otp -> future.complete(otp) },
+                onFailure = { e -> future.completeExceptionally(e) }
+            )
+        })
+        val otp = future.get(10, TimeUnit.SECONDS)
         val verified = IntegrationUtils.verifyQROperation(op, qrData, otp)
         Assert.assertTrue("OTP should be valid for legacy P256 QR operation", verified.otpValid)
     }

@@ -29,6 +29,8 @@ import com.wultra.android.powerauth.networking.data.StatusResponse
 import com.wultra.android.powerauth.networking.error.ApiError
 import com.wultra.android.powerauth.networking.error.ApiErrorException
 import com.wultra.android.powerauth.networking.tokens.IPowerAuthTokenProvider
+import io.getlime.security.powerauth.networking.interfaces.ICancelable
+import io.getlime.security.powerauth.networking.response.IOfflineAuthenticationCodeListener
 import io.getlime.security.powerauth.sdk.PowerAuthAuthentication
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
 import okhttp3.OkHttpClient
@@ -48,7 +50,7 @@ class OperationsService {
     companion object {
         /**
          * Maximal duration in milliseconds of the request that can affect server time.
-         * If request takes longer than this value, the value won't update server time
+         * If a request takes longer than this value, the value won't update server time.
          */
         private const val SERVER_TIME_DELAY_THRESHOLD_MS = 1_000
         /**
@@ -56,7 +58,7 @@ class OperationsService {
          */
         private const val MIN_SERVER_TIME_CHANGE_MS = 300
         /**
-         * Delta change which is forced to be accepted even when the network conditions are not ideal
+         * Delta change that is forced to be accepted even when the network conditions are not ideal.
          */
         private const val FORCED_SERVER_TIME_CHANGE_MS = 20_000
     }
@@ -68,12 +70,12 @@ class OperationsService {
 
     /**
      * Accept language for the outgoing requests headers.
-     * Default value is "en".
-     * Changing this value updates the accept language of the underlying operationsApi.
+     * The default value is "en".
+     * Changing this value updates the acceptance language of the underlying operationsApi.
      *
      * Standard RFC "Accept-Language" https://tools.ietf.org/html/rfc7231#section-5.3.5
-     * Response texts are based on this setting. For example when "de" is set, server
-     * will return operation texts in german (if available).
+     * Response texts are based on this setting. For example, when "de" is set, the server
+     * will return operation texts in German (if available).
      */
     var acceptLanguage: String
         get() = operationApi.acceptLanguage
@@ -103,7 +105,7 @@ class OperationsService {
     val lastFetchResult: Result<List<UserOperation>>?
         get() = synchronized(mutex) { lastFetchOperationsResult }
 
-    // Contains last fetched result with operations. Must be accessed from the mutex.
+    // Contains the last fetched result with operations. Must be accessed from the mutex.
     private var lastFetchOperationsResult: Result<List<UserOperation>>? = null
 
     // Operation register holds operations in order
@@ -116,12 +118,12 @@ class OperationsService {
     // API class for communication.
     private val operationApi: OperationApi
 
-    // List of tasks waiting for ongoing operation fetch to finish. If list is not empty, then
-    // this indicate that operations loading is in progress.
+    // List of tasks waiting for ongoing operation fetch to finish. If the list is not empty,
+    // the operations loading is in progress.
     private val tasks = mutableListOf<GetOperationsCallback>()
 
     // Mutex
-    private val mutex = Object()
+    private val mutex = Any()
 
     /**
      * Constructs OperationService
@@ -130,7 +132,7 @@ class OperationsService {
      * @param appContext Application Context object
      * @param httpClient OkHttpClient for API communication
      * @param baseURL Base URL where the operations endpoint rests.
-     * @param tokenProvider PowerAuthToken provider. If null is provided, default internal implementation is provided.
+     * @param tokenProvider PowerAuthToken provider. If null is provided, a default internal implementation is provided.
      *
      */
     constructor(powerAuthSDK: PowerAuthSDK, appContext: Context, httpClient: OkHttpClient, baseURL: String, tokenProvider: IPowerAuthTokenProvider? = null, userAgent: UserAgent? = null, gsonBuilder: GsonBuilder? = null) {
@@ -147,7 +149,7 @@ class OperationsService {
     /**
      * Retrieves user operations.
      *
-     * @param callback Callback with result
+     * @param callback Callback with a result
      */
     fun getOperations(callback: GetOperationsCallback) {
         synchronized(mutex) {
@@ -171,8 +173,8 @@ class OperationsService {
     }
 
     /**
-     * Fetch operations from the server and report result to service's [IOperationsService.listener]. The function is effective
-     * only if service's listener is set.
+     * Fetch operations from the server and report a result to service's [IOperationsService.listener]. The function is effective
+     * only if the service's listener is set.
      */
     fun fetchOperations() = getOperations {}
 
@@ -180,13 +182,13 @@ class OperationsService {
         synchronized(mutex) {
             // At first, capture result to "lastFetchResult"
             lastFetchOperationsResult = result
-            // Then, report result back to the listener, if it's set.
+            // Then, report result back to the listener if it's set.
             listener?.let { listener ->
                 result.onSuccess { operationsRegister.replace(it) }
                     .onFailure { listener.operationsFailed(it.apiErrorForListener()) }
             }
-            // Now notify all tasks. We should iterate over copy of the list, to prevent
-            // tasks modification in case that application start yet another update right from
+            // Now notify all tasks. We should iterate over copy of the list to prevent
+            // tasks modification in case that application starts yet another update right from
             // the callback.
             val tasksCopy = tasks.toList()
             tasks.clear()
@@ -200,8 +202,8 @@ class OperationsService {
     /**
      * Retrieves the history of user operations with its current status.
      *
-     * @param authentication A multi-factor authentication object for signing. 2FA should be used (password or biometrics).
-     * @param callback Callback with result.
+     * @param authentication A multifactor authentication object for signing. 2FA should be used (password or biometrics).
+     * @param callback Callback with a result.
      */
     fun getHistory(authentication: PowerAuthAuthentication, callback: (result: Result<List<UserOperation>>) -> Unit) {
         operationApi.history(
@@ -219,11 +221,11 @@ class OperationsService {
     }
 
     /**
-     * Authorises operation with provided authentication
+     * Authorizes operation with provided authentication
      *
      * @param operation Operation for approval
-     * @param authentication Multi-factor authentication object for signing, which depends on the operation type but usually 2FA (password or biometrics)
-     * @param callback Callback with result.
+     * @param authentication Multifactor authentication object for signing, which depends on the operation type but usually 2FA (password or biometrics)
+     * @param callback Callback with a result.
      */
     fun authorizeOperation(operation: IOperation, authentication: PowerAuthAuthentication, callback: (result: Result<Unit>) -> Unit) {
 
@@ -250,11 +252,11 @@ class OperationsService {
     }
 
     /**
-     * Rejects operation with provided reason
+     * Rejects operation with the provided reason
      *
      * @param operation Operation to reject
      * @param reason Rejection reason
-     * @param callback Callback with result.
+     * @param callback Callback with a result.
      */
     fun rejectOperation(operation: IOperation, reason: RejectionData, callback: (result: Result<Unit>) -> Unit) {
         val rejectRequest = RejectRequest(RejectRequestObject(operation.id, reason.serialized, operation.mobileTokenData))
@@ -277,25 +279,42 @@ class OperationsService {
      * Sign offline QR operation with provided authentication.
      *
      * @param operation Operation to approve
-     * @param authentication Multi-factor authentication object for signing, which depends on the operation type but usually 2FA (password or biometrics)
+     * @param authentication Multifactor authentication object for signing, which depends on the operation type but usually 2FA (password or biometrics)
      * @param uriId uriId: Custom signature URI ID of the operation. Use URI ID under which the operation was
      * created on the server. Default value is `/operation/authorize/offline`.
+     * @param callback Callback with the resulting authentication code or error.
      *
-     * @throws Exception Various exceptions, based on the error.
-     *
-     * @return Signature that should be displayed to the user
+     * @return Cancelable object associated with the pending operation.
      */
-    @Throws
-    fun authorizeOfflineOperation(operation: QROperation, authentication: PowerAuthAuthentication, uriId: String = OperationApi.OFFLINE_AUTHORIZE_URI_ID): String {
-        return powerAuthSDK.offlineSignatureWithAuthentication(appContext, authentication, uriId, operation.dataForOfflineSigning(), operation.nonce)
-            ?: throw Exception("Cannot sign this operation")
+    fun authorizeOfflineOperation(
+        operation: QROperation,
+        authentication: PowerAuthAuthentication,
+        uriId: String = OperationApi.OFFLINE_AUTHORIZE_URI_ID,
+        callback: (Result<String>) -> Unit
+    ): ICancelable {
+        return powerAuthSDK.offlineAuthenticationCode(
+            appContext,
+            authentication,
+            uriId,
+            operation.dataForOfflineSigning(),
+            operation.nonce,
+            object : IOfflineAuthenticationCodeListener {
+                override fun onOfflineAuthenticationCodeSucceed(authenticationCode: String) {
+                    callback(Result.success(authenticationCode))
+                }
+
+                override fun onOfflineAuthenticationCodeFailed(throwable: Throwable) {
+                    callback(Result.failure(throwable))
+                }
+            }
+        )
     }
 
     /**
      * Retrieves operation detail based on operation ID
      *
      * @param operationId The identifier of the specific operation.
-     * @param callback Callback with result.
+     * @param callback Callback with a result.
      */
     fun getDetail(operationId: String, callback: (Result<UserOperation>) -> Unit) {
         val detailRequest = OperationClaimDetailRequest(OperationClaimDetailData(operationId))
@@ -318,7 +337,7 @@ class OperationsService {
      * Claims the "non-personalized" operation and assigns it to the user.
      *
      * @param operationId Operation ID that will be claimed as belonging to the user.
-     * @param callback Callback with result.
+     * @param callback Callback with a result.
      */
     fun claim(operationId: String, callback: (Result<UserOperation>) -> Unit) {
         val claimRequest = OperationClaimDetailRequest(OperationClaimDetailData(operationId))
@@ -348,9 +367,9 @@ class OperationsService {
      * If operations are already polling, this call is ignored
      * and the polling interval won't be changed.
      *
-     * @param pollingInterval Polling interval in milliseconds, default value is 7s and minimum is 5s
+     * @param pollingInterval Polling interval in milliseconds, default value is 7s, minimum is 5s
      * @param delayStart When true, polling starts after the first [pollingInterval] passes
-     *                   - By default it is set to false and polling starts immediately.
+     *                   - By default, it is set to false and polling starts immediately.
      */
     @Synchronized
     fun startPollingOperations(pollingInterval: Long = 7_000, delayStart: Boolean = false) {
@@ -402,7 +421,7 @@ private class OperationsRegister(private val onChangeCallback: (CallbackData) ->
     private val currentOperations = mutableListOf<UserOperation>()
 
     // Mutex to prevent race conditions from running multiple operations calls simultaneously
-    private val currentOperationsMutex = Object()
+    private val currentOperationsMutex = Any()
 
     // Adds an operation to the register
     fun add(operation: UserOperation) {
@@ -414,8 +433,8 @@ private class OperationsRegister(private val onChangeCallback: (CallbackData) ->
         }
     }
 
-    // Adds a multiple operations to the register.
-    // Returns list of added and removed operations.
+    // Adds multiple operations to the register.
+    // Returns a list of added and removed operations.
     fun replace(operations: List<UserOperation>): Pair<List<UserOperation>, List<UserOperation>> {
         synchronized(currentOperationsMutex) {
             // Build a list of operations which were added
