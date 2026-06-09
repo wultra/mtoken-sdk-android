@@ -22,7 +22,6 @@ import com.wultra.android.mtokensdk.inbox.InboxService
 import com.wultra.android.mtokensdk.log.WMTLogger
 import com.wultra.android.mtokensdk.oidc.OIDCService
 import com.wultra.android.mtokensdk.operation.OperationsService
-import com.wultra.android.mtokensdk.operation.OperationsUtils
 import com.wultra.android.mtokensdk.push.PushService
 import com.wultra.android.powerauth.networking.UserAgent
 import com.wultra.android.powerauth.networking.ssl.SSLValidationStrategy

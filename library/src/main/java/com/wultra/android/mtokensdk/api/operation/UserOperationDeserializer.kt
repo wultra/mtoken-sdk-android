@@ -19,12 +19,12 @@ package com.wultra.android.mtokensdk.api.operation
 import com.google.gson.JsonDeserializationContext
 import com.google.gson.JsonDeserializer
 import com.google.gson.JsonElement
-import com.wultra.android.mtokensdk.api.operation.model.UserOperation
-import java.lang.reflect.Type
-import com.wultra.android.mtokensdk.api.operation.model.FormData
 import com.wultra.android.mtokensdk.api.operation.model.AllowedSignatureType
+import com.wultra.android.mtokensdk.api.operation.model.FormData
 import com.wultra.android.mtokensdk.api.operation.model.OperationUIData
+import com.wultra.android.mtokensdk.api.operation.model.UserOperation
 import com.wultra.android.mtokensdk.api.operation.model.UserOperationStatus
+import java.lang.reflect.Type
 import java.time.ZonedDateTime
 
 /**

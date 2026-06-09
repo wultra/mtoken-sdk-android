@@ -19,7 +19,7 @@ import com.android.build.api.dsl.DefaultConfig
 import org.gradle.api.Project
 import java.io.File
 import java.io.FileInputStream
-import java.util.*
+import java.util.Properties
 
 fun wrapString(value: String?) = if (value != null) "\"${value}\"" else "null"
 

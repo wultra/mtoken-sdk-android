@@ -19,7 +19,6 @@ package com.wultra.android.mtokensdk.oidc.utils
 import com.wultra.android.mtokensdk.api.oidc.model.OIDCConfigResponse
 import com.wultra.android.mtokensdk.oidc.models.OIDCConfig
 import com.wultra.android.mtokensdk.oidc.models.OIDCPowerAuthActivationAttributes
-import io.getlime.security.powerauth.exception.PowerAuthMissingConfigException
 import io.getlime.security.powerauth.networking.interfaces.ICancelable
 import io.getlime.security.powerauth.networking.response.ICreateActivationListener
 import io.getlime.security.powerauth.sdk.PowerAuthActivation
