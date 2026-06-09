@@ -26,7 +26,7 @@ import com.wultra.android.mtokensdk.inbox.InboxMessage
 import com.wultra.android.mtokensdk.inbox.InboxMessageDetail
 import com.wultra.android.mtokensdk.operation.OperationsUtils
 import com.wultra.android.powerauth.networking.Api
-import com.wultra.android.powerauth.networking.EndpointSignedWithToken
+import com.wultra.android.powerauth.networking.EndpointAuthenticatedWithToken
 import com.wultra.android.powerauth.networking.IApiCallResponseListener
 import com.wultra.android.powerauth.networking.OkHttpBuilderInterceptor
 import com.wultra.android.powerauth.networking.UserAgent
@@ -38,12 +38,21 @@ import com.wultra.android.powerauth.networking.tokens.IPowerAuthTokenProvider
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
 import okhttp3.OkHttpClient
 
-internal class InboxCountResponse(responseObject: InboxCount, status: Status): ObjectResponse<InboxCount>(responseObject, status)
-internal class InboxGetListRequest(requestObject: GetList): ObjectRequest<GetList>(requestObject)
-internal class InboxGetListResponse(responseObject: List<InboxMessage>, status: Status): ObjectResponse<List<InboxMessage>>(responseObject, status)
-internal class InboxGetMessageDetailRequest(requestObject: GetMessageDetail): ObjectRequest<GetMessageDetail>(requestObject)
-internal class InboxGetMessageDetailResponse(responseObject: InboxMessageDetail, status: Status): ObjectResponse<InboxMessageDetail>(responseObject, status)
-internal class InboxSetMessageReadRequest(requestObject: SetMessageRead): ObjectRequest<SetMessageRead>(requestObject)
+internal class InboxCountResponse(responseObject: InboxCount, status: Status) :
+    ObjectResponse<InboxCount>(responseObject, status)
+
+internal class InboxGetListRequest(requestObject: GetList) : ObjectRequest<GetList>(requestObject)
+internal class InboxGetListResponse(responseObject: List<InboxMessage>, status: Status) :
+    ObjectResponse<List<InboxMessage>>(responseObject, status)
+
+internal class InboxGetMessageDetailRequest(requestObject: GetMessageDetail) :
+    ObjectRequest<GetMessageDetail>(requestObject)
+
+internal class InboxGetMessageDetailResponse(responseObject: InboxMessageDetail, status: Status) :
+    ObjectResponse<InboxMessageDetail>(responseObject, status)
+
+internal class InboxSetMessageReadRequest(requestObject: SetMessageRead) :
+    ObjectRequest<SetMessageRead>(requestObject)
 
 internal class InboxApi(
     okHttpClient: OkHttpClient,
@@ -53,14 +62,41 @@ internal class InboxApi(
     tokenProvider: IPowerAuthTokenProvider?,
     userAgent: UserAgent?,
     gsonBuilder: GsonBuilder?
-) : Api(baseUrl, okHttpClient, powerAuthSDK, gsonBuilder ?: OperationsUtils.defaultGsonBuilder(), appContext, tokenProvider, userAgent ?: UserAgent.libraryDefault(appContext)) {
+) : Api(
+    baseUrl,
+    okHttpClient,
+    powerAuthSDK,
+    gsonBuilder ?: OperationsUtils.defaultGsonBuilder(),
+    appContext,
+    tokenProvider,
+    userAgent ?: UserAgent.libraryDefault(appContext)
+) {
 
     companion object {
-        private val getMessageCount = EndpointSignedWithToken<BaseRequest, InboxCountResponse>("api/inbox/count", "possession_universal")
-        private val getMessageList = EndpointSignedWithToken<InboxGetListRequest, InboxGetListResponse>("api/inbox/message/list", "possession_universal")
-        private val getMessageDetail = EndpointSignedWithToken<InboxGetMessageDetailRequest, InboxGetMessageDetailResponse>("api/inbox/message/detail", "possession_universal")
-        private val setMessageRead = EndpointSignedWithToken<InboxSetMessageReadRequest, StatusResponse>("api/inbox/message/read", "possession_universal")
-        private val setMessageAllRead = EndpointSignedWithToken<BaseRequest, StatusResponse>("api/inbox/message/read-all", "possession_universal")
+        private val getMessageCount =
+            EndpointAuthenticatedWithToken<BaseRequest, InboxCountResponse>(
+                "api/inbox/count",
+                "possession_universal"
+            )
+        private val getMessageList =
+            EndpointAuthenticatedWithToken<InboxGetListRequest, InboxGetListResponse>(
+                "api/inbox/message/list",
+                "possession_universal"
+            )
+        private val getMessageDetail =
+            EndpointAuthenticatedWithToken<InboxGetMessageDetailRequest, InboxGetMessageDetailResponse>(
+                "api/inbox/message/detail",
+                "possession_universal"
+            )
+        private val setMessageRead =
+            EndpointAuthenticatedWithToken<InboxSetMessageReadRequest, StatusResponse>(
+                "api/inbox/message/read",
+                "possession_universal"
+            )
+        private val setMessageAllRead = EndpointAuthenticatedWithToken<BaseRequest, StatusResponse>(
+            "api/inbox/message/read-all",
+            "possession_universal"
+        )
     }
 
     var okHttpInterceptor: OkHttpBuilderInterceptor? = null
@@ -73,23 +109,32 @@ internal class InboxApi(
     }
 
     /**
-     * Get paged message list.
+     * Get a paged message list.
      */
-    fun list(request: InboxGetListRequest, listener: IApiCallResponseListener<InboxGetListResponse>) {
+    fun list(
+        request: InboxGetListRequest,
+        listener: IApiCallResponseListener<InboxGetListResponse>
+    ) {
         post(request, getMessageList, null, okHttpInterceptor, listener)
     }
 
     /**
      * Get message detail.
      */
-    fun detail(request: InboxGetMessageDetailRequest, listener: IApiCallResponseListener<InboxGetMessageDetailResponse>) {
+    fun detail(
+        request: InboxGetMessageDetailRequest,
+        listener: IApiCallResponseListener<InboxGetMessageDetailResponse>
+    ) {
         post(request, getMessageDetail, null, okHttpInterceptor, listener)
     }
 
     /**
      * Set message as read.
      */
-    fun read(request: InboxSetMessageReadRequest, listener: IApiCallResponseListener<StatusResponse>) {
+    fun read(
+        request: InboxSetMessageReadRequest,
+        listener: IApiCallResponseListener<StatusResponse>
+    ) {
         post(request, setMessageRead, null, okHttpInterceptor, listener)
     }
 

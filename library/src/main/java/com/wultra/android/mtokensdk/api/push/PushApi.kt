@@ -20,7 +20,7 @@ import android.content.Context
 import com.google.gson.GsonBuilder
 import com.wultra.android.mtokensdk.api.push.model.PushRegistrationRequestObject
 import com.wultra.android.powerauth.networking.Api
-import com.wultra.android.powerauth.networking.EndpointSignedWithToken
+import com.wultra.android.powerauth.networking.EndpointAuthenticatedWithToken
 import com.wultra.android.powerauth.networking.IApiCallResponseListener
 import com.wultra.android.powerauth.networking.OkHttpBuilderInterceptor
 import com.wultra.android.powerauth.networking.UserAgent
@@ -45,7 +45,7 @@ internal class PushApi constructor(
 ) : Api(baseURL, okHttpClient, powerAuthSDK, GsonBuilder(), appContext, tokenProvider, userAgent ?: UserAgent.libraryDefault(appContext)) {
 
     companion object {
-        private val endpoint = EndpointSignedWithToken<PushRegistrationRequest, StatusResponse>("api/push/device/register/token", "possession_universal")
+        private val endpoint = EndpointAuthenticatedWithToken<PushRegistrationRequest, StatusResponse>("api/push/device/register/token", "possession_universal")
     }
 
     var okHttpInterceptor: OkHttpBuilderInterceptor? = null
