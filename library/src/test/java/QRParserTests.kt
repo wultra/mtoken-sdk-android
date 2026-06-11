@@ -368,6 +368,29 @@ class QRParserTests {
     }
 
     @Test
+    fun `test MAC personalized signature boundary length`() {
+        // MAC_PERSONALIZED requires exactly 32 bytes; the adjacent 31- and 33-byte
+        // payloads must be rejected with INVALID_SIGNATURE.
+        val cases = mapOf(
+            31 to "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHg==",
+            33 to "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8g"
+        )
+        for ((length, signature) in cases) {
+            val e = assertThrows(
+                "A $length-byte MAC signature should be rejected",
+                QROperationParseException::class.java
+            ) {
+                QROperationParser.parse(makeCode(signingKey = "2", signature = signature))
+            }
+            assertEquals(
+                "A $length-byte MAC signature should fail with INVALID_SIGNATURE",
+                QRParseError.INVALID_SIGNATURE,
+                e.reason
+            )
+        }
+    }
+
+    @Test
     fun `test some missing flags`() {
         val operation = QROperationParser.parse(makeCode(flags = "FX"))
         assertFalse(operation.flags.biometricsAllowed)
