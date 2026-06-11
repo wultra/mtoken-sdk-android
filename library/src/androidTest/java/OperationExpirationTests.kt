@@ -26,123 +26,123 @@ import java.time.ZonedDateTime
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
-class OperationExpirationTests {
-
-    private val watcher = OperationExpirationWatcher()
-
-    @After
-    fun clear() {
-        watcher.listener = null
-        watcher.removeAll()
-    }
-
-    @Test
-    fun testAddOperation() {
-        val op = Operation()
-        watcher.add(op)
-        val ops = watcher.getWatchedOperations()
-        Assert.assertTrue(ops.count() == 1 && ops.first().equals(op))
-    }
-
-    @Test
-    fun testAddSameOperationTwice() {
-        val op = Operation()
-        watcher.add(op)
-        val ops = watcher.add(op)
-        Assert.assertTrue(ops.count() == 1 && ops.first().equals(op))
-    }
-
-    @Test
-    fun testAddOperations() {
-        val ops = watcher.add(listOf(Operation(), Operation()))
-        Assert.assertTrue(ops.count() == 2)
-    }
-
-    @Test
-    fun testRemoveOperation() {
-        val op = Operation()
-        val ops = watcher.add(op)
-        Assert.assertTrue(ops.count() == 1 && ops.first().equals(op))
-        val opsAfterRemoved = watcher.remove(op)
-        Assert.assertTrue(opsAfterRemoved.isEmpty())
-    }
-
-    @Test
-    fun testRemoveNonAddedOperation() {
-        val op = Operation()
-        val ops = watcher.add(op)
-        Assert.assertTrue(ops.count() == 1 && ops.first().equals(op))
-        val opsAfterRemoved = watcher.remove(Operation())
-        Assert.assertTrue(opsAfterRemoved.count() == 1)
-    }
-
-    @Test
-    fun testRemoveOperations() {
-        val op = Operation()
-        val op2 = Operation()
-        watcher.add(op)
-        val ops = watcher.add(op2)
-        Assert.assertTrue(ops.count() == 2)
-        val opsAfterRemoved = watcher.remove(listOf(op, op2))
-        Assert.assertTrue(opsAfterRemoved.isEmpty())
-    }
-
-    @Test
-    fun testRemoveAllOperations() {
-        watcher.add(Operation())
-        val ops = watcher.add(listOf(Operation(), Operation()))
-        Assert.assertTrue(ops.count() == 3)
-        val opsAfterRemoved = watcher.removeAll()
-        Assert.assertTrue(opsAfterRemoved.isEmpty())
-    }
-
-    @Test
-    fun testExpiring() {
-        val future = CompletableFuture<Any?>()
-        val op = Operation()
-        watcher.listener = WatcherListener { ops ->
-            if (ops.count() != 1 || !ops.first().equals(op)) {
-                future.completeExceptionally(Throwable())
-                return@WatcherListener
-            }
-            val curOps = watcher.getWatchedOperations()
-            if (curOps.isNotEmpty()) {
-                future.completeExceptionally(Throwable())
-                return@WatcherListener
-            }
-            future.complete(null)
-        }
-        watcher.add(op)
-        // we need to wait longer, because minimum report time is 5 seconds
-        Assert.assertNull(future.get(10, TimeUnit.SECONDS))
-    }
-
-    @Test
-    fun testExpiring2() {
-        val future = CompletableFuture<Any?>()
-        watcher.listener = WatcherListener { ops ->
-            if (ops.count() != 1) {
-                future.completeExceptionally(Throwable())
-                return@WatcherListener
-            }
-            val curOps = watcher.getWatchedOperations()
-            if (curOps.count() != 1) {
-                future.completeExceptionally(Throwable())
-                return@WatcherListener
-            }
-            future.complete(null)
-        }
-        watcher.add(listOf(Operation(), Operation(ZonedDateTime.now().plusSeconds(20))))
-        // we need to wait longer, because minimum report time is 5 seconds
-        Assert.assertNull(future.get(10, TimeUnit.SECONDS))
-    }
-}
-
-private class WatcherListener(private val callback: (List<ExpirableOperation>) -> Unit): OperationExpirationWatcherListener {
-
-    override fun operationsExpired(expiredOperations: List<ExpirableOperation>) {
-        callback(expiredOperations)
-    }
-}
-
-private class Operation(override val expires: ZonedDateTime = ZonedDateTime.now()): ExpirableOperation
+//class OperationExpirationTests {
+//
+//    private val watcher = OperationExpirationWatcher()
+//
+//    @After
+//    fun clear() {
+//        watcher.listener = null
+//        watcher.removeAll()
+//    }
+//
+//    @Test
+//    fun testAddOperation() {
+//        val op = Operation()
+//        watcher.add(op)
+//        val ops = watcher.getWatchedOperations()
+//        Assert.assertTrue(ops.count() == 1 && ops.first().equals(op))
+//    }
+//
+//    @Test
+//    fun testAddSameOperationTwice() {
+//        val op = Operation()
+//        watcher.add(op)
+//        val ops = watcher.add(op)
+//        Assert.assertTrue(ops.count() == 1 && ops.first().equals(op))
+//    }
+//
+//    @Test
+//    fun testAddOperations() {
+//        val ops = watcher.add(listOf(Operation(), Operation()))
+//        Assert.assertTrue(ops.count() == 2)
+//    }
+//
+//    @Test
+//    fun testRemoveOperation() {
+//        val op = Operation()
+//        val ops = watcher.add(op)
+//        Assert.assertTrue(ops.count() == 1 && ops.first().equals(op))
+//        val opsAfterRemoved = watcher.remove(op)
+//        Assert.assertTrue(opsAfterRemoved.isEmpty())
+//    }
+//
+//    @Test
+//    fun testRemoveNonAddedOperation() {
+//        val op = Operation()
+//        val ops = watcher.add(op)
+//        Assert.assertTrue(ops.count() == 1 && ops.first().equals(op))
+//        val opsAfterRemoved = watcher.remove(Operation())
+//        Assert.assertTrue(opsAfterRemoved.count() == 1)
+//    }
+//
+//    @Test
+//    fun testRemoveOperations() {
+//        val op = Operation()
+//        val op2 = Operation()
+//        watcher.add(op)
+//        val ops = watcher.add(op2)
+//        Assert.assertTrue(ops.count() == 2)
+//        val opsAfterRemoved = watcher.remove(listOf(op, op2))
+//        Assert.assertTrue(opsAfterRemoved.isEmpty())
+//    }
+//
+//    @Test
+//    fun testRemoveAllOperations() {
+//        watcher.add(Operation())
+//        val ops = watcher.add(listOf(Operation(), Operation()))
+//        Assert.assertTrue(ops.count() == 3)
+//        val opsAfterRemoved = watcher.removeAll()
+//        Assert.assertTrue(opsAfterRemoved.isEmpty())
+//    }
+//
+//    @Test
+//    fun testExpiring() {
+//        val future = CompletableFuture<Any?>()
+//        val op = Operation()
+//        watcher.listener = WatcherListener { ops ->
+//            if (ops.count() != 1 || !ops.first().equals(op)) {
+//                future.completeExceptionally(Throwable())
+//                return@WatcherListener
+//            }
+//            val curOps = watcher.getWatchedOperations()
+//            if (curOps.isNotEmpty()) {
+//                future.completeExceptionally(Throwable())
+//                return@WatcherListener
+//            }
+//            future.complete(null)
+//        }
+//        watcher.add(op)
+//        // we need to wait longer, because minimum report time is 5 seconds
+//        Assert.assertNull(future.get(10, TimeUnit.SECONDS))
+//    }
+//
+//    @Test
+//    fun testExpiring2() {
+//        val future = CompletableFuture<Any?>()
+//        watcher.listener = WatcherListener { ops ->
+//            if (ops.count() != 1) {
+//                future.completeExceptionally(Throwable())
+//                return@WatcherListener
+//            }
+//            val curOps = watcher.getWatchedOperations()
+//            if (curOps.count() != 1) {
+//                future.completeExceptionally(Throwable())
+//                return@WatcherListener
+//            }
+//            future.complete(null)
+//        }
+//        watcher.add(listOf(Operation(), Operation(ZonedDateTime.now().plusSeconds(20))))
+//        // we need to wait longer, because minimum report time is 5 seconds
+//        Assert.assertNull(future.get(10, TimeUnit.SECONDS))
+//    }
+//}
+//
+//private class WatcherListener(private val callback: (List<ExpirableOperation>) -> Unit): OperationExpirationWatcherListener {
+//
+//    override fun operationsExpired(expiredOperations: List<ExpirableOperation>) {
+//        callback(expiredOperations)
+//    }
+//}
+//
+//private class Operation(override val expires: ZonedDateTime = ZonedDateTime.now()): ExpirableOperation

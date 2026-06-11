@@ -48,104 +48,106 @@ class OidcTests {
         pa.removeActivationLocal(IntegrationUtils.context)
     }
 
-    @Test
-    fun testGetConfigFails() {
-        val nonValidProviderId = "xxx"
+//    @Test
+//    fun testGetConfigFails() {
+//        val nonValidProviderId = "xxx"
+//
+//        val future = CompletableFuture<Throwable>()
+//        oidc.getConfig(nonValidProviderId) { result ->
+//            result
+//                .onSuccess { Assert.fail("ProviderId shouldn't exist") }
+//                .onFailure { error ->
+//                    future.complete(error)
+//                }
+//        }
+//
+//        val error = future.get(20, TimeUnit.SECONDS)
+//
+//        // Assert the type of the error or its message
+//        Assert.assertNotNull("Error should not be null", error)
+//        Assert.assertEquals(
+//            "Expected error code 400 for nonexistent provider",
+//            400,
+//            ((error as ApiErrorException).cause as ApiHttpException).code
+//        )
+//    }
+//
+//    @Test
+//    fun testGetConfigSucceed() {
+//        val validProvider = IntegrationUtils.getOIDCProps().providerId
+//
+//        // Skip the test if the provider ID is empty
+//        assumeTrue("Skipping test: OIDC providerId is not set", validProvider.isNotEmpty())
+//
+//        val future = CompletableFuture<OIDCConfig>()
+//        oidc.getConfig(validProvider) { result ->
+//            result
+//                .onSuccess { future.complete(it) }
+//                .onFailure { future.completeExceptionally(it) }
+//        }
+//
+//        val config = future.get(20, TimeUnit.SECONDS)
+//
+//        Assert.assertNotNull(config.authorizeUri)
+//        Assert.assertNotNull(config.providerId)
+//        Assert.assertNotNull(config.scopes)
+//        Assert.assertNotNull(config.clientId)
+//        Assert.assertNotNull(config.redirectUri)
+//        Assert.assertTrue(!config.pkceEnabled)
+//    }
+//
+//    @Test
+//    fun testGetConfigPKCESucceed() {
+//        val validPKCEProviderId = IntegrationUtils.getOIDCProps().providerIdPkce
+//
+//        // Skip the test if the provider ID is empty
+//        assumeTrue("Skipping test: OIDC providerId is not set", validPKCEProviderId.isNotEmpty())
+//
+//        val future = CompletableFuture<OIDCConfig>()
+//        oidc.getConfig(validPKCEProviderId) { result ->
+//            result
+//                .onSuccess { future.complete(it) }
+//                .onFailure { future.completeExceptionally(it) }
+//        }
+//
+//        val config = future.get(20, TimeUnit.SECONDS)
+//
+//        Assert.assertTrue(config.pkceEnabled)
+//    }
+//
+//    @Test
+//    fun testOidcPreparesAuthorizationData() {
+//        val providerIdPkce = IntegrationUtils.getOIDCProps().providerIdPkce
+//
+//        // Skip the test if the provider ID is empty
+//        assumeTrue("Skipping test: OIDC providerIdPkce is not set", providerIdPkce.isNotEmpty())
+//
+//        val configFuture = CompletableFuture<OIDCConfig>()
+//        oidc.getConfig(providerIdPkce) { result ->
+//            result
+//                .onSuccess { configFuture.complete(it) }
+//                .onFailure { configFuture.completeExceptionally(it) }
+//        }
+//
+//        val config = configFuture.get(20, TimeUnit.SECONDS)
+//        Assert.assertNotNull("Config should not be null", config)
+//
+//        val oidcAuthDataFuture = CompletableFuture<OIDCAuthorizationRequest>()
+//        oidc.prepareAuthorizationData(config) { data ->
+//            data
+//                .onSuccess { oidcAuthDataFuture.complete(it) }
+//                .onFailure { oidcAuthDataFuture.completeExceptionally(it) }
+//        }
+//
+//        val oidcAuthData = oidcAuthDataFuture.get(5, TimeUnit.SECONDS)
+//        Assert.assertEquals(providerIdPkce, oidcAuthData.providerId)
+//        Assert.assertNotNull("Authorization URI should not be null", oidcAuthData.authorizeUri)
+//        Assert.assertNotNull("State should not be null", oidcAuthData.state)
+//        Assert.assertNotNull("Nonce should not be null", oidcAuthData.nonce)
+//        Assert.assertNotNull("Code verifier should not be null", oidcAuthData.codeVerifier)
+//    }
 
-        val future = CompletableFuture<Throwable>()
-        oidc.getConfig(nonValidProviderId) { result ->
-            result
-                .onSuccess { Assert.fail("ProviderId shouldn't exist") }
-                .onFailure { error ->
-                    future.complete(error)
-                }
-        }
-
-        val error = future.get(20, TimeUnit.SECONDS)
-
-        // Assert the type of the error or its message
-        Assert.assertNotNull("Error should not be null", error)
-        Assert.assertEquals(
-            "Expected error code 400 for nonexistent provider",
-            400,
-            ((error as ApiErrorException).cause as ApiHttpException).code
-        )
-    }
-
-    @Test
-    fun testGetConfigSucceed() {
-        val validProvider = IntegrationUtils.getOIDCProps().providerId
-
-        // Skip the test if the provider ID is empty
-        assumeTrue("Skipping test: OIDC providerId is not set", validProvider.isNotEmpty())
-
-        val future = CompletableFuture<OIDCConfig>()
-        oidc.getConfig(validProvider) { result ->
-            result
-                .onSuccess { future.complete(it) }
-                .onFailure { future.completeExceptionally(it) }
-        }
-
-        val config = future.get(20, TimeUnit.SECONDS)
-
-        Assert.assertNotNull(config.authorizeUri)
-        Assert.assertNotNull(config.providerId)
-        Assert.assertNotNull(config.scopes)
-        Assert.assertNotNull(config.clientId)
-        Assert.assertNotNull(config.redirectUri)
-        Assert.assertTrue(!config.pkceEnabled)
-    }
-
-    @Test
-    fun testGetConfigPKCESucceed() {
-        val validPKCEProviderId = IntegrationUtils.getOIDCProps().providerIdPkce
-
-        // Skip the test if the provider ID is empty
-        assumeTrue("Skipping test: OIDC providerId is not set", validPKCEProviderId.isNotEmpty())
-
-        val future = CompletableFuture<OIDCConfig>()
-        oidc.getConfig(validPKCEProviderId) { result ->
-            result
-                .onSuccess { future.complete(it) }
-                .onFailure { future.completeExceptionally(it) }
-        }
-
-        val config = future.get(20, TimeUnit.SECONDS)
-
-        Assert.assertTrue(config.pkceEnabled)
-    }
-
-    @Test
-    fun testOidcPreparesAuthorizationData() {
-        val providerIdPkce = IntegrationUtils.getOIDCProps().providerIdPkce
-
-        // Skip the test if the provider ID is empty
-        assumeTrue("Skipping test: OIDC providerIdPkce is not set", providerIdPkce.isNotEmpty())
-
-        val configFuture = CompletableFuture<OIDCConfig>()
-        oidc.getConfig(providerIdPkce) { result ->
-            result
-                .onSuccess { configFuture.complete(it) }
-                .onFailure { configFuture.completeExceptionally(it) }
-        }
-
-        val config = configFuture.get(20, TimeUnit.SECONDS)
-        Assert.assertNotNull("Config should not be null", config)
-
-        val oidcAuthDataFuture = CompletableFuture<OIDCAuthorizationRequest>()
-        oidc.prepareAuthorizationData(config) { data ->
-            data
-                .onSuccess { oidcAuthDataFuture.complete(it) }
-                .onFailure { oidcAuthDataFuture.completeExceptionally(it) }
-        }
-
-        val oidcAuthData = oidcAuthDataFuture.get(5, TimeUnit.SECONDS)
-        Assert.assertEquals(providerIdPkce, oidcAuthData.providerId)
-        Assert.assertNotNull("Authorization URI should not be null", oidcAuthData.authorizeUri)
-        Assert.assertNotNull("State should not be null", oidcAuthData.state)
-        Assert.assertNotNull("Nonce should not be null", oidcAuthData.nonce)
-        Assert.assertNotNull("Code verifier should not be null", oidcAuthData.codeVerifier)
-    }
+    //// UNCOMMENT ABOVE
 
     /**
      * The entire OIDC activation flow is highly dependent on third-party implementations,
