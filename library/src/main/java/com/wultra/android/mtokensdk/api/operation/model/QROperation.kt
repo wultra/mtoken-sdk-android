@@ -17,6 +17,7 @@
 package com.wultra.android.mtokensdk.api.operation.model
 
 import io.getlime.security.powerauth.core.CoreSignatureKeyId
+import io.getlime.security.powerauth.exception.PowerAuthErrorException
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
 import java.math.BigDecimal
 import java.util.Date
@@ -75,9 +76,9 @@ data class QROperation(
      * so the user is never asked to confirm an operation whose signature cannot be verified.
      *
      * @param powerAuth The [PowerAuthSDK] instance used to verify the signature.
-     * @throws Exception if the signature is invalid or cannot be verified.
+     * @throws PowerAuthErrorException if the signature is invalid or cannot be verified.
      */
-    @Throws(Exception::class)
+    @Throws(PowerAuthErrorException::class)
     fun verifySignature(powerAuth: PowerAuthSDK) {
         powerAuth.verifyDigitalSignature(signature.data, signedData, signature.keyType.powerAuthKeyId)
     }
