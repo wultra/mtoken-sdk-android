@@ -17,12 +17,16 @@
 package com.wultra.android.mtokensdk.api.operation.model
 
 import android.annotation.SuppressLint
+import android.os.Handler
+import android.os.Looper
 import android.util.Base64
 import com.wultra.android.mtokensdk.log.WMTLogger
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
 import java.math.BigDecimal
 import java.text.SimpleDateFormat
 import java.util.Locale
+import java.util.concurrent.Executor
+import java.util.concurrent.Executors
 
 /**
  * Parser for QR operation data encoded in a scanned QR code.
@@ -64,6 +68,37 @@ class QROperationParser(private val powerAuth: PowerAuthSDK? = null) {
         @Throws(QROperationParseException::class)
         fun parse(string: String): QROperation {
             return QROperationParser().parse(string)
+        }
+
+        /**
+         * Asynchronously process loaded payload from a scanned offline QR.
+         *
+         * Parsing is performed on the provided [executor] (a single-thread executor by default),
+         * and the [callback] is delivered on the Android main thread. This is the recommended
+         * variant when calling the parser from UI callbacks (e.g. a QR scanner) to avoid
+         * blocking the main thread.
+         *
+         * This static method creates a parser without automatic signature verification.
+         * The caller is responsible for verifying the operation's signature after parsing,
+         * for example, by calling [QROperation.verifySignature].
+         *
+         * @param string String parsed from QR code.
+         * @param executor Executor on which parsing is performed. Defaults to a single-thread executor.
+         * @param callback Invoked on the main thread with the parsing [Result].
+         */
+        fun parseAsync(
+            string: String,
+            executor: Executor = defaultParserExecutor,
+            callback: (Result<QROperation>) -> Unit
+        ) {
+            QROperationParser().parseAsync(string, executor, callback)
+        }
+
+        /** Lazily created single-thread executor used as the default for [parseAsync]. */
+        private val defaultParserExecutor: Executor by lazy {
+            Executors.newSingleThreadExecutor { r ->
+                Thread(r, "QROperationParser").apply { isDaemon = true }
+            }
         }
     }
 
@@ -142,6 +177,40 @@ class QROperationParser(private val powerAuth: PowerAuthSDK? = null) {
         }
 
         return operation
+    }
+
+    /**
+     * Asynchronously process loaded payload from a scanned offline QR.
+     *
+     * Parsing (including signature verification when this parser was created with a
+     * [PowerAuthSDK] instance) is performed on the provided [executor] - a single-thread
+     * executor by default - and the [callback] is delivered on the Android main thread.
+     *
+     * Use this variant to offload parsing off the UI thread (for example, when invoked
+     * directly from a QR scanner callback). The synchronous [parse] method remains
+     * available for callers that already run on a background thread.
+     *
+     * The [Result] passed to the [callback] wraps either the parsed [QROperation] on success
+     * or a [QROperationParseException] on failure.
+     *
+     * @param string String parsed from QR code.
+     * @param executor Executor on which parsing is performed. Defaults to a single-thread executor.
+     * @param callback Invoked on the main thread with the parsing [Result].
+     */
+    fun parseAsync(
+        string: String,
+        executor: Executor = defaultParserExecutor,
+        callback: (Result<QROperation>) -> Unit
+    ) {
+        val mainHandler = Handler(Looper.getMainLooper())
+        executor.execute {
+            val result = try {
+                Result.success(parse(string))
+            } catch (e: QROperationParseException) {
+                Result.failure(e)
+            }
+            mainHandler.post { callback(result) }
+        }
     }
 
     // region Private parsing methods

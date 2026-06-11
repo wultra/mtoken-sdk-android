@@ -476,7 +476,27 @@ fun onQROperationScanned(scannedCode: String): QROperation {
 ```
 
 <!-- begin box warning -->
-Signature verification is performed synchronously inside `parse`. Because QR scanning callbacks often run on the main thread, call the parser on a background thread to avoid blocking the UI.
+Signature verification is performed synchronously inside `parse`. Because QR scanning callbacks often run on the main thread, call the parser on a background thread to avoid blocking the UI. As a convenience, the SDK provides `parseAsync`, which performs parsing on a background executor and delivers the `Result<QROperation>` on the main thread:
+
+```kotlin
+fun onQROperationScanned(scannedCode: String) {
+    QROperationParser(this.powerAuthSDK).parseAsync(scannedCode) { result ->
+        result.onSuccess { operation ->
+            // use the parsed operation on the main thread
+        }.onFailure { error ->
+            // handle QROperationParseException
+        }
+    }
+}
+```
+
+You can supply your own `Executor` if you want to control where parsing runs (e.g. to reuse an existing background thread pool):
+
+```kotlin
+QROperationParser(this.powerAuthSDK).parseAsync(scannedCode, myExecutor) { result -> /* ... */ }
+```
+
+A static `QROperationParser.parseAsync` variant is also available when you want to parse without automatic signature verification.
 <!-- end -->
 
 If you need to parse without automatic verification (for example, to inspect the operation before verifying), use the parameterless parser and verify the signature manually with `QROperation.verifySignature`:
