@@ -476,27 +476,28 @@ fun onQROperationScanned(scannedCode: String): QROperation {
 ```
 
 <!-- begin box warning -->
-Signature verification is performed synchronously inside `parse`. Because QR scanning callbacks often run on the main thread, call the parser on a background thread to avoid blocking the UI. As a convenience, the SDK provides `parseAsync`, which performs parsing on a background executor and delivers the `Result<QROperation>` on the main thread:
+Signature verification is performed synchronously inside `parse`. Because QR scanning callbacks often run on the main thread, call the parser on a background thread to avoid blocking the UI. As a convenience, the SDK provides `parseAsync`, which performs parsing on a background executor and delivers the `Result<QROperation>` on the **main thread** - for both the success and the failure paths - so you can safely update the UI directly from within the callback:
 
 ```kotlin
 fun onQROperationScanned(scannedCode: String) {
+    // callback is always invoked on the main thread (success or failure)
     QROperationParser(this.powerAuthSDK).parseAsync(scannedCode) { result ->
         result.onSuccess { operation ->
-            // use the parsed operation on the main thread
+            // use the parsed operation; safe to touch the UI here
         }.onFailure { error ->
-            // handle QROperationParseException
+            // handle QROperationParseException; also delivered on the main thread
         }
     }
 }
 ```
 
-You can supply your own `Executor` if you want to control where parsing runs (e.g. to reuse an existing background thread pool):
+You can supply your own `Executor` if you want to control where parsing runs (e.g. to reuse an existing background thread pool). The callback delivery thread does not change - it remains the main thread regardless of which executor you provide:
 
 ```kotlin
-QROperationParser(this.powerAuthSDK).parseAsync(scannedCode, myExecutor) { result -> /* ... */ }
+QROperationParser(this.powerAuthSDK).parseAsync(scannedCode, myExecutor) { result -> /* still on main thread */ }
 ```
 
-A static `QROperationParser.parseAsync` variant is also available when you want to parse without automatic signature verification.
+A static `QROperationParser.parseAsync` variant is also available when you want to parse without automatic signature verification; it follows the same threading contract.
 <!-- end -->
 
 If you need to parse without automatic verification (for example, to inspect the operation before verifying), use the parameterless parser and verify the signature manually with `QROperation.verifySignature`:

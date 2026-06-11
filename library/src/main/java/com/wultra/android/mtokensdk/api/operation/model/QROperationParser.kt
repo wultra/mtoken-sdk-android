@@ -20,6 +20,7 @@ import android.annotation.SuppressLint
 import android.os.Handler
 import android.os.Looper
 import android.util.Base64
+import androidx.annotation.MainThread
 import com.wultra.android.mtokensdk.log.WMTLogger
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
 import java.math.BigDecimal
@@ -73,10 +74,11 @@ class QROperationParser(private val powerAuth: PowerAuthSDK? = null) {
         /**
          * Asynchronously process loaded payload from a scanned offline QR.
          *
-         * Parsing is performed on the provided [executor] (a single-thread executor by default),
-         * and the [callback] is delivered on the Android main thread. This is the recommended
-         * variant when calling the parser from UI callbacks (e.g. a QR scanner) to avoid
-         * blocking the main thread.
+         * Parsing is performed on the provided [executor] (a single-thread executor by default).
+         * The [callback] is always invoked on the Android main thread (looper of
+         * `Looper.getMainLooper()`), for both the success and the failure paths, so it is safe
+         * to update the UI directly from within it. This is the recommended variant when calling
+         * the parser from UI callbacks (e.g. a QR scanner) to avoid blocking the main thread.
          *
          * This static method creates a parser without automatic signature verification.
          * The caller is responsible for verifying the operation's signature after parsing,
@@ -84,12 +86,14 @@ class QROperationParser(private val powerAuth: PowerAuthSDK? = null) {
          *
          * @param string String parsed from QR code.
          * @param executor Executor on which parsing is performed. Defaults to a single-thread executor.
-         * @param callback Invoked on the main thread with the parsing [Result].
+         * @param callback Invoked on the main thread with the parsing [Result]. A successful result
+         *   wraps the parsed [QROperation]; a failed result wraps a [QROperationParseException].
+         *   Both outcomes are delivered on the main thread.
          */
         fun parseAsync(
             string: String,
             executor: Executor = defaultParserExecutor,
-            callback: (Result<QROperation>) -> Unit
+            @MainThread callback: (Result<QROperation>) -> Unit
         ) {
             QROperationParser().parseAsync(string, executor, callback)
         }
@@ -184,23 +188,28 @@ class QROperationParser(private val powerAuth: PowerAuthSDK? = null) {
      *
      * Parsing (including signature verification when this parser was created with a
      * [PowerAuthSDK] instance) is performed on the provided [executor] - a single-thread
-     * executor by default - and the [callback] is delivered on the Android main thread.
+     * executor by default. The [callback] is always invoked on the Android main thread
+     * (looper of `Looper.getMainLooper()`), for both the success and the failure paths, so it
+     * is safe to update the UI directly from within it.
      *
      * Use this variant to offload parsing off the UI thread (for example, when invoked
      * directly from a QR scanner callback). The synchronous [parse] method remains
      * available for callers that already run on a background thread.
      *
      * The [Result] passed to the [callback] wraps either the parsed [QROperation] on success
-     * or a [QROperationParseException] on failure.
+     * or a [QROperationParseException] on failure. Both outcomes are delivered on the main
+     * thread; no other exception types are reported through the callback.
      *
      * @param string String parsed from QR code.
      * @param executor Executor on which parsing is performed. Defaults to a single-thread executor.
-     * @param callback Invoked on the main thread with the parsing [Result].
+     * @param callback Invoked on the main thread with the parsing [Result]. A successful result
+     *   wraps the parsed [QROperation]; a failed result wraps a [QROperationParseException].
+     *   Both outcomes are delivered on the main thread.
      */
     fun parseAsync(
         string: String,
         executor: Executor = defaultParserExecutor,
-        callback: (Result<QROperation>) -> Unit
+        @MainThread callback: (Result<QROperation>) -> Unit
     ) {
         val mainHandler = Handler(Looper.getMainLooper())
         executor.execute {
