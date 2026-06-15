@@ -184,16 +184,6 @@ data class QROperationSignature(
     /** Original Base64 data source as received from the payload */
     val dataSource: String
 ) {
-
-    @Deprecated("Use keyType instead", replaceWith = ReplaceWith("keyType"))
-    val signingKey: KeyType get() = keyType
-
-    @Deprecated("Use data instead", replaceWith = ReplaceWith("data"))
-    val signature: ByteArray get() = data
-
-    @Deprecated("Use dataSource instead", replaceWith = ReplaceWith("dataSource"))
-    val signatureString: String get() = dataSource
-
     /** Defines which key was used for signature calculation */
     enum class KeyType(val typeValue: Char) {
         /** Master server key was used for signature calculation */
@@ -224,17 +214,6 @@ data class QROperationSignature(
         companion object {
             private val map = entries.associateBy(KeyType::typeValue)
             fun fromTypeValue(typeValue: Char) = map[typeValue]
-        }
-    }
-
-    @Deprecated("Use keyType == KeyType.MASTER instead", replaceWith = ReplaceWith("keyType == KeyType.MASTER"))
-    fun isMaster() = keyType == KeyType.MASTER
-
-    companion object {
-        @Deprecated("Use KeyType.fromTypeValue instead", replaceWith = ReplaceWith("KeyType.fromTypeValue(typeValue)"))
-        object SigningKey {
-            val MASTER = KeyType.MASTER
-            val PERSONALIZED = KeyType.PERSONALIZED
         }
     }
 }
