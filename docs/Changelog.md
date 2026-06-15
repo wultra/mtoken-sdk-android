@@ -9,6 +9,7 @@
     - Added `QROperationParser.parseAsync` (both instance and static) that runs parsing on a background executor and delivers the `Result<QROperation>` on the main thread, so callers don't have to manage threading themselves.
     - The parser now throws a structured `QROperationParseException` (a subclass of `IllegalArgumentException`) carrying a `QRParseError` reason.
     - Reworked `QROperationSignature`: `signingKey` → `keyType`, `signature` → `data`, `signatureString` → `dataSource` (old members deprecated). Added support for KMAC-based signatures via `KeyType.MAC_PERSONALIZED`.
+    - Removed previously deprecated `QROperationFlags.biometryAllowed`; use `biometricsAllowed` instead.
     - `PowerAuthSDK.createOIDCActivation` no longer declares/throws `PowerAuthMissingConfigException` (removed in PowerAuth `2.0.0`).
 
 ## 2.4.0

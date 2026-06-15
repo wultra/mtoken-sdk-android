@@ -99,10 +99,7 @@ data class QROperationFlags(
 
     /** Block confirmation when the call is active. */
     val blockWhenOnCall: Boolean
-) {
-    @Deprecated(replaceWith = ReplaceWith("biometricsAllowed"), message = "Use biometricsAllowed instead")
-    val biometryAllowed = biometricsAllowed
-}
+)
 
 /**
  * defines operation data in QR operation

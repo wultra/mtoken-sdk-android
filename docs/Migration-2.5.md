@@ -105,6 +105,16 @@ A new `KeyType.MAC_PERSONALIZED` value was added to support KMAC-based (symmetri
 
 ---
 
+### `QROperationFlags` Changes
+
+The previously deprecated `biometryAllowed` property was removed from `QROperationFlags`. Use `biometricsAllowed` instead.
+
+| Removed | Replacement |
+|---|---|
+| `biometryAllowed` | `biometricsAllowed` |
+
+---
+
 ### Error Handling
 
 The parser now throws a structured **`QROperationParseException`** that carries a **`QRParseError`** reason. It extends `IllegalArgumentException`, so existing `catch (e: IllegalArgumentException)` blocks keep working. You can switch on `exception.reason` for finer-grained handling.
@@ -124,6 +134,7 @@ The parser now throws a structured **`QROperationParseException`** that carries 
 - Convert `authorizeOfflineOperation` calls to the **asynchronous callback** form.
 - Replace `verifyServerSignedData` usage with `QROperationParser(powerAuthSDK).parse(...)` or `QROperation.verifySignature(...)`.
 - Migrate deprecated `QROperationSignature` members (`signingKey`/`signature`/`signatureString`/`isMaster()`).
+- Replace `QROperationFlags.biometryAllowed` with `biometricsAllowed`.
 - Optionally handle `QROperationParseException.reason` for structured parse errors.
 
 ---
