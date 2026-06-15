@@ -87,8 +87,9 @@ class QROperationParser(private val powerAuth: PowerAuthSDK? = null) {
          * @param string String parsed from QR code.
          * @param executor Executor on which parsing is performed. Defaults to a single-thread executor.
          * @param callback Invoked on the main thread with the parsing [Result]. A successful result
-         *   wraps the parsed [QROperation]; a failed result wraps a [QROperationParseException].
-         *   Both outcomes are delivered on the main thread.
+         *   wraps the parsed [QROperation]; a failed result wraps the [Throwable] thrown during
+         *   parsing (typically a [QROperationParseException]). Both outcomes are delivered on the
+         *   main thread.
          */
         fun parseAsync(
             string: String,
@@ -197,14 +198,17 @@ class QROperationParser(private val powerAuth: PowerAuthSDK? = null) {
      * available for callers that already run on a background thread.
      *
      * The [Result] passed to the [callback] wraps either the parsed [QROperation] on success
-     * or a [QROperationParseException] on failure. Both outcomes are delivered on the main
-     * thread; no other exception types are reported through the callback.
+     * or a [Throwable] on failure. Failures are typically [QROperationParseException] instances
+     * raised by the parser itself, but any other unexpected [Throwable] thrown during parsing
+     * (e.g. from the underlying [PowerAuthSDK] signature verification) is also propagated
+     * through the callback. Both outcomes are delivered on the main thread.
      *
      * @param string String parsed from QR code.
      * @param executor Executor on which parsing is performed. Defaults to a single-thread executor.
      * @param callback Invoked on the main thread with the parsing [Result]. A successful result
-     *   wraps the parsed [QROperation]; a failed result wraps a [QROperationParseException].
-     *   Both outcomes are delivered on the main thread.
+     *   wraps the parsed [QROperation]; a failed result wraps the [Throwable] thrown during
+     *   parsing (typically a [QROperationParseException]). Both outcomes are delivered on the
+     *   main thread.
      */
     fun parseAsync(
         string: String,
@@ -215,7 +219,7 @@ class QROperationParser(private val powerAuth: PowerAuthSDK? = null) {
         executor.execute {
             val result = try {
                 Result.success(parse(string))
-            } catch (e: QROperationParseException) {
+            } catch (e: Throwable) {
                 Result.failure(e)
             }
             mainHandler.post { callback(result) }
