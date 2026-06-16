@@ -30,7 +30,6 @@ android {
     namespace = "com.wultra.android.mtokensdk"
 
     compileSdk = Constants.Android.compileSdkVersion
-    buildToolsVersion = Constants.Android.buildToolsVersion
 
     defaultConfig {
         minSdk = Constants.Android.minSdkVersion
