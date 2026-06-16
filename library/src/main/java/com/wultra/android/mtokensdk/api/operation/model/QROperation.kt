@@ -16,8 +16,11 @@
 
 package com.wultra.android.mtokensdk.api.operation.model
 
+import io.getlime.security.powerauth.core.CoreSignatureKeyId
+import io.getlime.security.powerauth.exception.PowerAuthErrorException
+import io.getlime.security.powerauth.sdk.PowerAuthSDK
 import java.math.BigDecimal
-import java.util.*
+import java.util.Date
 
 /**
  * QR operation model class.
@@ -41,16 +44,17 @@ data class QROperation(
     /** Flags associated with the operation */
     val flags: QROperationFlags,
 
-    /** Additional Time-based one time password for proximity check */
+    /** Additional Time-based one-time password for proximity check */
     val totp: String?,
 
     /** Data for signature validation */
+    @Suppress("ArrayInDataClass")
     val signedData: ByteArray,
 
-    /** ECDSA signature calculated from [signedData] */
+    /** Signature calculated from [signedData] */
     val signature: QROperationSignature,
 
-    /** QR code uses a string in newer format that this class implements. This may be used as warning in UI */
+    /** QR code uses a string in a newer format that this class implements. This may be used as a warning in UI */
     val isNewerFormat: Boolean
 ) {
     fun dataForOfflineSigning(): ByteArray {
@@ -60,27 +64,42 @@ data class QROperation(
             "$operationId&${operationData.sourceString}&$totp".toByteArray(Charsets.UTF_8)
         }
     }
+
+    /**
+     * Verifies the signature of the QR operation against the server's public keys
+     * held by the provided [PowerAuthSDK] instance.
+     *
+     * The method picks the correct verification key based on [QROperationSignature.keyType]
+     * and validates [QROperationSignature.data] against [signedData].
+     *
+     * Call this after parsing the QR code and before presenting the operation to the user,
+     * so the user is never asked to confirm an operation whose signature cannot be verified.
+     *
+     * @param powerAuth The [PowerAuthSDK] instance used to verify the signature.
+     * @throws PowerAuthErrorException if the signature is invalid or cannot be verified.
+     */
+    @Throws(PowerAuthErrorException::class)
+    fun verifySignature(powerAuth: PowerAuthSDK) {
+        powerAuth.verifyDigitalSignature(signature.data, signedData, signature.keyType.powerAuthKeyId)
+    }
 }
 
 /**
  * Flags associated with the operation
  */
 data class QROperationFlags(
-    /** If true, then 2FA signature with biometric factor can be used for operation confirmation.*/
+    /** If true, then 2FA signature with a biometric factor can be used for operation confirmation.*/
     val biometricsAllowed: Boolean,
 
-    /** If confirm/reject buttons should be flipped in the UI. This can be useful to test users attention. */
+    /** If true, confirm / reject buttons are flipped in the UI. This can be useful to test users' attention. */
     val flipButtons: Boolean,
 
     /** When the operation is considered a "potential fraud" on the server, a warning UI should be displayed to the user. */
     val fraudWarning: Boolean,
 
-    /** Block confirmation when call is active. */
+    /** Block confirmation when the call is active. */
     val blockWhenOnCall: Boolean
-) {
-    @Deprecated(replaceWith = ReplaceWith("biometricsAllowed"), message = "Use biometricsAllowed instead")
-    val biometryAllowed = biometricsAllowed
-}
+)
 
 /**
  * defines operation data in QR operation
@@ -139,8 +158,8 @@ data class QROperationData(
     data class TextField(val text: String): QROperationDataField()
 
     /**
-     * Fallback for forward compatibility. If newer version of operation data
-     * contains new field type, then this case can be used for it's representation.
+     * Fallback for forward compatibility. If a newer version of operation data
+     * contains a new field type, then this case can be used for its representation.
      */
     data class FallbackField(val text: String, val type: Char): QROperationDataField()
 
@@ -152,37 +171,46 @@ data class QROperationData(
 
 /** Model class for offline QR operation signature. */
 data class QROperationSignature(
-    /** Defines which key has been used for ECDSA signature calculation.*/
-    val signingKey: SigningKey,
+    /** Defines which key has been used for signature calculation. */
+    val keyType: KeyType,
 
     /** Raw signature data */
     @Suppress("ArrayInDataClass")
-    val signature: ByteArray,
+    val data: ByteArray,
 
-    /** Signature in Base64 format */
-    val signatureString: String
+    /** Original Base64 data source as received from the payload */
+    val dataSource: String
 ) {
-
-    /** Defines which key was used for ECDSA signature calculation */
-    enum class SigningKey(val typeValue: Char) {
-        /** Master server key was used for ECDSA signature calculation */
+    /** Defines which key was used for signature calculation */
+    enum class KeyType(val typeValue: Char) {
+        /** Master server key was used for signature calculation */
         MASTER('0'),
 
-        /** Personalized server's private key was used for ECDSA signature calculation */
-        PERSONALIZED('1');
+        /** Personalized server's private key was used for signature calculation */
+        PERSONALIZED('1'),
 
-        companion object {
-            private val map = mutableMapOf<Char, SigningKey>()
-            init {
-                for (type in values()) {
-                    map[type.typeValue] = type
-                }
+        /** KMAC-based symmetric key for MAC verification */
+        MAC_PERSONALIZED('2');
+
+        /** PowerAuth signature key identifier that corresponds to this key type. */
+        val powerAuthKeyId: Int
+            get() = when (this) {
+                MASTER -> CoreSignatureKeyId.MASTER_EC
+                PERSONALIZED -> CoreSignatureKeyId.SERVER_EC
+                MAC_PERSONALIZED -> CoreSignatureKeyId.MAC_PERSONALIZED
             }
-            fun fromTypeValue(typeValue: Char): SigningKey? {
-                return map[typeValue]
+
+        /** Validates the key length for the given signature data. */
+        fun validate(signatureData: ByteArray): Boolean {
+            return when (this) {
+                MAC_PERSONALIZED -> signatureData.size == 32
+                MASTER, PERSONALIZED -> signatureData.size in 64..255
             }
         }
-    }
 
-    fun isMaster() = signingKey == SigningKey.MASTER
+        companion object {
+            private val map = entries.associateBy(KeyType::typeValue)
+            fun fromTypeValue(typeValue: Char) = map[typeValue]
+        }
+    }
 }

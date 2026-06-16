@@ -57,12 +57,12 @@ internal class OperationApi(
     private object EmptyRequest: BaseRequest()
 
     companion object {
-        private val historyEndpoint = EndpointSigned<EmptyRequest, OperationHistoryResponse>("api/auth/token/app/operation/history", "/operation/history")
-        private val listEndpoint = EndpointSignedWithToken<EmptyRequest, OperationListResponse>("api/auth/token/app/operation/list", "possession_universal")
-        private val authorizeEndpoint = EndpointSigned<AuthorizeRequest, StatusResponse>("api/auth/token/app/operation/authorize", "/operation/authorize")
-        private val rejectEndpoint = EndpointSigned<RejectRequest, StatusResponse>("api/auth/token/app/operation/cancel", "/operation/cancel")
-        private val detailEndpoint = EndpointSignedWithToken<OperationClaimDetailRequest, OperationClaimDetailResponse>("api/auth/token/app/operation/detail", "possession_universal")
-        private val claimEndpoint = EndpointSignedWithToken<OperationClaimDetailRequest, OperationClaimDetailResponse>("api/auth/token/app/operation/detail/claim", "possession_universal")
+        private val historyEndpoint = EndpointAuthenticated<EmptyRequest, OperationHistoryResponse>("api/auth/token/app/operation/history", "/operation/history")
+        private val listEndpoint = EndpointAuthenticatedWithToken<EmptyRequest, OperationListResponse>("api/auth/token/app/operation/list", "possession_universal")
+        private val authorizeEndpoint = EndpointAuthenticated<AuthorizeRequest, StatusResponse>("api/auth/token/app/operation/authorize", "/operation/authorize")
+        private val rejectEndpoint = EndpointAuthenticated<RejectRequest, StatusResponse>("api/auth/token/app/operation/cancel", "/operation/cancel")
+        private val detailEndpoint = EndpointAuthenticatedWithToken<OperationClaimDetailRequest, OperationClaimDetailResponse>("api/auth/token/app/operation/detail", "possession_universal")
+        private val claimEndpoint = EndpointAuthenticatedWithToken<OperationClaimDetailRequest, OperationClaimDetailResponse>("api/auth/token/app/operation/detail/claim", "possession_universal")
         const val OFFLINE_AUTHORIZE_URI_ID = "/operation/authorize/offline"
     }
 

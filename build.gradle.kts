@@ -28,7 +28,7 @@ buildscript {
         // releasing
         classpath("com.wultra.gradle:android-release-gradle-plugin:1.+") // Wultra releasing plugin (latest 1.x version)
         // tests
-        classpath("com.github.bjoernq:unmockplugin:0.7.9")
+        classpath("com.github.bjoernq:unmockplugin:0.9.0")
     }
 }
 

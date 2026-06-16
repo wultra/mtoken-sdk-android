@@ -82,7 +82,7 @@ class IntegrationTests {
         Assert.assertNotNull(oplist)
     }
 
-    /** currentServerDate was removed in favour of PowerAuthSDK timeSynchronizationService */
+    /** the currentServerDate was removed in favor of PowerAuthSDK timeSynchronizationService */
     @Test
     fun testServerTime() {
         var currentTime: ZonedDateTime? = null
@@ -415,7 +415,7 @@ class IntegrationTests {
 
     @Test
     fun testOperationHistory() {
-        // lets create 1 operation and leave it in the state of "pending"
+        // let's create 1 operation and leave it in the state of "pending"
         val op = IntegrationUtils.createOperation(IntegrationUtils.Companion.Factors.F_2FA)
         val auth = PowerAuthAuthentication.possessionWithPassword(pin)
         val future = CompletableFuture<List<UserOperation>?>()
@@ -448,11 +448,17 @@ class IntegrationTests {
 
         // get the OTP with the "offline" signing
         val auth = PowerAuthAuthentication.possessionWithPassword(pin)
-        val otp = ops.authorizeOfflineOperation(qrOperation, auth)
+        val future = CompletableFuture<String>()
+        ops.authorizeOfflineOperation(qrOperation, auth, callback = { result ->
+            result.fold(
+                onSuccess = { otp -> future.complete(otp) },
+                onFailure = { e -> future.completeExceptionally(e) }
+            )
+        })
+        val otp = future.get(10, TimeUnit.SECONDS)
 
         // verify the operation on the backend with the OTP
         val verifiedResult = IntegrationUtils.verifyQROperation(op, qrData, otp)
-
         Assert.assertTrue(verifiedResult.otpValid)
     }
 

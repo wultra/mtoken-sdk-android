@@ -464,16 +464,51 @@ In case the user is not online, you can use off-line authorizations. In this ope
 
 ### Processing Scanned QR Operation
 
+The recommended way is to create a `QROperationParser` with your `PowerAuthSDK` instance. The parser then parses the payload **and** verifies the operation signature in a single step, throwing a `QROperationParseException` (with a structured `QRParseError` reason) when parsing fails or the signature is invalid:
+
 ```kotlin
-@Throws(IllegalArgumentException::class)
+@Throws(QROperationParseException::class)
 fun onQROperationScanned(scannedCode: String): QROperation {
-    // retrieve parsed operation
-    val operation = QROperationParser.parse(scannedCode)
-    // verify the signature against the powerauth instance
-    val verified = this.powerAuthSDK.verifyServerSignedData(operation.signedData, operation.signature.signature, operation.signature.isMaster())
-    if (!verified) {
-        throw IllegalArgumentException("Invalid offline operation")
+    // The parser verifies the operation signature against the PowerAuth instance.
+    // It throws QROperationParseException if parsing or signature verification fails.
+    return QROperationParser(this.powerAuthSDK).parse(scannedCode)
+}
+```
+
+<!-- begin box warning -->
+Signature verification is performed synchronously inside `parse`. Because QR scanning callbacks often run on the main thread, call the parser on a background thread to avoid blocking the UI. As a convenience, the SDK provides `parseAsync`, which performs parsing on a background executor and delivers the `Result<QROperation>` on the **main thread** - for both the success and the failure paths - so you can safely update the UI directly from within the callback:
+
+```kotlin
+fun onQROperationScanned(scannedCode: String) {
+    // callback is always invoked on the main thread (success or failure)
+    QROperationParser(this.powerAuthSDK).parseAsync(scannedCode) { result ->
+        result.onSuccess { operation ->
+            // use the parsed operation; safe to touch the UI here
+        }.onFailure { error ->
+            // handle QROperationParseException; also delivered on the main thread
+        }
     }
+}
+```
+
+You can supply your own `Executor` if you want to control where parsing runs (e.g. to reuse an existing background thread pool). The callback delivery thread does not change - it remains the main thread regardless of which executor you provide:
+
+```kotlin
+QROperationParser(this.powerAuthSDK).parseAsync(scannedCode, myExecutor) { result -> /* still on main thread */ }
+```
+
+A static `QROperationParser.parseAsync` variant is also available when you want to parse without automatic signature verification; it follows the same threading contract.
+<!-- end -->
+
+If you need to parse without automatic verification (for example, to inspect the operation before verifying), use the parameterless parser and verify the signature manually with `QROperation.verifySignature`:
+
+```kotlin
+@Throws(QROperationParseException::class)
+fun onQROperationScanned(scannedCode: String): QROperation {
+    // Parse without verifying the signature.
+    val operation = QROperationParser.parse(scannedCode)
+    // Verify the signature against the PowerAuth instance; throws on failure.
+    operation.verifySignature(this.powerAuthSDK)
     return operation
 }
 ```
@@ -494,12 +529,13 @@ Each offline operation created on the server has an __URI ID__ to define its pur
 // Approves QR operation with password
 fun approveQROperation(operation: QROperation, password: String) {
     val auth = PowerAuthAuthentication.possessionWithPassword(password)
-    try {
-        val offlineSignature = this.operationsService.authorizeOfflineOperation(operation, auth)
-        // Display the signature to the user so it can be manually rewritten.
-        // Note that the operation will be signed even with the wrong password!
-    } catch (e: Exception) {
-       // Failed to sign the operation
+    operationsService.authorizeOfflineOperation(operation, auth) { result ->
+        result.onSuccess { offlineSignature ->
+            // Display the signature to the user so it can be manually rewritten.
+            // Note that the operation will be signed even with the wrong password!
+        }.onFailure { error ->
+            // Failed to sign the operation
+        }
     }
 }
 ```
@@ -514,12 +550,13 @@ An offline operation can and will be signed even with an incorrect password. The
 // Approves QR operation with password
 fun approveQROperation(operation: QROperation, password: String) {
     val auth = PowerAuthAuthentication.possessionWithPassword(password)
-    try {
-        val offlineSignature = this.operationsService.authorizeOfflineOperation(operation, auth, "/confirm/offline/operation")
-        // Display the signature to the user so it can be manually rewritten.
-        // Note that the operation will be signed even with the wrong password!
-    } catch (e: Exception) {
-       // Failed to sign the operation
+    operationsService.authorizeOfflineOperation(operation, auth, "/confirm/offline/operation") { result ->
+        result.onSuccess { offlineSignature ->
+            // Display the signature to the user so it can be manually rewritten.
+            // Note that the operation will be signed even with the wrong password!
+        }.onFailure { error ->
+            // Failed to sign the operation
+        }
     }
 }
 ```
@@ -546,11 +583,12 @@ fun approveQROperationWithBiometrics(operation: QROperation, appContext: Context
 
             override fun onBiometricDialogSuccess(biometricKeyData: BiometricKeyData) {
                 val auth = PowerAuthAuthentication.possessionWithBiometrics(biometricKeyData.derivedData)
-                try {
-                    val offlineSignature = operationsService.authorizeOfflineOperation(operation, auth)
-                    // Display the signature to the user so it can be manually rewritten.
-                } catch (e: Exception) {
-                    // Failed to sign the operation
+                operationsService.authorizeOfflineOperation(operation, auth) { result ->
+                    result.onSuccess { offlineSignature ->
+                        // Display the signature to the user so it can be manually rewritten.
+                    }.onFailure { error ->
+                        // Failed to sign the operation
+                    }
                 }
             }
 
@@ -594,10 +632,12 @@ All available methods and attributes of `IOperationsService` API are:
   - `operation` - An operation to reject, retrieved from `getOperations` call or [created locally](#creating-a-custom-operation).
   - `reason` - Rejection reason.
   - `callback` - Called when rejection request finishes.
-- `fun authorizeOfflineOperation(operation: QROperation, authentication: PowerAuthAuthentication, uriId: String)` - Sign offline (QR) operation
+- `fun authorizeOfflineOperation(operation: QROperation, authentication: PowerAuthAuthentication, uriId: String, callback: (Result<String>) -> Unit): ICancelable` - Sign offline (QR) operation
   - `operation` - Offline operation retrieved via `QROperationParser.parse` method.
   - `authentication` - PowerAuth authentication object for operation signing.
   - `uriId` - Custom signature URI ID of the operation. Use the URI ID under which the operation was created on the server. The default value is `/operation/authorize/offline`.
+  - `callback` - Called when the signing finishes. On success it provides the resulting authentication code that should be displayed to the user; on failure it provides the error.
+  - Returns an `ICancelable` object that can be used to cancel the pending operation.
 
 ## UserOperation
 

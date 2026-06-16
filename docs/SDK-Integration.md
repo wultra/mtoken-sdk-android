@@ -2,7 +2,7 @@
 
 ## Requirements
 
-- `minSdkVersion 21` (Android 5.0 Lollipop)
+- `minSdkVersion 23` (Android 6.0 Marshmallow)
 - [PowerAuth Mobile SDK](https://github.com/wultra/powerauth-mobile-sdk) needs to be available in your project.
 
 ## Gradle
@@ -14,7 +14,7 @@ repositories {
     mavenCentral() // if not defined elsewhere...
 }
 
-implementation "com.wultra.android.mtokensdk:wultra-mtoken-sdk:2.2.1"
+implementation "com.wultra.android.mtokensdk:wultra-mtoken-sdk:2.5.0"
 // if not added yet, include PowerAuth SDK too
 implementation "com.wultra.android.powerauth:powerauth-sdk:X.Y.Z"
 ```
@@ -23,7 +23,8 @@ implementation "com.wultra.android.powerauth:powerauth-sdk:X.Y.Z"
 
 | WMT SDK            | PowerAuth SDK     |  
 |--------------------|-------------------|
-| `2.0.x` - `2.3.x`  | `1.9.x`           |
+| `2.5.x`            | `2.0.x`           |
+| `2.0.x` - `2.4.x`  | `1.9.x`           |
 | `1.12.x`           | `1.9.x`           |
 | `1.8.x` - `1.11.x` | `1.8.x`           |
 | `1.5.x` - `1.7.x`  | `1.7.x`           |

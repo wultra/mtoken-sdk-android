@@ -33,6 +33,8 @@ import com.wultra.android.mtokensdk.oidc.OIDCService
 import io.getlime.security.powerauth.core.ActivationCodeUtil
 import io.getlime.security.powerauth.networking.response.CreateActivationResult
 import io.getlime.security.powerauth.networking.response.ICreateActivationListener
+import io.getlime.security.powerauth.networking.response.IPersistActivationListener
+import io.getlime.security.powerauth.sdk.PowerAuthAlgorithm
 import io.getlime.security.powerauth.sdk.PowerAuthClientConfiguration
 import io.getlime.security.powerauth.sdk.PowerAuthConfiguration
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
@@ -88,7 +90,7 @@ class IntegrationUtils {
 
         fun prepareForOIDC(): Pair<PowerAuthSDK, OIDCService> {
 
-            // CREATE PA INSTANCE
+            // Create PA instance
             val cfg = PowerAuthConfiguration.Builder("tests", enrollmentUrl, sdkConfig).build()
             val clientCfg = PowerAuthClientConfiguration.Builder().allowUnsecuredConnection(true).build()
             val pa = PowerAuthSDK.Builder(cfg).clientConfiguration(clientCfg).build(context)
@@ -98,26 +100,23 @@ class IntegrationUtils {
         }
 
         @Throws
-        fun prepareActivation(pin: String, userId: String? = null): Pair<PowerAuthSDK, WultraMobileToken> {
+        fun prepareActivation(pin: String, userId: String? = null, @PowerAuthAlgorithm algorithm: Int = PowerAuthAlgorithm.DEFAULT): Pair<PowerAuthSDK, WultraMobileToken> {
 
             // Be sure that each activation has its own user
             activationName = userId ?: UUID.randomUUID().toString()
 
-            // Be sure that each activation has its own user
-            activationName = UUID.randomUUID().toString()
+            // Create PA instance
 
-            // CREATE PA INSTANCE
-
-            val cfg = PowerAuthConfiguration.Builder("tests", enrollmentUrl, sdkConfig).build()
+            val cfg = PowerAuthConfiguration.Builder("tests", enrollmentUrl, sdkConfig).algorithm(algorithm).build()
             val clientCfg = PowerAuthClientConfiguration.Builder().allowUnsecuredConnection(true).build()
             val pa = PowerAuthSDK.Builder(cfg).clientConfiguration(clientCfg).build(context)
             val wmt = pa.createWultraMobileToken(context)
 
-            // REMOVE LOCAL INSTANCE IF PRESENT
+            // Remove local instance if present
 
             pa.removeActivationLocal(context)
 
-            // CREATE ACTIVATION ON THE SERVER
+            // Create activation on the server
 
             val body = """
                 {
@@ -149,12 +148,30 @@ class IntegrationUtils {
             )
             calFuture.get(10, TimeUnit.SECONDS)
 
-            // COMMIT ACTIVATION LOCALLY
+            // Commit activation locally
 
-            val result = pa.persistActivationWithPassword(context, pin)
-            Log.d("prepare activation", "commitActivationWithPassword result: $result")
+            val persistFuture = CompletableFuture<Any>()
+            pa.persistActivationWithPassword(
+                context,
+                pin,
+                object : IPersistActivationListener {
+                    override fun onPersistActivationSucceeded() {
+                        persistFuture.complete(null)
+                    }
 
-            // COMMIT ACTIVATION ON THE SERVER
+                    override fun onPersistActivationFailed(throwable: Throwable) {
+                        persistFuture.completeExceptionally(throwable)
+                    }
+
+                    override fun onPersistActivationCancelled(userCancel: Boolean) {
+                        persistFuture.completeExceptionally(Exception("Persist activation cancelled"))
+                    }
+                }
+            )
+            persistFuture.get(10, TimeUnit.SECONDS)
+            Log.d("prepare activation", "persistActivationWithPassword succeeded")
+
+            // Commit activation on the server
             val bodyCommit = """
                 {
                   "externalUserId": "test"
@@ -285,7 +302,6 @@ class IntegrationUtils {
                 .build()
             val resp = client.newCall(request).execute()
             val stringResp = resp.body!!.string()
-            Log.d("make call response", stringResp)
             return gson.fromJson(stringResp, object: TypeToken<T>() {}.type)
         }
 
@@ -337,8 +353,6 @@ data class QROperationVerify(
     val registrationStatus: String,
     val signatureType: String,
     val remainingAttempts: Int
-    // val flags: []
-    // val application)
 )
 
 data class NewInboxMessage(

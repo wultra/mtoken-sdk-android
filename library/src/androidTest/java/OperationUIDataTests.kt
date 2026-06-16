@@ -534,7 +534,7 @@ class OperationUIDataTests {
                         "type": "FUTURE",
                         "heading": "Future",
                         "message": "Future is now, old man.",
-                        "items": [] 
+                        "items": []
                     }
                 },
                 "allowedSignatureType": {

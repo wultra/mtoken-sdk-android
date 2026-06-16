@@ -17,15 +17,22 @@
 package com.wultra.android.mtokensdk.api.operation
 
 import com.wultra.android.mtokensdk.api.operation.model.QROperationData
+import com.wultra.android.mtokensdk.api.operation.model.QROperationParseException
 import com.wultra.android.mtokensdk.api.operation.model.QROperationParser
 import com.wultra.android.mtokensdk.api.operation.model.QROperationSignature
+import com.wultra.android.mtokensdk.api.operation.model.QRParseError
 import org.junit.Assert.*
 import org.junit.Test
-import java.lang.Exception
 import java.math.BigDecimal
 import java.util.*
 
 class QRParserTests {
+
+    /** Inline reified helper to replace kotlin.test assertIsInstance<T> (not available with JUnit 4 only). */
+    private inline fun <reified T> assertIsInstance(value: Any?, message: String? = null): T {
+        assertTrue(message ?: "Expected ${T::class.simpleName} but got ${value?.let { it::class.simpleName }}", value is T)
+        return value as T
+    }
 
     /*
      * Main tests
@@ -50,61 +57,39 @@ class QRParserTests {
 
         /* ktlint-enable */
 
-        try {
-            val operation = QROperationParser.parse(code)
-            assertEquals("5ff1b1ed-a3cc-45a3-8ab0-ed60950312b6", operation.operationId)
-            assertEquals("5ff1b1ed-a3cc-45a3-8ab0-ed60950312b6", operation.operationId)
-            assertEquals("Payment", operation.title)
-            assertEquals("Please confirm this payment", operation.message)
-            assert(operation.flags.biometricsAllowed) { "biometrics allowed flag missing" }
-            assert(operation.flags.blockWhenOnCall) { "block when on call flag missing" }
-            assert(operation.flags.flipButtons) { "flip buttons flag missing" }
-            assert(operation.flags.fraudWarning) { "fraud warning flag missing" }
-            assertEquals("AD8bOO0Df73kNaIGb3Vmpg==", operation.nonce)
-            assertEquals("MEYCIQDby1Uq+MaxiAAGzKmE/McHzNOUrvAP2qqGBvSgcdtyjgIhAMo1sgqNa1pPZTFBhhKvCKFLGDuHuTTYexdmHFjUUIJW", operation.signature.signatureString)
-            assertEquals(QROperationSignature.SigningKey.MASTER, operation.signature.signingKey)
-            assert(operation.signedData.contentEquals(expectedSignedData))
+        val operation = QROperationParser.parse(code)
+        assertEquals("5ff1b1ed-a3cc-45a3-8ab0-ed60950312b6", operation.operationId)
+        assertEquals("Payment", operation.title)
+        assertEquals("Please confirm this payment", operation.message)
+        assertTrue(operation.flags.biometricsAllowed)
+        assertTrue(operation.flags.blockWhenOnCall)
+        assertTrue(operation.flags.flipButtons)
+        assertTrue(operation.flags.fraudWarning)
+        assertEquals("AD8bOO0Df73kNaIGb3Vmpg==", operation.nonce)
+        assertEquals("MEYCIQDby1Uq+MaxiAAGzKmE/McHzNOUrvAP2qqGBvSgcdtyjgIhAMo1sgqNa1pPZTFBhhKvCKFLGDuHuTTYexdmHFjUUIJW", operation.signature.dataSource)
+        assertEquals(QROperationSignature.KeyType.MASTER, operation.signature.keyType)
+        assertTrue(operation.signedData.contentEquals(expectedSignedData))
 
-            // Operation data
-            assertEquals(QROperationData.Version.V1, operation.operationData.version)
-            assertEquals(1, operation.operationData.templateId)
-            assertEquals(4, operation.operationData.fields.count())
-            assertEquals("A1*A100CZK*ICZ2730300000001165254011*D20180425*Thello world", operation.operationData.sourceString)
+        // Operation data
+        assertEquals(QROperationData.Version.V1, operation.operationData.version)
+        assertEquals(1, operation.operationData.templateId)
+        assertEquals(4, operation.operationData.fields.count())
+        assertEquals("A1*A100CZK*ICZ2730300000001165254011*D20180425*Thello world", operation.operationData.sourceString)
 
-            val fields = operation.operationData.fields
-            fields[0].let {
-                if (it is QROperationData.AmountField) {
-                    assertEquals(BigDecimal(100), it.amount)
-                    assertEquals("CZK", it.currency)
-                } else {
-                    fail("Amount was not parsed correctly")
-                }
-            }
-            fields[1].let {
-                if (it is QROperationData.AccountField) {
-                    assertEquals("CZ2730300000001165254011", it.iban)
-                    assertEquals(null, it.bic)
-                } else {
-                    fail("Account was not parsed correctly")
-                }
-            }
-            fields[2].let {
-                if (it is QROperationData.DateField) {
-                    assertEquals(Date(118, 3, 25), it.date)
-                } else {
-                    fail("Date was not parsed correctly")
-                }
-            }
-            fields[3].let {
-                if (it is QROperationData.TextField) {
-                    assertEquals("hello world", it.text)
-                } else {
-                    fail("Text was not parsed correctly")
-                }
-            }
-        } catch (e: Exception) {
-            fail("This should be parsed. $e")
-        }
+        val fields = operation.operationData.fields
+        val amount = assertIsInstance<QROperationData.AmountField>(fields[0])
+        assertEquals(BigDecimal(100), amount.amount)
+        assertEquals("CZK", amount.currency)
+
+        val account = assertIsInstance<QROperationData.AccountField>(fields[1])
+        assertEquals("CZ2730300000001165254011", account.iban)
+        assertNull(account.bic)
+
+        val date = assertIsInstance<QROperationData.DateField>(fields[2])
+        assertEquals(Date(118, 3, 25), date.date)
+
+        val text = assertIsInstance<QROperationData.TextField>(fields[3])
+        assertEquals("hello world", text.text)
     }
 
     @Test
@@ -124,24 +109,16 @@ class QRParserTests {
         ).toByteArray()
         /* ktlint-enable */
 
-        try {
-            val operation = QROperationParser.parse(qrcode)
+        val operation = QROperationParser.parse(qrcode)
 
-            assert(operation.isNewerFormat)
-            assert(operation.signedData.contentEquals(expectedSignedData))
-            assertEquals(QROperationData.Version.VX, operation.operationData.version)
-            assertEquals(1, operation.operationData.fields.count())
-            operation.operationData.fields[0].let {
-                if (it is QROperationData.FallbackField) {
-                    assertEquals("test", it.text)
-                    assertEquals('X', it.type)
-                } else {
-                    fail("OperationData parser is not forward compatible")
-                }
-            }
-        } catch (e: Exception) {
-            fail("This should be parsed. $e")
-        }
+        assertTrue(operation.isNewerFormat)
+        assertTrue(operation.signedData.contentEquals(expectedSignedData))
+        assertEquals(QROperationData.Version.VX, operation.operationData.version)
+        assertEquals(1, operation.operationData.fields.count())
+
+        val fallback = assertIsInstance<QROperationData.FallbackField>(operation.operationData.fields[0])
+        assertEquals("test", fallback.text)
+        assertEquals('X', fallback.type)
     }
 
     /**
@@ -150,87 +127,67 @@ class QRParserTests {
 
     @Test
     fun `test missing operation id`() {
-        try {
+        val e = assertThrows(QROperationParseException::class.java) {
             QROperationParser.parse(makeCode(operationId = ""))
-            fail("Exception expected")
-        } catch (e: Exception) {
-            // expected
         }
+        assertEquals(QRParseError.EMPTY_OPERATION_ID, e.reason)
     }
 
     @Test
     fun `test missing title or message`() {
-        try {
-            val operation = QROperationParser.parse(makeCode(title = "", message = ""))
-            assertEquals("", operation.title)
-            assertEquals("", operation.message)
-        } catch (e: Exception) {
-            fail("This should be parsed")
-        }
+        val operation = QROperationParser.parse(makeCode(title = "", message = ""))
+        assertEquals("", operation.title)
+        assertEquals("", operation.message)
     }
 
     @Test
     fun `test missing or bad operation data version`() {
         listOf("", "A", "2", "A100", "A-100").forEach {
-            try {
+            val e = assertThrows(QROperationParseException::class.java) {
                 QROperationParser.parse(makeCode(operationData = it))
-                fail("Operation data $it should not be accepted")
-            } catch (e: Exception) {
-                // expected
             }
+            assertEquals("Operation data '$it' should fail with INVALID_OPERATION_DATA", QRParseError.INVALID_OPERATION_DATA, e.reason)
         }
     }
 
     @Test
     fun `test missing flags`() {
-        try {
-            val operation = QROperationParser.parse(makeCode(flags = ""))
-            assertFalse(operation.flags.biometricsAllowed)
-            assertFalse(operation.flags.blockWhenOnCall)
-            assertFalse(operation.flags.flipButtons)
-            assertFalse(operation.flags.fraudWarning)
-        } catch (e: Exception) {
-            fail("This should be parsed")
-        }
+        val operation = QROperationParser.parse(makeCode(flags = ""))
+        assertFalse(operation.flags.biometricsAllowed)
+        assertFalse(operation.flags.blockWhenOnCall)
+        assertFalse(operation.flags.flipButtons)
+        assertFalse(operation.flags.fraudWarning)
     }
 
     @Test
     fun `test missing or bad nonce`() {
         listOf("", "AAAA", "MEYCIQDby1Uq+MaxiAAGzKmE/McHzNOUrvAP2qqGBvSgcdtyjgIhAMo1sgqNa1pPZTFBhhKvCKFLGDuHuTTYexdmHFjUUIJW").forEach {
-            try {
+            val e = assertThrows(QROperationParseException::class.java) {
                 QROperationParser.parse(makeCode(nonce = it))
-                fail("Nonce $it should not be accepted")
-            } catch (e: Exception) {
-                // expected
             }
+            assertEquals("Nonce '$it' should fail with INVALID_NONCE", QRParseError.INVALID_NONCE, e.reason)
         }
     }
 
     @Test
     fun `test missing or bad signature`() {
-        try {
+        val emptyE = assertThrows(QROperationParseException::class.java) {
             QROperationParser.parse(makeCode(signingKey = "", signature = ""))
-            fail("This should not be parsed")
-        } catch (e: Exception) {
-            // expected
         }
+        assertEquals(QRParseError.INVALID_SIGNATURE, emptyE.reason)
 
         listOf("", "AAAA", "AD8bOO0Df73kNaIGb3Vmpg==").forEach {
-            try {
+            val e = assertThrows(QROperationParseException::class.java) {
                 QROperationParser.parse(makeCode(signature = it))
-                fail("Signature $it should not be accepted")
-            } catch (e: Exception) {
-                // expected
             }
+            assertEquals("Signature '$it' should fail with INVALID_SIGNATURE", QRParseError.INVALID_SIGNATURE, e.reason)
         }
 
         listOf("", "2", "X").forEach {
-            try {
+            val e = assertThrows(QROperationParseException::class.java) {
                 QROperationParser.parse(makeCode(signingKey = it))
-                fail("Signing key $it should not be accepted")
-            } catch (e: Exception) {
-                // expected
             }
+            assertEquals("Signing key '$it' should fail with INVALID_SIGNATURE", QRParseError.INVALID_SIGNATURE, e.reason)
         }
     }
 
@@ -240,49 +197,28 @@ class QRParserTests {
 
     @Test
     fun `test attribute string escaping`() {
-        try {
-            val operation = QROperationParser.parse(makeCode(title = "Hello\\nWorld\\\\xyz", message = "Hello\\nWorld\\\\xyz\\*"))
-            assertEquals("Hello\nWorld\\xyz", operation.title)
-            assertEquals("Hello\nWorld\\xyz\\*", operation.message)
-        } catch (e: Exception) {
-            fail("This should be parsed")
-        }
+        val operation = QROperationParser.parse(makeCode(title = "Hello\\nWorld\\\\xyz", message = "Hello\\nWorld\\\\xyz\\*"))
+        assertEquals("Hello\nWorld\\xyz", operation.title)
+        assertEquals("Hello\nWorld\\xyz\\*", operation.message)
     }
 
     @Test
     fun `test field string escaping`() {
         val code = makeCode(operationData = "A1*Thello \\* asterisk*Nnew\\nline*Xback\\\\slash")
 
-        try {
-            val operation = QROperationParser.parse(code)
+        val operation = QROperationParser.parse(code)
 
-            assertEquals(3, operation.operationData.fields.count())
+        assertEquals(3, operation.operationData.fields.count())
 
-            val fields = operation.operationData.fields
-            fields[0].let {
-                if (it is QROperationData.TextField) {
-                    assertEquals("hello * asterisk", it.text)
-                } else {
-                    fail()
-                }
-            }
-            fields[1].let {
-                if (it is QROperationData.NoteField) {
-                    assertEquals("new\nline", it.text)
-                } else {
-                    fail()
-                }
-            }
-            fields[2].let {
-                if (it is QROperationData.FallbackField) {
-                    assertEquals("back\\slash", it.text)
-                } else {
-                    fail()
-                }
-            }
-        } catch (e: Exception) {
-            fail("This should be parsed. $e")
-        }
+        val fields = operation.operationData.fields
+        val textField = assertIsInstance<QROperationData.TextField>(fields[0])
+        assertEquals("hello * asterisk", textField.text)
+
+        val noteField = assertIsInstance<QROperationData.NoteField>(fields[1])
+        assertEquals("new\nline", noteField.text)
+
+        val fallbackField = assertIsInstance<QROperationData.FallbackField>(fields[2])
+        assertEquals("back\\slash", fallbackField.text)
     }
 
     /**
@@ -299,27 +235,15 @@ class QRParserTests {
             Triple("A.325CZK", BigDecimal("0.325"), "CZK")
         )
         valid.forEach {
-            try {
-                val operation = QROperationParser.parse(makeCode(operationData = "A1*${it.first}"))
-                operation.operationData.fields[0].let { field ->
-                    if (field is QROperationData.AmountField) {
-                        assertEquals(it.second, field.amount)
-                        assertEquals(it.third, field.currency)
-                    } else {
-                        fail("Unexpected operation data")
-                    }
-                }
-            } catch (e: Exception) {
-                fail("Amount ${it.first} should be parsed")
-            }
+            val operation = QROperationParser.parse(makeCode(operationData = "A1*${it.first}"))
+            val field = assertIsInstance<QROperationData.AmountField>(operation.operationData.fields[0])
+            assertEquals(it.second, field.amount)
+            assertEquals(it.third, field.currency)
         }
         // Invalid
         listOf("ACZK", "A", "A0", "AxCZK").forEach { field ->
-            try {
+            assertThrows(QROperationParseException::class.java) {
                 QROperationParser.parse(makeCode(operationData = "A1*$field"))
-                fail("This should not be parsed")
-            } catch (e: Exception) {
-                // expected
             }
         }
     }
@@ -332,27 +256,15 @@ class QRParserTests {
             Triple("ISOMEIBAN,", "SOMEIBAN", null)
         )
         valid.forEach {
-            try {
-                val operation = QROperationParser.parse(makeCode(operationData = "A1*${it.first}"))
-                operation.operationData.fields[0].let { field ->
-                    if (field is QROperationData.AccountField) {
-                        assertEquals(it.second, field.iban)
-                        assertEquals(it.third, field.bic)
-                    } else {
-                        fail("Unexpected operation data")
-                    }
-                }
-            } catch (e: Exception) {
-                fail("Account ${it.first} should be parsed")
-            }
+            val operation = QROperationParser.parse(makeCode(operationData = "A1*${it.first}"))
+            val field = assertIsInstance<QROperationData.AccountField>(operation.operationData.fields[0])
+            assertEquals(it.second, field.iban)
+            assertEquals(it.third, field.bic)
         }
         // Invalid
         listOf("I", "Isomeiban,", "IGOODIBAN,badbic").forEach { field ->
-            try {
+            assertThrows(QROperationParseException::class.java) {
                 QROperationParser.parse(makeCode(operationData = "A1*$field"))
-                fail("This should not be parsed")
-            } catch (e: Exception) {
-                // expected
             }
         }
     }
@@ -361,29 +273,138 @@ class QRParserTests {
     fun `test field date`() {
         // Invalid dates
         listOf("D", "D0", "D2004", "D20189999").forEach {
-            try {
+            assertThrows(QROperationParseException::class.java) {
                 QROperationParser.parse(makeCode(operationData = "A1*$it"))
-                fail("Date $it should not be accepted")
-            } catch (e: Exception) {
-                // expected
             }
         }
     }
 
     @Test
     fun `test field empty`() {
-        try {
-            val operation = QROperationParser.parse(makeCode(operationData = "A1*A10CZK****Ttest"))
-            val fields = operation.operationData.fields
-            assertEquals(5, fields.count())
-            assert(fields[0] is QROperationData.AmountField)
-            assert(fields[1] is QROperationData.EmptyField)
-            assert(fields[2] is QROperationData.EmptyField)
-            assert(fields[3] is QROperationData.EmptyField)
-            assert(fields[4] is QROperationData.TextField)
-        } catch (e: Exception) {
-            fail("This should be parsed")
+        val operation = QROperationParser.parse(makeCode(operationData = "A1*A10CZK****Ttest"))
+        val fields = operation.operationData.fields
+        assertEquals(5, fields.count())
+        assertIsInstance<QROperationData.AmountField>(fields[0])
+        assertIsInstance<QROperationData.EmptyField>(fields[1])
+        assertIsInstance<QROperationData.EmptyField>(fields[2])
+        assertIsInstance<QROperationData.EmptyField>(fields[3])
+        assertIsInstance<QROperationData.TextField>(fields[4])
+    }
+
+    @Test
+    fun `test current format with TOTP`() {
+        val code = makeCode(otherAttrs = listOf("12345678"))
+
+        /* ktlint-disable indent */
+        val expectedSignedData = (
+            "5ff1b1ed-a3cc-45a3-8ab0-ed60950312b6\n" +
+            "Payment\n" +
+            "Please confirm this payment\n" +
+            "A1*A100CZK*ICZ2730300000001165254011*D20180425*Thello world\n" +
+            "BCFX\n" +
+            "12345678\n" +
+            "AD8bOO0Df73kNaIGb3Vmpg==\n" +
+            "0"
+        ).toByteArray()
+        /* ktlint-enable */
+
+        val operation = QROperationParser.parse(code)
+        assertEquals("5ff1b1ed-a3cc-45a3-8ab0-ed60950312b6", operation.operationId)
+        assertEquals("Payment", operation.title)
+        assertEquals("Please confirm this payment", operation.message)
+        assertTrue(operation.flags.biometricsAllowed)
+        assertTrue(operation.flags.blockWhenOnCall)
+        assertTrue(operation.flags.flipButtons)
+        assertTrue(operation.flags.fraudWarning)
+        assertEquals("12345678", operation.totp)
+        assertEquals("AD8bOO0Df73kNaIGb3Vmpg==", operation.nonce)
+        assertEquals("MEYCIQDby1Uq+MaxiAAGzKmE/McHzNOUrvAP2qqGBvSgcdtyjgIhAMo1sgqNa1pPZTFBhhKvCKFLGDuHuTTYexdmHFjUUIJW", operation.signature.dataSource)
+        assertEquals(QROperationSignature.KeyType.MASTER, operation.signature.keyType)
+        assertTrue(operation.signedData.contentEquals(expectedSignedData))
+
+        // Operation data
+        assertEquals(QROperationData.Version.V1, operation.operationData.version)
+        assertEquals(1, operation.operationData.templateId)
+        assertEquals(4, operation.operationData.fields.count())
+        assertEquals("A1*A100CZK*ICZ2730300000001165254011*D20180425*Thello world", operation.operationData.sourceString)
+    }
+
+    @Test
+    fun `test MAC personalized signature`() {
+        // 32-byte base64 payload (KMAC output length)
+        val macSignature = "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8="
+        val code = makeCode(signingKey = "2", signature = macSignature)
+
+        /* ktlint-disable indent */
+        val expectedSignedData = (
+            "5ff1b1ed-a3cc-45a3-8ab0-ed60950312b6\n" +
+            "Payment\n" +
+            "Please confirm this payment\n" +
+            "A1*A100CZK*ICZ2730300000001165254011*D20180425*Thello world\n" +
+            "BCFX\n" +
+            "AD8bOO0Df73kNaIGb3Vmpg==\n" +
+            "2"
+        ).toByteArray()
+        /* ktlint-enable */
+
+        val operation = QROperationParser.parse(code)
+        assertEquals(QROperationSignature.KeyType.MAC_PERSONALIZED, operation.signature.keyType)
+        assertEquals(32, operation.signature.data.size)
+        assertTrue(operation.signedData.contentEquals(expectedSignedData))
+    }
+
+    @Test
+    fun `test MAC personalized signature bad length`() {
+        // ECDSA-sized payload (>= 64 bytes) is invalid for MAC key type which requires exactly 32 bytes
+        val e = assertThrows(QROperationParseException::class.java) {
+            QROperationParser.parse(
+                makeCode(
+                    signingKey = "2",
+                    signature = "MEYCIQDby1Uq+MaxiAAGzKmE/McHzNOUrvAP2qqGBvSgcdtyjgIhAMo1sgqNa1pPZTFBhhKvCKFLGDuHuTTYexdmHFjUUIJW"
+                )
+            )
         }
+        assertEquals(QRParseError.INVALID_SIGNATURE, e.reason)
+    }
+
+    @Test
+    fun `test MAC personalized signature boundary length`() {
+        // MAC_PERSONALIZED requires exactly 32 bytes; the adjacent 31- and 33-byte
+        // payloads must be rejected with INVALID_SIGNATURE.
+        val cases = mapOf(
+            31 to "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHg==",
+            33 to "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8g"
+        )
+        for ((length, signature) in cases) {
+            val e = assertThrows(
+                "A $length-byte MAC signature should be rejected",
+                QROperationParseException::class.java
+            ) {
+                QROperationParser.parse(makeCode(signingKey = "2", signature = signature))
+            }
+            assertEquals(
+                "A $length-byte MAC signature should fail with INVALID_SIGNATURE",
+                QRParseError.INVALID_SIGNATURE,
+                e.reason
+            )
+        }
+    }
+
+    @Test
+    fun `test some missing flags`() {
+        val operation = QROperationParser.parse(makeCode(flags = "FX"))
+        assertFalse(operation.flags.biometricsAllowed)
+        assertFalse(operation.flags.blockWhenOnCall)
+        assertTrue(operation.flags.flipButtons)
+        assertTrue(operation.flags.fraudWarning)
+    }
+
+    @Test
+    fun `test invalid format too few fields`() {
+        val e = assertThrows(QROperationParseException::class.java) {
+            QROperationParser.parse("only\nthree\nfields")
+        }
+        assertEquals(QRParseError.INVALID_FORMAT, e.reason)
     }
 
     /* ktlint-disable indent no-multi-spaces */

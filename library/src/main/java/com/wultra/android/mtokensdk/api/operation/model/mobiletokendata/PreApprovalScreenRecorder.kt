@@ -17,10 +17,10 @@
 package com.wultra.android.mtokensdk.api.operation.model.mobiletokendata
 
 import com.wultra.android.mtokensdk.log.WMTLogger
+import io.getlime.security.powerauth.sdk.PowerAuthSDK
 import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
-import io.getlime.security.powerauth.sdk.PowerAuthSDK
 
 /**
  * Records user navigation through Pre-approval screens.

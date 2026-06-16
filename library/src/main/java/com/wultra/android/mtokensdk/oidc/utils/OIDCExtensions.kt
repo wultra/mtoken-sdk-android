@@ -19,7 +19,6 @@ package com.wultra.android.mtokensdk.oidc.utils
 import com.wultra.android.mtokensdk.api.oidc.model.OIDCConfigResponse
 import com.wultra.android.mtokensdk.oidc.models.OIDCConfig
 import com.wultra.android.mtokensdk.oidc.models.OIDCPowerAuthActivationAttributes
-import io.getlime.security.powerauth.exception.PowerAuthMissingConfigException
 import io.getlime.security.powerauth.networking.interfaces.ICancelable
 import io.getlime.security.powerauth.networking.response.ICreateActivationListener
 import io.getlime.security.powerauth.sdk.PowerAuthActivation
@@ -31,14 +30,12 @@ import io.getlime.security.powerauth.sdk.PowerAuthSDK
  * @receiver PowerAuthSDK
  * @param attributes Data object containing the information required for the activation creation.
  *  - to create attributes see [OIDCUtils.processDeeplink]
- * @param activationName The activation's name parameter is optional, but recommended to set. You can use the
+ * @param activationName The activation's name parameter is optional but recommended to set. You can use the
  * value obtained from {@code Settings.System.getString(getContentResolver(), "device_name")} or let the user
  * set the name.
  * @param listener A callback listener called when the process finishes - it contains an activation fingerprint in case of success or an error in case of failure.
  * @return ICancelable object associated with the running HTTP request.
- * @throws PowerAuthMissingConfigException – thrown in case configuration is not present.
  */
-@Throws(PowerAuthMissingConfigException::class)
 fun PowerAuthSDK.createOIDCActivation(attributes: OIDCPowerAuthActivationAttributes, activationName: String? = null, listener: ICreateActivationListener): ICancelable? {
     val activationBuilder =
         PowerAuthActivation
