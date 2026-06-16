@@ -93,7 +93,7 @@ Signature verification runs synchronously inside `parse`. Call the parser on a b
 
 The signature model was reworked. The old members are kept as deprecated aliases, but note that `SigningKey` is now `KeyType` (a different type):
 
-| Removed / Deprecated | Replacement |
+| Removed  | Replacement |
 |---|---|
 | `signingKey: SigningKey` | `keyType: KeyType` |
 | `signature: ByteArray` | `data: ByteArray` |
@@ -133,7 +133,7 @@ The parser now throws a structured **`QROperationParseException`** that carries 
 - Raise your app's `minSdkVersion` to **`23`**.
 - Convert `authorizeOfflineOperation` calls to the **asynchronous callback** form.
 - Replace `verifyServerSignedData` usage with `QROperationParser(powerAuthSDK).parse(...)` or `QROperation.verifySignature(...)`.
-- Migrate deprecated `QROperationSignature` members (`signingKey`/`signature`/`signatureString`/`isMaster()`).
+- Migrate removed `QROperationSignature` members (`signingKey`/`signature`/`signatureString`/`isMaster()`).
 - Replace `QROperationFlags.biometryAllowed` with `biometricsAllowed`.
 - Optionally handle `QROperationParseException.reason` for structured parse errors.
 
