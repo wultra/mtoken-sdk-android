@@ -1,6 +1,6 @@
 # Changelog
 
-## X.X.X
+## 3.0.0
 - Integrated `PowerAuthSDK` `2.0.0` [(#234)](https://github.com/wultra/mtoken-sdk-android/issues/234). PowerAuth "server stack" `2.0+` is now required.
     - [Migration guide](Migration-2.5.md)
     - Raised `minSdkVersion` from `21` to `23` and updated the build toolchain (Kotlin `2.2.0`, Android Gradle Plugin `8.13.0`, Gradle `8.13`).
