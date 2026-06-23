@@ -20,8 +20,6 @@ import com.google.gson.annotations.SerializedName
 import com.wultra.android.mtokensdk.api.operation.model.preapproval.PreApprovalScreen
 import com.wultra.android.mtokensdk.operation.expiration.ExpirableOperation
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
-import java.time.Instant
-import java.time.ZoneId
 import java.time.ZonedDateTime
 
 /**
@@ -222,46 +220,70 @@ data class OperationUIData(
 /**
  * Operation OTP data
  *
- * Data shall be assigned to the operation when obtained in the app
+ * Data shall be assigned to the operation when obtained in the app.
+ *
+ * The SDK automatically adjusts `timestampReceived` using server-synchronized time
+ * during [com.wultra.android.mtokensdk.operation.OperationsService.authorizeOperation],
+ * so consumers only need to create this with `ProximityCheck(totp, type)`.
  */
-data class ProximityCheck(
+data data class ProximityCheck(
 
     /** The actual Time-based one time password */
     val totp: String,
 
     /** Type of the Proximity check */
-    val type: ProximityCheckType,
+    val type: ProximityCheckType
+) {
 
     /**
-     * Timestamp when the operation was scanned (qrCode) or delivered to the device (deeplink)
+     * Timestamp when the operation was scanned (qrCode) or delivered to the device (deeplink).
      *
-     * We **strongly recommend** using [withSynchronizedTime] to ensure
-     * the timestamp is aligned with the server time, especially for time-sensitive operations.
+     * Captured automatically as the current system time at creation.
+     * The SDK adjusts this value to server-aligned time internally during authorization.
      */
-    val timestampReceived: ZonedDateTime = ZonedDateTime.now()
-) {
+    var timestampReceived: ZonedDateTime = ZonedDateTime.now()
+        internal set
+
+    /**
+     * Creates a ProximityCheck, ignoring the provided [timestampReceived] parameter.
+     *
+     * The `timestampReceived` parameter is ignored — the SDK captures current time at creation
+     * and adjusts it to server time internally during authorization.
+     *
+     * @param totp The Time-based one-time password.
+     * @param type The proximity check type.
+     * @param timestampReceived Ignored. The SDK uses current time and adjusts it during operation authorization.
+     */
+    @Deprecated(
+        message = "Use ProximityCheck(totp, type) instead. The SDK now handles time synchronization internally during authorize.",
+        replaceWith = ReplaceWith("ProximityCheck(totp, type)")
+    )
+    constructor(totp: String, type: ProximityCheckType, @Suppress("UNUSED_PARAMETER") timestampReceived: ZonedDateTime) : this(totp, type)
+
     companion object {
 
         /**
-         * Creates a new instance using time synchronized with PowerAuth server, if available.
+         * Deprecated. Previously synchronized `timestampReceived` with the PowerAuth server.
          *
-         * If the SDK is not initialized or synchronization is unavailable, falls back to system time.
+         * This is no longer needed — the SDK now handles time synchronization internally
+         * during authorization. This method simply creates a [ProximityCheck]
+         * with current time as the timestamp; the [powerAuthSDK] parameter is ignored.
          *
          * @param totp The TOTP code.
          * @param type The proximity check type.
-         * @param powerAuthSDK Instance of PowerAuthSDK.
+         * @param powerAuthSDK Instance of PowerAuthSDK (no longer used).
          */
+        @Deprecated(
+            message = "No longer needed. The SDK automatically synchronizes time during authorization. " +
+                "Use ProximityCheck(totp, type) instead.",
+            replaceWith = ReplaceWith("ProximityCheck(totp, type)")
+        )
         fun withSynchronizedTime(
             totp: String,
             type: ProximityCheckType,
-            powerAuthSDK: PowerAuthSDK
+            @Suppress("UNUSED_PARAMETER") powerAuthSDK: PowerAuthSDK
         ): ProximityCheck {
-            val timeService = powerAuthSDK.timeSynchronizationService
-            val currentDateTime = if (timeService.isTimeSynchronized) {
-                ZonedDateTime.ofInstant(Instant.ofEpochMilli(timeService.currentTime), ZoneId.systemDefault())
-            } else ZonedDateTime.now()
-
-            return ProximityCheck(totp, type, currentDateTime)
+            return ProximityCheck(totp, type)
         }
     }
 }
