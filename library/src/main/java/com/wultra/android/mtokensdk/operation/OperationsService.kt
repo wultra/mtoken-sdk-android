@@ -29,6 +29,7 @@ import com.wultra.android.powerauth.networking.data.StatusResponse
 import com.wultra.android.powerauth.networking.error.ApiError
 import com.wultra.android.powerauth.networking.error.ApiErrorException
 import com.wultra.android.powerauth.networking.tokens.IPowerAuthTokenProvider
+import io.getlime.security.powerauth.networking.response.ITimeSynchronizationListener
 import io.getlime.security.powerauth.sdk.PowerAuthAuthentication
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
 import okhttp3.OkHttpClient
