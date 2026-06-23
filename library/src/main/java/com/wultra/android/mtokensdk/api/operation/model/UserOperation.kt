@@ -226,7 +226,7 @@ data class OperationUIData(
  * during [com.wultra.android.mtokensdk.operation.OperationsService.authorizeOperation],
  * so consumers only need to create this with `ProximityCheck(totp, type)`.
  */
-data data class ProximityCheck(
+data class ProximityCheck(
 
     /** The actual Time-based one time password */
     val totp: String,
