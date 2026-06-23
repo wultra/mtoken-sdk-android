@@ -2,7 +2,7 @@
 
 This guide provides instructions for migrating from **Wultra Mobile Token SDK for Android** version `2.4.x` to version `2.5.x`.
 
-Version `2.5.x` improves proximity check time handling. There are **no breaking changes** — only deprecations.
+Version `2.5.x` improves proximity check time handling. The public API changes are minimal — primarily deprecations — but `ProximityCheck`'s data class structure changed (see [`timestampReceived` Changes](#timestampreceived-changes)).
 
 ---
 
@@ -48,6 +48,12 @@ The deprecated APIs continue to work but their behavior has changed. The `timest
 
 The `timestampReceived` property moved from the `data class` primary constructor to a body property with `internal set`. It remains read-only from outside the SDK. The SDK now adjusts this value internally during `authorizeOperation` to align with server time.
 
-Because `timestampReceived` is no longer a constructor parameter, it no longer participates in the generated `equals()`, `hashCode()`, `toString()`, `copy()`, or `componentN()` methods. In practice this is unlikely to affect consumers — `ProximityCheck` is a short-lived object created, assigned to an operation, and authorized. If you relied on these data class features with `timestampReceived`, you will need to update your code accordingly.
+Because `timestampReceived` is no longer a constructor parameter, it no longer participates in the generated `equals()`, `hashCode()`, `toString()`, `copy()`, or `componentN()` methods. Specifically:
+
+- `copy(timestampReceived = ...)` **will not compile** — `timestampReceived` is no longer a `copy()` parameter.
+- Destructuring `val (totp, type, ts) = proximityCheck` **will not compile** — only two components are generated.
+- `equals()`/`hashCode()` now compare only `totp` and `type`.
+
+In practice this is unlikely to affect consumers — `ProximityCheck` is a short-lived object created, assigned to an operation, and authorized.
 
 ---
