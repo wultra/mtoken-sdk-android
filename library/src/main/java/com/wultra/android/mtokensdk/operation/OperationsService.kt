@@ -257,7 +257,7 @@ class OperationsService {
 
                 override fun onTimeSynchronizationFailed(t: Throwable) {
                     WMTLogger.e("Proximity check: time synchronization failed: ${t.message}")
-                    callback(Result.failure(ApiErrorException(t)))
+                    callback(Result.failure(t))
                 }
             })
         }
@@ -270,6 +270,8 @@ class OperationsService {
      */
     private fun adjustProximityCheckData(proximityCheck: ProximityCheck): ProximityCheckData {
         val timeService = powerAuthSDK.timeSynchronizationService
+        check(timeService.isTimeSynchronized) { "adjustProximityCheckData called before time synchronization" }
+
         val localTimeAdjustment = timeService.localTimeAdjustment
 
         val originalReceived = proximityCheck.timestampReceived

@@ -823,7 +823,7 @@ Types:
 Definition of `ProximityCheck`:
 
 ```kotlin
-class ProximityCheck {
+data class ProximityCheck {
   
     /** The actual Time-based one-time password */
     val totp: String
@@ -831,8 +831,11 @@ class ProximityCheck {
     /** Type of the Proximity check */
     val type: ProximityCheckType
     
-    /** Timestamp when the operation was scanned (QR Code) or delivered to the device (Deeplink) */
-    val timestampReceived: ZonedDateTime = ZonedDateTime.now()
+    /**
+     * Timestamp when the operation was scanned (QR Code) or delivered to the device (Deeplink).
+     * Captured automatically at creation. The SDK adjusts this to server time during authorization.
+     */
+    var timestampReceived: ZonedDateTime
 }
 ```
 

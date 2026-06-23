@@ -13,7 +13,7 @@
     - `PowerAuthSDK.createOIDCActivation` no longer declares/throws `PowerAuthMissingConfigException` (removed in PowerAuth `2.0.0`).
 
 ## 2.5.0
-- Improved proximity check time synchronization — the SDK now automatically adjusts timestamps during `authorize` [(#240)](https://github.com/wultra/mtoken-sdk-android/issues/240).
+- Improved proximity check time synchronization — the SDK now automatically adjusts timestamps during `authorizeOperation` [(#240)](https://github.com/wultra/mtoken-sdk-android/issues/240).
 
 ## 2.4.0
 - Added multiple PreApprovalScreens support [(#207)](https://github.com/wultra/mtoken-sdk-android/issues/207).
