@@ -11,6 +11,7 @@
     - Reworked `QROperationSignature`: `signingKey` → `keyType`, `signature` → `data`, `signatureString` → `dataSource` (old members removed). Added support for KMAC-based signatures via `KeyType.MAC_PERSONALIZED`.
     - Removed previously deprecated `QROperationFlags.biometryAllowed`; use `biometricsAllowed` instead.
     - `PowerAuthSDK.createOIDCActivation` no longer declares/throws `PowerAuthMissingConfigException` (removed in PowerAuth `2.0.0`).
+- Improved `PreApprovalScreen` decoding & logging. [(#226)](https://github.com/wultra/mtoken-sdk-android/issues/232).
 
 ## 2.4.0
 - Added multiple PreApprovalScreens support [(#207)](https://github.com/wultra/mtoken-sdk-android/issues/207).
