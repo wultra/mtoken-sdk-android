@@ -63,7 +63,10 @@ class OperationUIDataDeserializer : JsonDeserializer<OperationUIData> {
         if (hasNew) {
             // New format: "preApprovalScreens" (plural, array)
             val el = obj.get("preApprovalScreens")
-            if (!el.isJsonArray) return null
+            if (!el.isJsonArray) {
+                WMTLogger.e("'preApprovalScreens' is present but is not a JSON array — ignoring.")
+                return null
+            }
             WMTLogger.d("Decoding preApprovalScreens.")
             val screens = el.asJsonArray.mapNotNull { screenEl ->
                 try {
