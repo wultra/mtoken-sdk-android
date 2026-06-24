@@ -2,7 +2,7 @@
 
 ## X.X.X
 - Integrated `PowerAuthSDK` `2.0.0` [(#234)](https://github.com/wultra/mtoken-sdk-android/issues/234). PowerAuth "server stack" `2.0+` is now required.
-    - [Migration guide](Migration-2.5.md)
+    - [Migration guide](Migration-3.0.md)
     - Raised `minSdkVersion` from `21` to `23` and updated the build toolchain (Kotlin `2.2.0`, Android Gradle Plugin `8.13.0`, Gradle `8.13`).
     - `IOperationsService.authorizeOfflineOperation` is now **asynchronous** - it reports the result through a `callback` and returns an `ICancelable`, replacing the previous synchronous variant.
     - `QROperationParser` is now an instantiable class. When created with a `PowerAuthSDK` instance it verifies the operation signature during parsing; added `QROperation.verifySignature(powerAuth)` for manual verification.
@@ -12,6 +12,9 @@
     - Removed previously deprecated `QROperationFlags.biometryAllowed`; use `biometricsAllowed` instead.
     - `PowerAuthSDK.createOIDCActivation` no longer declares/throws `PowerAuthMissingConfigException` (removed in PowerAuth `2.0.0`).
 - Improved `PreApprovalScreen` decoding & logging. [(#226)](https://github.com/wultra/mtoken-sdk-android/issues/232).
+
+## 2.5.0
+- Improved proximity check time synchronization — the SDK now automatically adjusts timestamps during `authorizeOperation` [(#240)](https://github.com/wultra/mtoken-sdk-android/issues/240).
 
 ## 2.4.0
 - Added multiple PreApprovalScreens support [(#207)](https://github.com/wultra/mtoken-sdk-android/issues/207).
