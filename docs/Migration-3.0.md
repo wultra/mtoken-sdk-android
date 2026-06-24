@@ -127,6 +127,14 @@ The parser now throws a structured **`QROperationParseException`** that carries 
 
 ---
 
+### `PreApprovalScreen` Requires `heading` and `message`
+
+`PreApprovalScreen` decoding now correctly enforces that both `heading` and `message` fields are present. Previously, the deserializer would fall back to empty strings when these fields were missing — this was an unintended behavior. Screens with incomplete payloads are now skipped (the deserializer returns `null` for that entry).
+
+Backend implementations must always provide both `heading` and `message` for each pre-approval screen.
+
+---
+
 ### Migration Checklist
 
 - Update `powerauth-sdk` and `powerauth-networking` to `2.0.0`.
@@ -136,5 +144,6 @@ The parser now throws a structured **`QROperationParseException`** that carries 
 - Migrate removed `QROperationSignature` members (`signingKey`/`signature`/`signatureString`/`isMaster()`).
 - Replace `QROperationFlags.biometryAllowed` with `biometricsAllowed`.
 - Optionally handle `QROperationParseException.reason` for structured parse errors.
+- Verify your backend always provides `heading` and `message` for pre-approval screens — incomplete entries are now skipped.
 
 ---
