@@ -17,7 +17,6 @@
 package com.wultra.android.mtokensdk.test
 
 import android.content.Context
-import androidx.test.core.app.ApplicationProvider
 import com.wultra.android.mtokensdk.api.operation.*
 import com.wultra.android.mtokensdk.api.operation.model.IOperation
 import com.wultra.android.mtokensdk.api.operation.model.ProximityCheck
@@ -31,10 +30,7 @@ import io.getlime.security.powerauth.networking.interfaces.ICancelable
 import io.getlime.security.powerauth.networking.response.ITimeSynchronizationListener
 import io.getlime.security.powerauth.sdk.IPowerAuthTimeSynchronizationService
 import io.getlime.security.powerauth.sdk.PowerAuthAuthentication
-import io.getlime.security.powerauth.sdk.PowerAuthClientConfiguration
-import io.getlime.security.powerauth.sdk.PowerAuthConfiguration
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
-import org.junit.After
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
