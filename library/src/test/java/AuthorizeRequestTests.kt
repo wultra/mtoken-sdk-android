@@ -22,7 +22,6 @@ import com.wultra.android.mtokensdk.operation.OperationsUtils
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-import java.time.ZonedDateTime
 
 class AuthorizeRequestTests {
 
@@ -43,8 +42,7 @@ class AuthorizeRequestTests {
     @Test
     fun `test authorize request without mobile token data`() {
         val operation = TestOperation("test-id", "test-data")
-        val timestamp = ZonedDateTime.now()
-        val request = AuthorizeRequestObject(operation, timestamp)
+        val request = AuthorizeRequestObject(operation)
 
         val json = gson.toJson(request)
 
@@ -60,8 +58,7 @@ class AuthorizeRequestTests {
             "riskScore" to 0.8
         )
         val operation = TestOperation("test-id", "test-data", mobileTokenData = mobileTokenData)
-        val timestamp = ZonedDateTime.now()
-        val request = AuthorizeRequestObject(operation, timestamp)
+        val request = AuthorizeRequestObject(operation)
 
         val json = gson.toJson(request)
 
@@ -81,5 +78,35 @@ class AuthorizeRequestTests {
 
         Assert.assertTrue("JSON should contain mobileTokenData", json.contains("\"mobileTokenData\""))
         Assert.assertTrue("JSON should contain testKey", json.contains("\"testKey\":\"testValue\""))
+    }
+
+    @Test
+    fun `test authorize request with proximity check data`() {
+        val timestamp = java.time.ZonedDateTime.now()
+        val proximityCheckData = ProximityCheckData(
+            otp = "123456",
+            type = ProximityCheckType.QR_CODE,
+            timestampReceived = timestamp,
+            timestampSent = timestamp
+        )
+        val operation = TestOperation("test-id", "test-data")
+        val request = AuthorizeRequestObject(operation, proximityCheckData)
+
+        val json = gson.toJson(request)
+
+        Assert.assertTrue("JSON should contain otp", json.contains("\"otp\":\"123456\""))
+        Assert.assertTrue("JSON should contain type", json.contains("\"type\":\"QR_CODE\""))
+        Assert.assertTrue("JSON should contain timestampReceived", json.contains("\"timestampReceived\""))
+        Assert.assertTrue("JSON should contain timestampSent", json.contains("\"timestampSent\""))
+    }
+
+    @Test
+    fun `test authorize request without proximity check data`() {
+        val operation = TestOperation("test-id", "test-data")
+        val request = AuthorizeRequestObject(operation, null)
+
+        val json = gson.toJson(request)
+
+        Assert.assertFalse("JSON should not contain proximityCheck when null", json.contains("proximityCheck"))
     }
 }
