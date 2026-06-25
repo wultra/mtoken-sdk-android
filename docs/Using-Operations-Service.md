@@ -823,7 +823,7 @@ Types:
 Definition of `ProximityCheck`:
 
 ```kotlin
-class ProximityCheck {
+data class ProximityCheck {
   
     /** The actual Time-based one-time password */
     val totp: String
@@ -831,7 +831,10 @@ class ProximityCheck {
     /** Type of the Proximity check */
     val type: ProximityCheckType
     
-    /** Timestamp when the operation was scanned (QR Code) or delivered to the device (Deeplink) */
+    /**
+     * Timestamp when the operation was scanned (QR Code) or delivered to the device (Deeplink).
+     * Captured automatically at creation.
+     */
     val timestampReceived: ZonedDateTime = ZonedDateTime.now()
 }
 ```
@@ -858,10 +861,9 @@ When the app is launched via a deeplink, preserve the data from the deeplink and
   Once the QR code is scanned or a match from the deeplink is found, create a `ProximityCheck` with:
   - `totp`: The actual Time-Based One-Time Password.
   - `type`: Set to `ProximityCheckType.QR_CODE` or `ProximityCheckType.DEEPLINK`.
-  - `timestampReceived`: The timestamp when the QR code was scanned (by default, it is created as the current timestamp when the object is instantiated).
 
-- Authorizing the ProximityCheck
-  When authorizing, the SDK will by default add `timestampSent` to the `ProximityCheck` object. This timestamp indicates when the operation was sent.
+- Automatic Time Synchronization
+  The SDK automatically produces server-aligned timestamps (`timestampReceived` and `timestampSent`) in the authorization request during `authorizeOperation`. This ensures correct timestamps even when the device system clock has been manually changed. If time is not yet synchronized with the server, the SDK will synchronize it before sending the authorization request.
 
 ### PACUtils
 
@@ -887,17 +889,16 @@ data class PACData(
 - Accepted formats:
   - notice that the totp key in JWT and in query shall be `potp`!
 
-#### Creating a ProximityCheck with Server-Synchronized Time
+#### Creating a ProximityCheck
 
-When handling an operation with a required ProximityCheck, you will need to send a ProximityCheck along with your authorization request.
-
-The SDK provides a factory method:
+When handling an operation with a required ProximityCheck, create a `ProximityCheck` and assign it to the operation before authorization:
 
 ```kotlin
-val proximityCheck = ProximityCheck.withSynchronizedTime(
+// Create the proximity check — just provide the TOTP and type.
+// The SDK handles timestamp adjustment automatically during authorization.
+val proximityCheck = ProximityCheck(
     totp = "123456",
-    type = ProximityCheckType.QR_CODE,
-    powerAuthSDK = powerAuth
+    type = ProximityCheckType.QR_CODE
 )
 operation.proximityCheck = proximityCheck
 
@@ -909,6 +910,10 @@ this.operationsService.authorizeOperation(operation, auth) { result ->
     }
 }
 ```
+
+<!-- begin box info -->
+The `ProximityCheck.withSynchronizedTime()` factory method is deprecated. The SDK now automatically synchronizes timestamps during `authorizeOperation`, so you only need to use the simple `ProximityCheck(totp, type)` constructor.
+<!-- end -->
 
 ## Creating a Custom Operation
 
