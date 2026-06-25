@@ -32,6 +32,7 @@ import com.wultra.android.powerauth.networking.tokens.IPowerAuthTokenProvider
 import io.getlime.security.powerauth.networking.interfaces.ICancelable
 import io.getlime.security.powerauth.networking.response.IOfflineAuthenticationCodeListener
 import io.getlime.security.powerauth.networking.response.ITimeSynchronizationListener
+import io.getlime.security.powerauth.sdk.IPowerAuthTimeSynchronizationService
 import io.getlime.security.powerauth.sdk.PowerAuthAuthentication
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
 import okhttp3.OkHttpClient
@@ -97,6 +98,7 @@ class OperationsService {
 
     private val powerAuthSDK: PowerAuthSDK
     private val appContext: Context
+    private val timeService: IPowerAuthTimeSynchronizationService
     private var timer: Timer? = null
     private val minimumTimePollingInterval: Long = 5_000
 
@@ -117,7 +119,7 @@ class OperationsService {
     }
 
     // API class for communication.
-    private val operationApi: OperationApi
+    private val operationApi: IOperationApi
 
     // List of tasks waiting for ongoing operation fetch to finish. If the list is not empty,
     // the operations loading is in progress.
@@ -139,7 +141,18 @@ class OperationsService {
     constructor(powerAuthSDK: PowerAuthSDK, appContext: Context, httpClient: OkHttpClient, baseURL: String, tokenProvider: IPowerAuthTokenProvider? = null, userAgent: UserAgent? = null, gsonBuilder: GsonBuilder? = null) {
         this.powerAuthSDK = powerAuthSDK
         this.appContext = appContext
+        this.timeService = powerAuthSDK.timeSynchronizationService
         this.operationApi = OperationApi(httpClient, baseURL, appContext, powerAuthSDK, tokenProvider, userAgent, gsonBuilder)
+    }
+
+    /**
+     * Internal constructor for testing with mocked dependencies.
+     */
+    internal constructor(powerAuthSDK: PowerAuthSDK, appContext: Context, operationApi: IOperationApi, timeService: IPowerAuthTimeSynchronizationService) {
+        this.powerAuthSDK = powerAuthSDK
+        this.appContext = appContext
+        this.timeService = timeService
+        this.operationApi = operationApi
     }
 
     /**
@@ -235,7 +248,6 @@ class OperationsService {
     fun authorizeOperation(operation: IOperation, authentication: PowerAuthAuthentication, callback: (result: Result<Unit>) -> Unit) {
 
         val proximityCheck = operation.proximityCheck
-        val timeService = powerAuthSDK.timeSynchronizationService
 
         if (proximityCheck == null) {
             // No proximity check — authorize directly
@@ -269,7 +281,6 @@ class OperationsService {
      * Must only be called when time IS synchronized.
      */
     private fun adjustProximityCheckData(proximityCheck: ProximityCheck): ProximityCheckData {
-        val timeService = powerAuthSDK.timeSynchronizationService
         check(timeService.isTimeSynchronized) { "adjustProximityCheckData called before time synchronization" }
 
         val localTimeAdjustment = timeService.localTimeAdjustment
