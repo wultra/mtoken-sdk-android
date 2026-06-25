@@ -374,7 +374,7 @@ class AuthorizeOperationTests {
             Instant.ofEpochMilli(System.currentTimeMillis() - 30_000),
             ZoneId.systemDefault()
         )
-        // Use reflection to set timestampReceived since it has internal set
+        // Use reflection to set timestampReceived to simulate a QR scan 30 seconds ago
         val field = ProximityCheck::class.java.getDeclaredField("timestampReceived")
         field.isAccessible = true
         field.set(pc, thirtySecondsAgo)

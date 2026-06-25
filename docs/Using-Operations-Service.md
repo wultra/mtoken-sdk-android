@@ -833,9 +833,9 @@ data class ProximityCheck {
     
     /**
      * Timestamp when the operation was scanned (QR Code) or delivered to the device (Deeplink).
-     * Captured automatically at creation. The SDK adjusts this to server time during authorization.
+     * Captured automatically at creation.
      */
-    var timestampReceived: ZonedDateTime
+    val timestampReceived: ZonedDateTime = ZonedDateTime.now()
 }
 ```
 
@@ -863,7 +863,7 @@ When the app is launched via a deeplink, preserve the data from the deeplink and
   - `type`: Set to `ProximityCheckType.QR_CODE` or `ProximityCheckType.DEEPLINK`.
 
 - Automatic Time Synchronization
-  The SDK automatically adjusts `timestampReceived` and `timestampSent` to server-aligned time during `authorizeOperation`. This ensures correct timestamps even when the device system clock has been manually changed. If time is not yet synchronized with the server, the SDK will synchronize it before sending the authorization request.
+  The SDK automatically produces server-aligned timestamps (`timestampReceived` and `timestampSent`) in the authorization request during `authorizeOperation`. This ensures correct timestamps even when the device system clock has been manually changed. If time is not yet synchronized with the server, the SDK will synchronize it before sending the authorization request.
 
 ### PACUtils
 
