@@ -14,7 +14,7 @@ repositories {
     mavenCentral() // if not defined elsewhere...
 }
 
-implementation "com.wultra.android.mtokensdk:wultra-mtoken-sdk:2.4.0"
+implementation "com.wultra.android.mtokensdk:wultra-mtoken-sdk:2.5.0"
 // if not added yet, include PowerAuth SDK too
 implementation "com.wultra.android.powerauth:powerauth-sdk:X.Y.Z"
 ```
@@ -23,7 +23,7 @@ implementation "com.wultra.android.powerauth:powerauth-sdk:X.Y.Z"
 
 | WMT SDK            | PowerAuth SDK     |  
 |--------------------|-------------------|
-| `2.0.x` - `2.4.x`  | `1.9.x`           |
+| `2.0.x` - `2.5.x`  | `1.9.x`           |
 | `1.12.x`           | `1.9.x`           |
 | `1.8.x` - `1.11.x` | `1.8.x`           |
 | `1.5.x` - `1.7.x`  | `1.7.x`           |
