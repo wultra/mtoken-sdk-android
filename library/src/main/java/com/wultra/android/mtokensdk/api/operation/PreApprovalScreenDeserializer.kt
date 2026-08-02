@@ -27,6 +27,7 @@ import com.wultra.android.mtokensdk.api.operation.utils.getAsStringSafe
 import com.wultra.android.mtokensdk.api.operation.utils.parseEnumWithFallback
 import com.wultra.android.mtokensdk.api.operation.utils.safeDeserializeArray
 import com.wultra.android.mtokensdk.api.operation.utils.safeDeserializeObject
+import com.wultra.android.mtokensdk.log.WMTLogger
 import java.lang.reflect.Type
 import kotlin.collections.ifEmpty
 
@@ -43,19 +44,27 @@ import kotlin.collections.ifEmpty
  */
 class PreApprovalScreenDeserializer : JsonDeserializer<PreApprovalScreen> {
 
-    override fun deserialize(json: JsonElement, typeOfT: Type, ctx: JsonDeserializationContext): PreApprovalScreen {
+    override fun deserialize(json: JsonElement, typeOfT: Type, ctx: JsonDeserializationContext): PreApprovalScreen? {
         val obj = json.asJsonObject
         val type = parseScreenType(obj)
-        val heading = obj.getAsStringSafe("heading") ?: ""
-        val message = obj.getAsStringSafe("message") ?: ""
+        val heading = obj.getAsStringSafe("heading")
+        val message = obj.getAsStringSafe("message")
+
+        if (heading == null || message == null) {
+            if (heading == null) WMTLogger.e("PreApprovalScreen: missing required 'heading'")
+            if (message == null) WMTLogger.e("PreApprovalScreen: missing required 'message'")
+            return null
+        }
+
         val presence = detectVersion(obj)
 
         // --- Legacy branch ---
         if (!presence.hasNewModel && (presence.hasLegacyItems || presence.hasLegacyApproval)) {
+            WMTLogger.w("Using legacy pre-approval format — consider updating backend to the new model.")
             return parseLegacyScreen(ctx, obj, type, heading, message)
         }
 
-        // --- New-model branch (preferred) ---
+        // --- New-model branch ---
         val id = obj.getAsStringSafe("id")
         val backButton = obj.getAsBooleanSafe("backButton")
         val image = obj.getAsStringSafe("image")
@@ -110,8 +119,6 @@ class PreApprovalScreenDeserializer : JsonDeserializer<PreApprovalScreen> {
         heading: String,
         message: String
     ): PreApprovalScreen {
-        val image = obj.getAsStringSafe("image") ?: FALLBACK_IMAGE
-
         // create elements from legacy "items" array
         val rawItems: List<String>? = safeDeserializeArray(ctx, obj.get("items"), object : TypeToken<List<String>>() {}.type)
         val elements: List<PreApprovalElement>? = rawItems
@@ -134,7 +141,7 @@ class PreApprovalScreenDeserializer : JsonDeserializer<PreApprovalScreen> {
             type = type,
             heading = heading,
             message = message,
-            image = image,
+            image = FALLBACK_IMAGE,
             elements = elements,
             controls = controls
         )
