@@ -18,7 +18,7 @@ With Wultra Mobile Token (WMT) SDK, you can integrate an out-of-band operation a
 
 To understand the Wultra Mobile Token SDK purpose on a business level better, you can visit our own [Mobile Token application](https://www.wultra.com/mobile-token). We use Wultra Mobile Token SDK in our mobile token application as well.
 
-WMT SDK library does precisely this:
+WMT SDK library:
 
 - [Retrieves, approves, or rejects operations pending approval for a given user.](docs/Using-Operations-Service.md)
 - [Claims anonymous operations.](docs/Using-Operations-Service.md#claim-the-operation)
