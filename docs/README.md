@@ -4,16 +4,16 @@ With Wultra Mobile Token (WMT) SDK, you can integrate an out-of-band operation a
 
 To understand the Wultra Mobile Token SDK purpose on a business level better, you can visit our own [Mobile Token application](https://www.wultra.com/mobile-token). We use Wultra Mobile Token SDK in our mobile token application as well.
 
-WMT SDK library:
+**With this SDK, you can:**
 
-- [Retrieves, approves, or rejects operations pending approval for a given user.](Using-Operations-Service.md)
-- [Claims anonymous operations.](Using-Operations-Service.md#claim-the-operation)
-- [Retrieves operation history.](Using-Operations-Service.md#operation-history)
-- [Supports offline authorization.](Using-Operations-Service.md#off-line-authorization)
-- [Registers an existing PowerAuth activation to receive push notifications.](Using-Push-Service.md)
-- [Manages user's inbox messages.](Using-Inbox-Service.md)
-- [Handles OpenID Connect (OIDC) authentication flows.](Using-OIDC-Service.md)
-- [And more.](#integration-tutorials)
+- [Retrieve, approve, or reject operations pending approval for a given user.](Using-Operations-Service.md)
+- [Claim anonymous operations.](Using-Operations-Service.md#claim-the-operation)
+- [Retrieve operation history.](Using-Operations-Service.md#operation-history)
+- [Do offline authorization.](Using-Operations-Service.md#off-line-authorization)
+- [Register an existing PowerAuth activation to receive push notifications.](Using-Push-Service.md)
+- [Manage users' inbox messages.](Using-Inbox-Service.md)
+- [Handle OpenID Connect (OIDC) authentication flows.](Using-OIDC-Service.md)
+- [Explore more.](#integration-tutorials)
 
 Remarks:
 
