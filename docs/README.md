@@ -6,14 +6,19 @@ To understand the Wultra Mobile Token SDK purpose on a business level better, yo
 
 WMT SDK library does precisely this:
 
-- Retrieves the list of operations that are pending approval for a given user.
-- Approves or rejects operations with PowerAuth transaction signing.
-- Registers an existing PowerAuth activation to receive push notifications.
+- [Retrieves, approves, or rejects operations pending approval for a given user.](Using-Operations-Service.md)
+- [Claims anonymous operations.](Using-Operations-Service.md#claim-the-operation)
+- [Retrieves operation history.](Using-Operations-Service.md#operation-history)
+- [Supports offline authorization.](Using-Operations-Service.md#off-line-authorization)
+- [Registers an existing PowerAuth activation to receive push notifications.](Using-Push-Service.md)
+- [Manages user's inbox messages.](Using-Inbox-Service.md)
+- [Handles OpenID Connect (OIDC) authentication flows.](Using-OIDC-Service.md)
+- [And more.](#integration-tutorials)
 
 Remarks:
 
 - This library does not contain any UI.
-- We also provide an [iOS](https://github.com/wultra/mtoken-sdk-ios), [Flutter](https://github.com/wultra/mtoken-sdk-flutter) and [React Native/Cordova](https://github.com/wultra/mtoken-sdk-js) versions of this library.
+- We also provide an [iOS](https://github.com/wultra/mtoken-sdk-ios), [Flutter](https://github.com/wultra/mtoken-sdk-flutter), and [React Native/Cordova](https://github.com/wultra/mtoken-sdk-js) versions of this library.
 
 <!-- begin remove -->
 ## Integration Tutorials
