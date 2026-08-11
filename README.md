@@ -9,7 +9,7 @@
 ![date](https://img.shields.io/github/release-date/wultra/mtoken-sdk-android)
 [![license](https://img.shields.io/github/license/wultra/mtoken-sdk-android)](LICENSE)
 
-__Wultra Mobile Token SDK__ is a high-level SDK for operation approval.
+__Wultra Mobile Token SDK__ provides APIs for secure operation approval, push notifications, inbox messages, and OIDC flows.
 <!-- end -->
 
 ## Introduction
