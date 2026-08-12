@@ -4,16 +4,21 @@ With Wultra Mobile Token (WMT) SDK, you can integrate an out-of-band operation a
 
 To understand the Wultra Mobile Token SDK purpose on a business level better, you can visit our own [Mobile Token application](https://www.wultra.com/mobile-token). We use Wultra Mobile Token SDK in our mobile token application as well.
 
-WMT SDK library does precisely this:
+**With this SDK, you can:**
 
-- Retrieves the list of operations that are pending approval for a given user.
-- Approves or rejects operations with PowerAuth transaction signing.
-- Registers an existing PowerAuth activation to receive push notifications.
+- [Retrieve, approve, or reject operations pending approval for a given user.](Using-Operations-Service.md)
+- [Claim anonymous operations.](Using-Operations-Service.md#claim-the-operation)
+- [Retrieve operation history.](Using-Operations-Service.md#operation-history)
+- [Do offline authorization.](Using-Operations-Service.md#off-line-authorization)
+- [Register an existing PowerAuth activation to receive push notifications.](Using-Push-Service.md)
+- [Manage users' inbox messages.](Using-Inbox-Service.md)
+- [Handle OpenID Connect (OIDC) authentication flows.](Using-OIDC-Service.md)
+- [Explore more.](#integration-tutorials)
 
 Remarks:
 
 - This library does not contain any UI.
-- We also provide an [iOS](https://github.com/wultra/mtoken-sdk-ios), [Flutter](https://github.com/wultra/mtoken-sdk-flutter) and [React Native/Cordova](https://github.com/wultra/mtoken-sdk-js) versions of this library.
+- We also provide an [iOS](https://github.com/wultra/mtoken-sdk-ios), [Flutter](https://github.com/wultra/mtoken-sdk-flutter), and [React Native/Cordova](https://github.com/wultra/mtoken-sdk-js) versions of this library.
 
 <!-- begin remove -->
 ## Integration Tutorials
