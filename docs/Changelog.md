@@ -11,7 +11,7 @@
     - Reworked `QROperationSignature`: `signingKey` → `keyType`, `signature` → `data`, `signatureString` → `dataSource` (old members removed). Added support for KMAC-based signatures via `KeyType.MAC_PERSONALIZED`.
     - Removed previously deprecated `QROperationFlags.biometryAllowed`; use `biometricsAllowed` instead.
     - `PowerAuthSDK.createOIDCActivation` no longer declares/throws `PowerAuthMissingConfigException` (removed in PowerAuth `2.0.0`).
-- Improved `PreApprovalScreen` decoding & logging. [(#226)](https://github.com/wultra/mtoken-sdk-android/issues/232).
+- Improved `PreApprovalScreen` decoding & logging. [(#232)](https://github.com/wultra/mtoken-sdk-android/issues/232).
 
 ## 2.5.0
 - Improved proximity check time synchronization — the SDK now automatically adjusts timestamps during `authorizeOperation` [(#240)](https://github.com/wultra/mtoken-sdk-android/issues/240).
@@ -21,7 +21,7 @@
 - Fixed handling of the unexpected attributes payload [(#217)](https://github.com/wultra/mtoken-sdk-android/issues/217).
 
 ## 2.3.0
-- Added Alert Attribute [(#186](https://github.com/wultra/mtoken-sdk-android/issues/186)
+- Added Alert Attribute [(#186)](https://github.com/wultra/mtoken-sdk-android/issues/186)
 - Refactored time handling to use `java.time.ZonedDateTime` throughout the SDK, replacing ThreeTenABP due to its deprecation. [(#93)](https://github.com/wultra/mtoken-sdk-android/issues/93)
 - Added `ProximityCheck.withSynchronizedTime()` factory method to create proximity checks with server-synchronized timestamps, reducing clock drift issues. [(#201)](https://github.com/wultra/mtoken-sdk-android/issues/201)
 
