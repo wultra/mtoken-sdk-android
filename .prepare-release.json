@@ -17,19 +17,22 @@
             "description": "Example app pubspec file in the documentation.",
             "path": "docs/SDK-Integration.md",
             "type": "version_replace",
-            "match": "implementation \"com.wultra.android.mtokensdk:wultra-mtoken-sdk:%VERSION%\""
+            "match": "implementation \"com.wultra.android.mtokensdk:wultra-mtoken-sdk:%VERSION%\"",
+            "skipForSnapshot": true
         },
         {
             "description": "Compatibility in the documentation.",
             "path": "docs/SDK-Integration.md",
             "type": "versionstream_verify",
-            "match": "`%VERSION_STREAM%`"
+            "match": "`%VERSION_STREAM%`",
+            "skipForSnapshot": true
         },
         {
             "description": "Changelog for the wultra documentation.",
             "path": "docs/Changelog.md",
             "type": "version_verify",
-            "match": "## %VERSION%"
+            "match": "## %VERSION%",
+            "skipForSnapshot": true
         }
     ],
     "scripts": [
