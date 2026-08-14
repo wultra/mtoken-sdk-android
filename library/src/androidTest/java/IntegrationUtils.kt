@@ -99,6 +99,16 @@ class IntegrationUtils {
             return Pair(pa, wmt.oidc)
         }
 
+        fun prepareForAuthorize(): Pair<PowerAuthSDK, Context> {
+            // Create PA instance
+            val cfg = PowerAuthConfiguration.Builder("authorizeTests", enrollmentUrl, sdkConfig).build()
+            val clientCfg = PowerAuthClientConfiguration.Builder().allowUnsecuredConnection(true).build()
+            val pa = PowerAuthSDK.Builder(cfg).clientConfiguration(clientCfg).build(context)
+
+            val wmt = pa.createWultraMobileToken(context)
+            return Pair(pa, context)
+        }
+
         @Throws
         fun prepareActivation(pin: String, userId: String? = null, @PowerAuthAlgorithm algorithm: Int = PowerAuthAlgorithm.DEFAULT): Pair<PowerAuthSDK, WultraMobileToken> {
 

@@ -31,6 +31,8 @@ import com.wultra.android.powerauth.networking.error.ApiErrorException
 import com.wultra.android.powerauth.networking.tokens.IPowerAuthTokenProvider
 import io.getlime.security.powerauth.networking.interfaces.ICancelable
 import io.getlime.security.powerauth.networking.response.IOfflineAuthenticationCodeListener
+import io.getlime.security.powerauth.networking.response.ITimeSynchronizationListener
+import io.getlime.security.powerauth.sdk.IPowerAuthTimeSynchronizationService
 import io.getlime.security.powerauth.sdk.PowerAuthAuthentication
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
 import okhttp3.OkHttpClient
@@ -96,6 +98,7 @@ class OperationsService {
 
     private val powerAuthSDK: PowerAuthSDK
     private val appContext: Context
+    private val timeService: IPowerAuthTimeSynchronizationService
     private var timer: Timer? = null
     private val minimumTimePollingInterval: Long = 5_000
 
@@ -116,7 +119,7 @@ class OperationsService {
     }
 
     // API class for communication.
-    private val operationApi: OperationApi
+    private val operationApi: IOperationApi
 
     // List of tasks waiting for ongoing operation fetch to finish. If the list is not empty,
     // the operations loading is in progress.
@@ -138,7 +141,18 @@ class OperationsService {
     constructor(powerAuthSDK: PowerAuthSDK, appContext: Context, httpClient: OkHttpClient, baseURL: String, tokenProvider: IPowerAuthTokenProvider? = null, userAgent: UserAgent? = null, gsonBuilder: GsonBuilder? = null) {
         this.powerAuthSDK = powerAuthSDK
         this.appContext = appContext
+        this.timeService = powerAuthSDK.timeSynchronizationService
         this.operationApi = OperationApi(httpClient, baseURL, appContext, powerAuthSDK, tokenProvider, userAgent, gsonBuilder)
+    }
+
+    /**
+     * Internal constructor for testing with mocked dependencies.
+     */
+    internal constructor(powerAuthSDK: PowerAuthSDK, appContext: Context, operationApi: IOperationApi, timeService: IPowerAuthTimeSynchronizationService) {
+        this.powerAuthSDK = powerAuthSDK
+        this.appContext = appContext
+        this.timeService = timeService
+        this.operationApi = operationApi
     }
 
     /**
@@ -223,18 +237,84 @@ class OperationsService {
     /**
      * Authorizes operation with provided authentication
      *
+     * If the operation has a [ProximityCheck], the SDK automatically adjusts timestamps using
+     * server-synchronized time. If time is not yet synchronized, the SDK will synchronize it
+     * before proceeding with authorization.
+     *
      * @param operation Operation for approval
      * @param authentication Multifactor authentication object for signing, which depends on the operation type but usually 2FA (password or biometrics)
      * @param callback Callback with a result.
      */
     fun authorizeOperation(operation: IOperation, authentication: PowerAuthAuthentication, callback: (result: Result<Unit>) -> Unit) {
 
-        val timeService = powerAuthSDK.timeSynchronizationService
-        val currentDate = if (timeService.isTimeSynchronized) {
-            ZonedDateTime.ofInstant(Instant.ofEpochMilli(timeService.currentTime), ZoneId.systemDefault())
-        } else ZonedDateTime.now()
+        val proximityCheck = operation.proximityCheck
 
-        val authorizeRequest = AuthorizeRequest(AuthorizeRequestObject(operation, currentDate))
+        if (proximityCheck == null) {
+            // No proximity check — authorize directly
+            postAuthorize(operation, null, authentication, callback)
+        } else if (timeService.isTimeSynchronized) {
+            // Proximity check + time already synchronized — authorize directly
+            WMTLogger.d("Proximity check: time already synchronized, authorizing directly.")
+            val proximityCheckData = adjustProximityCheckData(proximityCheck)
+            postAuthorize(operation, proximityCheckData, authentication, callback)
+        } else {
+            // Proximity check + time NOT synchronized — synchronize first
+            WMTLogger.i("Proximity check: time not synchronized, synchronizing before authorize.")
+            timeService.synchronizeTime(object : ITimeSynchronizationListener {
+                override fun onTimeSynchronizationSucceeded() {
+                    WMTLogger.d("Proximity check: time synchronized, proceeding with authorize.")
+                    val proximityCheckData = adjustProximityCheckData(proximityCheck)
+                    postAuthorize(operation, proximityCheckData, authentication, callback)
+                }
+
+                override fun onTimeSynchronizationFailed(t: Throwable) {
+                    WMTLogger.e("Proximity check: time synchronization failed: ${t.message}")
+                    callback(Result.failure(t))
+                }
+            })
+        }
+    }
+
+    /**
+     * Adjusts proximity check timestamps using server time synchronization.
+     *
+     * Must only be called when time IS synchronized.
+     */
+    private fun adjustProximityCheckData(proximityCheck: ProximityCheck): ProximityCheckData {
+        check(timeService.isTimeSynchronized) { "adjustProximityCheckData called before time synchronization" }
+
+        val localTimeAdjustment = timeService.localTimeAdjustment
+
+        val originalReceived = proximityCheck.timestampReceived
+        val adjustedReceived = originalReceived.toInstant().plusMillis(localTimeAdjustment)
+        val timestampSent = Instant.ofEpochMilli(timeService.currentTime)
+
+        WMTLogger.d {
+            "Proximity check timestamps: " +
+                "timestampReceived=$originalReceived, " +
+                "adjustedReceived=$adjustedReceived, " +
+                "timestampSent(serverTime)=$timestampSent, " +
+                "localTimeAdjustment=${localTimeAdjustment}ms"
+        }
+
+        return ProximityCheckData(
+            otp = proximityCheck.totp,
+            type = proximityCheck.type,
+            timestampReceived = ZonedDateTime.ofInstant(adjustedReceived, ZoneId.systemDefault()),
+            timestampSent = ZonedDateTime.ofInstant(timestampSent, ZoneId.systemDefault())
+        )
+    }
+
+    /**
+     * Posts the authorize request to the server.
+     */
+    private fun postAuthorize(
+        operation: IOperation,
+        proximityCheckData: ProximityCheckData?,
+        authentication: PowerAuthAuthentication,
+        callback: (result: Result<Unit>) -> Unit
+    ) {
+        val authorizeRequest = AuthorizeRequest(AuthorizeRequestObject(operation, proximityCheckData))
         operationApi.authorize(
             authorizeRequest,
             authentication,
