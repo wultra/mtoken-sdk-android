@@ -85,19 +85,19 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib:${Constants.BuildScript.kotlinVersion}")
     implementation("androidx.annotation:annotation:1.10.0")
     implementation("com.google.code.gson:gson:2.14.0")
-    implementation("com.squareup.okhttp3:okhttp:5.3.2")
-    implementation("com.wultra.android.powerauth:powerauth-networking:2.0.0-SNAPSHOT")
+    implementation("com.squareup.okhttp3:okhttp:5.4.0")
+    implementation("com.wultra.android.powerauth:powerauth-networking:2.0.0")
 
     // Dependencies
-    compileOnly("com.wultra.android.powerauth:powerauth-sdk:2.0.0-SNAPSHOT")
+    compileOnly("com.wultra.android.powerauth:powerauth-sdk:2.0.0")
     compileOnly("io.getlime.core:rest-model-base:1.12.0")
 
     // TestDependencies
     testImplementation("junit:junit:4.13.2")
 
     // Android tests
-    androidTestImplementation("com.wultra.android.powerauth:powerauth-sdk:2.0.0-SNAPSHOT")
-    androidTestImplementation("com.wultra.android.powerauth:powerauth-networking:2.0.0-SNAPSHOT")
+    androidTestImplementation("com.wultra.android.powerauth:powerauth-sdk:2.0.0")
+    androidTestImplementation("com.wultra.android.powerauth:powerauth-networking:2.0.0")
     androidTestImplementation("androidx.test:runner:1.7.0")
     androidTestImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test:core:1.7.0")

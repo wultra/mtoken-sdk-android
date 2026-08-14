@@ -577,4 +577,102 @@ class JsonDeserializationTests {
         }
         Assert.assertNotNull("Expected exception for invalid attribute structure", thrown)
     }
+
+    @Test
+    fun `test preApprovalScreen missing heading and message`() {
+        val json = """
+        {
+          "status": "OK",
+          "responseObject": [{
+            "id": "1",
+            "name": "test",
+            "data": "d",
+            "status": "PENDING",
+            "operationCreated": "2023-04-25T13:09:52+0000",
+            "operationExpires": "2023-04-25T13:14:52+0000",
+            "ui": {
+              "preApprovalScreen": {
+                "type": "WARNING"
+              }
+            },
+            "allowedSignatureType": {"type": "2FA", "variants": []},
+            "formData": {"title": "t", "message": "m", "attributes": []}
+          }]
+        }
+        """.trimIndent()
+
+        val response = typeAdapter.fromJson(json)
+        val op = response.responseObject.firstOrNull()
+        Assert.assertNotNull(op)
+        Assert.assertNull("Screen should fail to decode when heading/message are missing", op!!.ui?.preApprovalScreens)
+    }
+
+    @Test
+    fun `test preApprovalScreen with heading and message`() {
+        val json = """
+        {
+          "status": "OK",
+          "responseObject": [{
+            "id": "1",
+            "name": "test",
+            "data": "d",
+            "status": "PENDING",
+            "operationCreated": "2023-04-25T13:09:52+0000",
+            "operationExpires": "2023-04-25T13:14:52+0000",
+            "ui": {
+              "preApprovalScreen": {
+                "type": "INFO",
+                "heading": "Title",
+                "message": "Body text"
+              }
+            },
+            "allowedSignatureType": {"type": "2FA", "variants": []},
+            "formData": {"title": "t", "message": "m", "attributes": []}
+          }]
+        }
+        """.trimIndent()
+
+        val response = typeAdapter.fromJson(json)
+        val op = response.responseObject.firstOrNull()
+        Assert.assertNotNull(op)
+        val screen = op!!.ui?.preApprovalScreens?.firstOrNull()
+        Assert.assertNotNull(screen)
+        Assert.assertEquals("Title", screen!!.heading)
+        Assert.assertEquals("Body text", screen.message)
+    }
+
+    @Test
+    fun `test preApprovalScreens array skips invalid screen keeps valid`() {
+        val json = """
+        {
+          "status": "OK",
+          "responseObject": [{
+            "id": "1",
+            "name": "test",
+            "data": "d",
+            "status": "PENDING",
+            "operationCreated": "2023-04-25T13:09:52+0000",
+            "operationExpires": "2023-04-25T13:14:52+0000",
+            "ui": {
+              "preApprovalScreens": [
+                {"type": "WARNING", "heading": "Valid", "message": "This one is fine"},
+                {"type": "INFO"},
+                {"type": "WARNING", "heading": "Also valid", "message": "This one too"}
+              ]
+            },
+            "allowedSignatureType": {"type": "2FA", "variants": []},
+            "formData": {"title": "t", "message": "m", "attributes": []}
+          }]
+        }
+        """.trimIndent()
+
+        val response = typeAdapter.fromJson(json)
+        val op = response.responseObject.firstOrNull()
+        Assert.assertNotNull(op)
+        val screens = op!!.ui?.preApprovalScreens
+        Assert.assertNotNull("Valid screens should survive when one is invalid", screens)
+        Assert.assertEquals(2, screens!!.size)
+        Assert.assertEquals("Valid", screens[0].heading)
+        Assert.assertEquals("Also valid", screens[1].heading)
+    }
 }

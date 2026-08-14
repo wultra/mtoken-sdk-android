@@ -52,7 +52,7 @@ internal class OperationApi(
     tokenProvider: IPowerAuthTokenProvider?,
     userAgent: UserAgent?,
     gsonBuilder: GsonBuilder?
-) : Api(baseUrl, okHttpClient, powerAuthSDK, gsonBuilder ?: OperationsUtils.defaultGsonBuilder(), appContext, tokenProvider, userAgent ?: UserAgent.libraryDefault(appContext)) {
+) : Api(baseUrl, okHttpClient, powerAuthSDK, gsonBuilder ?: OperationsUtils.defaultGsonBuilder(), appContext, tokenProvider, userAgent ?: UserAgent.libraryDefault(appContext)), IOperationApi {
 
     private object EmptyRequest: BaseRequest()
 
@@ -66,36 +66,36 @@ internal class OperationApi(
         const val OFFLINE_AUTHORIZE_URI_ID = "/operation/authorize/offline"
     }
 
-    var okHttpInterceptor: OkHttpBuilderInterceptor? = null
+    override var okHttpInterceptor: OkHttpBuilderInterceptor? = null
 
     /** List pending operations. */
-    fun list(listener: IApiCallResponseListener<OperationListResponse>) {
+    override fun list(listener: IApiCallResponseListener<OperationListResponse>) {
         post(EmptyRequest, listEndpoint, null, okHttpInterceptor, listener)
     }
 
     /** Retrieves operation history */
-    fun history(authentication: PowerAuthAuthentication, listener: IApiCallResponseListener<OperationHistoryResponse>) {
+    override fun history(authentication: PowerAuthAuthentication, listener: IApiCallResponseListener<OperationHistoryResponse>) {
         post(EmptyRequest, historyEndpoint, authentication, null, okHttpInterceptor, listener)
     }
 
     /** Reject an operation. */
-    fun reject(rejectRequest: RejectRequest, listener: IApiCallResponseListener<StatusResponse>) {
+    override fun reject(rejectRequest: RejectRequest, listener: IApiCallResponseListener<StatusResponse>) {
         val authentication = PowerAuthAuthentication.possession()
         post(rejectRequest, rejectEndpoint, authentication, null, okHttpInterceptor, listener)
     }
 
     /** Authorize an operation. */
-    fun authorize(authorizeRequest: AuthorizeRequest, authentication: PowerAuthAuthentication, listener: IApiCallResponseListener<StatusResponse>) {
+    override fun authorize(authorizeRequest: AuthorizeRequest, authentication: PowerAuthAuthentication, listener: IApiCallResponseListener<StatusResponse>) {
         post(authorizeRequest, authorizeEndpoint, authentication, null, okHttpInterceptor, listener)
     }
 
     /** Get an operation detail. */
-    fun getDetail(claimRequest: OperationClaimDetailRequest, listener: IApiCallResponseListener<OperationClaimDetailResponse>) {
+    override fun getDetail(claimRequest: OperationClaimDetailRequest, listener: IApiCallResponseListener<OperationClaimDetailResponse>) {
         post(data = claimRequest, endpoint = detailEndpoint, headers = null, okHttpInterceptor = okHttpInterceptor, listener = listener)
     }
 
     /** Claim an operation. */
-    fun claim(claimRequest: OperationClaimDetailRequest, listener: IApiCallResponseListener<OperationClaimDetailResponse>) {
+    override fun claim(claimRequest: OperationClaimDetailRequest, listener: IApiCallResponseListener<OperationClaimDetailResponse>) {
         post(data = claimRequest, endpoint = claimEndpoint, headers = null, okHttpInterceptor = okHttpInterceptor, listener = listener)
     }
 }

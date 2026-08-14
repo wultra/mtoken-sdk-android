@@ -2,7 +2,7 @@
 
 ## 3.0.0
 - Integrated `PowerAuthSDK` `2.0.0` [(#234)](https://github.com/wultra/mtoken-sdk-android/issues/234). PowerAuth "server stack" `2.0+` is now required.
-    - [Migration guide](Migration-2.5.md)
+    - [Migration guide](Migration-3.0.md)
     - Raised `minSdkVersion` from `21` to `23` and updated the build toolchain (Kotlin `2.2.0`, Android Gradle Plugin `8.13.0`, Gradle `8.13`).
     - `IOperationsService.authorizeOfflineOperation` is now **asynchronous** - it reports the result through a `callback` and returns an `ICancelable`, replacing the previous synchronous variant.
     - `QROperationParser` is now an instantiable class. When created with a `PowerAuthSDK` instance it verifies the operation signature during parsing; added `QROperation.verifySignature(powerAuth)` for manual verification.
@@ -11,13 +11,17 @@
     - Reworked `QROperationSignature`: `signingKey` → `keyType`, `signature` → `data`, `signatureString` → `dataSource` (old members removed). Added support for KMAC-based signatures via `KeyType.MAC_PERSONALIZED`.
     - Removed previously deprecated `QROperationFlags.biometryAllowed`; use `biometricsAllowed` instead.
     - `PowerAuthSDK.createOIDCActivation` no longer declares/throws `PowerAuthMissingConfigException` (removed in PowerAuth `2.0.0`).
+- Improved `PreApprovalScreen` decoding & logging. [(#232)](https://github.com/wultra/mtoken-sdk-android/issues/232).
+
+## 2.5.0
+- Improved proximity check time synchronization — the SDK now automatically adjusts timestamps during `authorizeOperation` [(#240)](https://github.com/wultra/mtoken-sdk-android/issues/240).
 
 ## 2.4.0
 - Added multiple PreApprovalScreens support [(#207)](https://github.com/wultra/mtoken-sdk-android/issues/207).
 - Fixed handling of the unexpected attributes payload [(#217)](https://github.com/wultra/mtoken-sdk-android/issues/217).
 
 ## 2.3.0
-- Added Alert Attribute [(#186](https://github.com/wultra/mtoken-sdk-android/issues/186)
+- Added Alert Attribute [(#186)](https://github.com/wultra/mtoken-sdk-android/issues/186)
 - Refactored time handling to use `java.time.ZonedDateTime` throughout the SDK, replacing ThreeTenABP due to its deprecation. [(#93)](https://github.com/wultra/mtoken-sdk-android/issues/93)
 - Added `ProximityCheck.withSynchronizedTime()` factory method to create proximity checks with server-synchronized timestamps, reducing clock drift issues. [(#201)](https://github.com/wultra/mtoken-sdk-android/issues/201)
 
