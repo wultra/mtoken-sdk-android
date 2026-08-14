@@ -85,7 +85,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib:${Constants.BuildScript.kotlinVersion}")
     implementation("androidx.annotation:annotation:1.10.0")
     implementation("com.google.code.gson:gson:2.14.0")
-    implementation("com.squareup.okhttp3:okhttp:5.3.2")
+    implementation("com.squareup.okhttp3:okhttp:5.4.0")
     implementation("com.wultra.android.powerauth:powerauth-networking:2.0.0")
 
     // Dependencies
