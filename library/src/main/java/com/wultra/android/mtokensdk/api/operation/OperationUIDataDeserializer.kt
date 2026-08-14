@@ -20,13 +20,12 @@ import com.google.gson.JsonDeserializationContext
 import com.google.gson.JsonDeserializer
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
-import com.google.gson.reflect.TypeToken
 import com.wultra.android.mtokensdk.api.operation.model.OperationUIData
 import com.wultra.android.mtokensdk.api.operation.model.PostApprovalScreen
 import com.wultra.android.mtokensdk.api.operation.model.preapproval.PreApprovalScreen
 import com.wultra.android.mtokensdk.api.operation.utils.asBooleanStrict
-import com.wultra.android.mtokensdk.api.operation.utils.safeDeserializeArray
 import com.wultra.android.mtokensdk.api.operation.utils.safeDeserializeObject
+import com.wultra.android.mtokensdk.log.WMTLogger
 import java.lang.reflect.Type
 
 /**
@@ -57,21 +56,43 @@ class OperationUIDataDeserializer : JsonDeserializer<OperationUIData> {
         obj: JsonObject,
         ctx: JsonDeserializationContext
     ): List<PreApprovalScreen>? {
-        val listType = object : TypeToken<List<PreApprovalScreen>>() {}.type
 
-        // 1) Prefer plural array
-        obj.get("preApprovalScreens")?.let { el ->
-            safeDeserializeArray<List<PreApprovalScreen>>(ctx, el, listType)?.let { return it }
+        val hasNew = obj.has("preApprovalScreens")
+        val hasLegacy = obj.has("preApprovalScreen")
+
+        if (hasNew) {
+            // New format: "preApprovalScreens" (plural, array)
+            val el = obj.get("preApprovalScreens")
+            if (!el.isJsonArray) {
+                WMTLogger.e("'preApprovalScreens' is present but is not a JSON array — ignoring.")
+                return null
+            }
+            WMTLogger.d("Decoding preApprovalScreens.")
+            val screens = el.asJsonArray.mapNotNull { screenEl ->
+                try {
+                    ctx.deserialize<PreApprovalScreen>(screenEl, PreApprovalScreen::class.java)
+                } catch (e: Throwable) {
+                    WMTLogger.e("Skipping invalid PreApprovalScreen: ${e.message}")
+                    null
+                }
+            }
+            if (hasLegacy) {
+                WMTLogger.i("Payload contains both 'preApprovalScreens' and legacy 'preApprovalScreen' — legacy is ignored.")
+            }
+            return screens.ifEmpty { null }
         }
 
-        // 2) Legacy singular object → wrap as list
-        obj.get("preApprovalScreen")?.let { el ->
-            safeDeserializeObject<PreApprovalScreen>(ctx, el, PreApprovalScreen::class.java)?.let { single ->
+        if (hasLegacy) {
+            // Legacy format: "preApprovalScreen" (singular object)
+            WMTLogger.d("Decoding preApprovalScreen (legacy format).")
+            val single = safeDeserializeObject<PreApprovalScreen>(ctx, obj.get("preApprovalScreen"), PreApprovalScreen::class.java)
+            if (single != null) {
                 return listOf(single)
+            } else {
+                WMTLogger.e("Failed to decode preApprovalScreen (legacy format).")
             }
         }
 
-        // 3) Nothing valid present
         return null
     }
 }

@@ -236,11 +236,13 @@ data class ProximityCheck(
 ) {
 
     /**
-     * Timestamp when the operation was scanned (QR Code) or delivered to the device (Deeplink).
+     * Timestamp when the operation was scanned (qrCode) or delivered to the device (deeplink).
      *
      * Captured automatically as the current system time at creation.
+     * The SDK adjusts this value to server-aligned time internally during authorization.
      */
-    val timestampReceived: ZonedDateTime = ZonedDateTime.now()
+    var timestampReceived: ZonedDateTime = ZonedDateTime.now()
+        internal set
 
     /**
      * Creates a ProximityCheck, ignoring the provided [timestampReceived] parameter.
