@@ -1,3 +1,8 @@
+---
+name: code-review
+description: Review pull requests in the Mobile Token SDK for Android. Use when reviewing Kotlin APIs, operations, OIDC, push, serialization, security, or release changes.
+---
+
 # Mobile Token SDK Android code review
 
 Review `mtoken-sdk-android` as the Maven-published `com.wultra.android:mtoken-sdk` Android SDK. Before deciding, verify the repository, PR target/head, and local commit with `git remote -v`, `git branch --show-current`, `git status --short`, and `git log -1 --oneline`. The expected integration base is `develop`; identify `release/*` bases explicitly and do not infer a PR from the checkout alone.
