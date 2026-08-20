@@ -1,6 +1,6 @@
 # Changelog
 
-## X.X.X
+## TBA
 
 ## 3.0.0
 - Integrated `PowerAuthSDK` `2.0.0` [(#234)](https://github.com/wultra/mtoken-sdk-android/issues/234). PowerAuth "server stack" `2.0+` is now required.
