@@ -14,7 +14,8 @@ repositories {
     mavenCentral() // if not defined elsewhere...
 }
 
-implementation "com.wultra.android.mtokensdk:wultra-mtoken-sdk:3.0.0"
+// Replace VERSION_DEFINITION with the actual library version.
+implementation "com.wultra.android.mtokensdk:wultra-mtoken-sdk:VERSION_DEFINITION"
 // if not added yet, include PowerAuth SDK too
 implementation "com.wultra.android.powerauth:powerauth-sdk:X.Y.Z"
 ```

@@ -17,20 +17,6 @@
             "devChange": true
         },
         {
-            "description": "Example app pubspec file in the documentation.",
-            "path": "docs/SDK-Integration.md",
-            "type": "version_replace",
-            "match": "implementation \"com.wultra.android.mtokensdk:wultra-mtoken-sdk:%VERSION%\"",
-            "skipForSnapshot": true
-        },
-        {
-            "description": "Compatibility in the documentation.",
-            "path": "docs/SDK-Integration.md",
-            "type": "versionstream_verify",
-            "match": "`%VERSION_STREAM%`",
-            "skipForSnapshot": true
-        },
-        {
             "description": "Changelog for the Wultra documentation.",
             "path": "docs/Changelog.md",
             "type": "tba_replace",
