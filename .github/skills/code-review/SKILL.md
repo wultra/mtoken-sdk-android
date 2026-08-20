@@ -5,7 +5,13 @@ description: Review pull requests in the Mobile Token SDK for Android. Use when 
 
 # Mobile Token SDK Android code review
 
-Review `mtoken-sdk-android` as the Maven-published `com.wultra.android:mtoken-sdk` Android SDK. Before deciding, verify the repository, PR target/head, and local commit with `git remote -v`, `git branch --show-current`, `git status --short`, and `git log -1 --oneline`. The expected integration base is `develop`; identify `release/*` bases explicitly and do not infer a PR from the checkout alone.
+Review only PR and repository content already available. Do not run or suggest
+commands, scripts, builds, tests, linters, formatters, validation tasks, or Git
+operations. Review `mtoken-sdk-android` as the Maven-published
+`com.wultra.android:mtoken-sdk` Android SDK. Determine the repository and PR
+target/head from available content only. The expected integration base is
+`develop`; identify `release/*` bases explicitly and do not infer PR metadata
+from local repository state.
 
 ## Decision and communication
 
@@ -25,8 +31,11 @@ Asynchronous services must preserve listener/completion behavior: each started o
 
 ## Versions, release material, documentation, and tests
 
-`library/gradle.properties` is the authoritative `VERSION_NAME`; `library/build.gradle.kts` exposes it in `BuildConfig`. On a release-to-`develop` change, every declared development version must be `0.0.1-dev`, including that properties file and changed release metadata. Release automation is `.prepare-release.json` and `scripts/prepare-release.sh`.
+`library/gradle.properties` is the authoritative `VERSION_NAME`; `library/build.gradle.kts` exposes it in `BuildConfig`. On a release-to-`develop` change, every declared development version must be `0.0.1-dev`, including that properties file and changed release metadata. Tracked release automation definitions in `.prepare-release.json` and `scripts/prepare-release.sh` may be read as evidence only.
 
-Public integration material is `README.md` and `docs/` (especially `SDK-Integration.md`, `Example-Usage.md`, `Using-Operations-Service.md`, `Using-OIDC-Service.md`, `Using-Push-Service.md`, `Using-Inbox-Service.md`, `Error-Handling.md`, and `Changelog.md`). Require corresponding docs and a changelog entry only for an externally observable API, integration, or behavior change. Follow the existing contribution guidance in `.github/CONTRIBUTING.md`; project-specific commands and constraints are in `.github/copilot-instructions.md`. Workflows `.github/workflows/{build,lint,tests}.yml` and scripts `scripts/{build-and-publish,lint,prepare-release}.sh` are evidence sources, not subjects for CI advice.
+Public integration material is `README.md` and `docs/` (especially `SDK-Integration.md`, `Example-Usage.md`, `Using-Operations-Service.md`, `Using-OIDC-Service.md`, `Using-Push-Service.md`, `Using-Inbox-Service.md`, `Error-Handling.md`, and `Changelog.md`). Require corresponding docs and a changelog entry only for an externally observable API, integration, or behavior change. Follow the existing contribution guidance in `.github/CONTRIBUTING.md` and review constraints in `.github/copilot-instructions.md`. Workflows `.github/workflows/{build,lint,tests}.yml` and scripts `scripts/{build-and-publish,lint,prepare-release}.sh` may be read as evidence only and are not subjects for CI advice.
 
-Use focused tests: JVM tests in `library/src/test/java/` cover JSON, QR parsing, push, authorization, and PAC utilities; instrumentation tests in `library/src/androidTest/java/` cover operations, OIDC, inbox, expiration, and integration. Run only relevant existing Gradle tests when validation is required.
+Inspect focused tests as evidence: JVM tests in `library/src/test/java/` cover
+JSON, QR parsing, push, authorization, and PAC utilities; instrumentation tests
+in `library/src/androidTest/java/` cover operations, OIDC, inbox, expiration,
+and integration. Never suggest executing them for validation.
