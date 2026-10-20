@@ -16,7 +16,9 @@
 
 package com.wultra.android.mtokensdk.api.operation.model
 
+import com.google.gson.annotations.JsonAdapter
 import com.google.gson.annotations.SerializedName
+import com.wultra.android.mtokensdk.api.operation.UtcInstantSerializer
 import java.time.ZonedDateTime
 
 /**
@@ -61,9 +63,11 @@ internal data class ProximityCheckData(
 
     /** Timestamp when the operation was received by the */
     @SerializedName("timestampReceived")
+    @JsonAdapter(UtcInstantSerializer::class)
     val timestampReceived: ZonedDateTime,
 
     /** Timestamp when the operation was sent */
     @SerializedName("timestampSent")
+    @JsonAdapter(UtcInstantSerializer::class)
     val timestampSent: ZonedDateTime
 )

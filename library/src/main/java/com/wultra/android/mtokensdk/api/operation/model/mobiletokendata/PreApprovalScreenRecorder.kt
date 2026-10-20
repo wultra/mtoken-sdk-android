@@ -16,22 +16,38 @@
 
 package com.wultra.android.mtokensdk.api.operation.model.mobiletokendata
 
+import com.google.gson.annotations.JsonAdapter
+import com.wultra.android.mtokensdk.api.operation.UtcInstantSerializer
 import com.wultra.android.mtokensdk.log.WMTLogger
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
-import java.time.Instant
-import java.time.ZoneId
 import java.time.ZonedDateTime
+import java.time.temporal.ChronoUnit
 
 /**
  * Records user navigation through Pre-approval screens.
  * Each “visit” captures an opening timestamp and, when closed,
  * a closing timestamp and the action that ended the visit.
- * Timestamps use PowerAuth time sync when available.
+ *
+ * Timestamps are captured with the device time. When the recorded data is sent with
+ * `OperationsService.authorizeOperation` or `OperationsService.rejectOperation`, the SDK
+ * aligns them to server time, synchronizing the time with the server first if needed.
  */
-class PreApprovalScreensRecorder(
-    /** Time source (used only for synchronized timestamps). */
-    private val powerAuthSDK: PowerAuthSDK
-) : MobileTokenDataRecord {
+class PreApprovalScreensRecorder() : MobileTokenDataRecord {
+
+    /**
+     * Deprecated. Previously used [powerAuthSDK] as a source of synchronized time.
+     *
+     * The recorder now captures device time and the SDK aligns it to server time
+     * during operation authorization or rejection. The [powerAuthSDK] parameter is ignored.
+     *
+     * @param powerAuthSDK Instance of PowerAuthSDK (no longer used).
+     */
+    @Deprecated(
+        message = "PowerAuthSDK is no longer needed. The SDK aligns recorded timestamps to server time " +
+            "during authorizeOperation and rejectOperation. Use PreApprovalScreensRecorder() instead.",
+        replaceWith = ReplaceWith("PreApprovalScreensRecorder()")
+    )
+    constructor(@Suppress("UNUSED_PARAMETER") powerAuthSDK: PowerAuthSDK) : this()
 
     private companion object { const val KEY = "preApprovalScreens" }
     override val key: String get() = KEY
@@ -49,10 +65,25 @@ class PreApprovalScreensRecorder(
     /** One screen visit within the Pre-approval flow. */
     private data class Visit(
         val screen: String,
+        @JsonAdapter(UtcInstantSerializer::class)
         val timestampOpened: ZonedDateTime,
+        @JsonAdapter(UtcInstantSerializer::class)
         var timestampClosed: ZonedDateTime? = null,
         var action: String? = null
     )
+
+    /** Snapshot of visits with device-time timestamps. Aligned to server time before sending. */
+    private class Visits(private val visits: List<Visit>) : AbstractList<Visit>(), ServerTimeAdjustable {
+        override val size: Int get() = visits.size
+        override fun get(index: Int): Visit = visits[index]
+
+        override fun adjusted(localTimeAdjustment: Long): List<Visit> = visits.map {
+            it.copy(
+                timestampOpened = it.timestampOpened.plus(localTimeAdjustment, ChronoUnit.MILLIS),
+                timestampClosed = it.timestampClosed?.plus(localTimeAdjustment, ChronoUnit.MILLIS)
+            )
+        }
+    }
 
     /** Synchronization primitive that protects recorder state. */
     private val mutex = Any()
@@ -106,7 +137,12 @@ class PreApprovalScreensRecorder(
         }
     }
 
-    /** Record value: snapshot of visits. */
+    /**
+     * Record value: snapshot of visits (a list) with device-time timestamps.
+     *
+     * The timestamps are aligned to server time by the SDK when the value is sent
+     * as a top-level `mobileTokenData` entry during operation authorization or rejection.
+     */
     override fun build(): Any = synchronized(mutex) {
         // If a visit is still open, close it now (no action)
         openVisit?.let { live ->
@@ -116,14 +152,9 @@ class PreApprovalScreensRecorder(
             openVisit = null
         }
 
-        visits.toList()
+        Visits(visits.map { it.copy() })
     }
 
-    /** PowerAuth-synchronized current time (fallback: system clock). */
-    private fun now(): ZonedDateTime {
-        val ts = powerAuthSDK.timeSynchronizationService
-        return if (ts.isTimeSynchronized) {
-            ZonedDateTime.ofInstant(Instant.ofEpochMilli(ts.currentTime), ZoneId.systemDefault())
-        } else ZonedDateTime.now()
-    }
+    /** Current device time. Aligned to server time by the SDK before sending. */
+    private fun now(): ZonedDateTime = ZonedDateTime.now()
 }

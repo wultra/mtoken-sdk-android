@@ -193,7 +193,7 @@ class IntegrationTests {
                         mtdBuilder.put("g3", mapOf("x" to true))
 
                         // Pre-approval flow: intro-warning -> CLOSE, intro-warning → CONTINUE, qr → SCAN, call-or-confirm → CONTINUE
-                        val recorder = PreApprovalScreensRecorder(pa)
+                        val recorder = PreApprovalScreensRecorder()
                             .begin("intro-warning")
                             .end("intro-warning", PreApprovalScreensRecorder.Action.CLOSE)
                             .begin("intro-warning")

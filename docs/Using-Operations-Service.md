@@ -369,15 +369,23 @@ If another visit is already open, it is automatically added to the list (without
 If no visit is open, but the most recent recorded visit has the same id and is still unclosed, it is finalized instead.
  - `reset()` - resets recorded visits
 
-Timestamps are aligned with server time via `PowerAuthSDK.timeSynchronizationService`.
+Timestamps are captured with the device time. When the recorded data is sent as a top-level `mobileTokenData` entry (via `builder.put(screenRecorder)` or `builder.put(screenRecorder.key, screenRecorder.build())`), `OperationsService.authorizeOperation` and `OperationsService.rejectOperation` align them to server time using `PowerAuthSDK.timeSynchronizationService`. If time is not yet synchronized, the SDK synchronizes it before sending the request. If the synchronization fails, the callback receives `ApiErrorException` (with the original error as its cause) and the operation is neither approved nor rejected.
+
+The recorder timestamps are sent as ISO-8601 UTC instants with millisecond precision (for example `2026-10-21T11:35:56.898Z`), the same format the server uses for its timestamps. `ZonedDateTime` values that you put into `mobileTokenData` yourself keep the previous format.
+
+Keep in mind the following limitations of the time alignment:
+
+- Only **top-level** `mobileTokenData` entries are aligned. If you nest the recorder output in another map or list, or transform it (for example with `filter` or `toList()`), it is sent with the device time.
+- Send the recorder output from the same process in which it was recorded. If you persist and restore `mobileTokenData` (for example as JSON), the restored data is sent with the device time.
+- The alignment uses the difference between the server and device time at the moment the operation is approved or rejected. If the device clock changes between recording and sending (for example, the user changes it manually), the recorded timestamps are shifted by that change.
 
 ```kotlin
 // Create MobileTokenData.Builder instance
 val builder = MobileTokenData.Builder()
 
-// The PowerAuthSDK instance provides a timeSynchronizationService used
-// to create accurate, server-aligned timestamps for each recorded event.
-val screenRecorder = PreApprovalScreensRecorder(powerAuthSDK)
+// Create the recorder. Timestamps are aligned to server time
+// by the OperationsService when the operation is approved or rejected.
+val screenRecorder = PreApprovalScreensRecorder()
 
 // Display UI for the PreApproval screen and record that it was shown
 screenRecorder.begin(screen.id)
@@ -392,6 +400,10 @@ builder.put(screenRecorder)
 // Assign created MobileTokenData to the Operation before approving/rejecting
 operation.mobileTokenData = builder.build()
 ```
+
+<!-- begin box info -->
+The `PreApprovalScreensRecorder(powerAuthSDK)` constructor is deprecated. The `PowerAuthSDK` instance is no longer needed, so use `PreApprovalScreensRecorder()` instead.
+<!-- end -->
 
 The `mobileTokenData` is completely optional and the structure is customer-specific. If you don't need this functionality, you can continue using operations without providing this property.
 
@@ -864,7 +876,7 @@ When the app is launched via a deeplink, preserve the data from the deeplink and
 
 - Automatic Time Synchronization
   The SDK automatically adjusts `timestampReceived` and `timestampSent` to server-aligned time during `authorizeOperation`. This ensures correct timestamps even when the device system clock has been manually changed. If time is not yet synchronized with the server, the SDK will synchronize it before sending the authorization request.
-
+  Both timestamps are sent as ISO-8601 UTC instants with millisecond precision (for example `2026-10-21T11:35:56.898Z`).
 ### PACUtils
 
 - For convenience, a utility class for parsing and extracting data from QR codes and deeplinks used in the PAC (Proximity Anti-fraud Check), is provided.
