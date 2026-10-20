@@ -369,14 +369,14 @@ If another visit is already open, it is automatically added to the list (without
 If no visit is open, but the most recent recorded visit has the same id and is still unclosed, it is finalized instead.
  - `reset()` - resets recorded visits
 
-Timestamps are aligned with server time via `PowerAuthSDK.timeSynchronizationService`.
+All opening and closing timestamps are captured using the device clock, independently of PowerAuth time synchronization. A change in synchronization availability during a visit does not change the clock used for its timestamps.
 
 ```kotlin
 // Create MobileTokenData.Builder instance
 val builder = MobileTokenData.Builder()
 
-// The PowerAuthSDK instance provides a timeSynchronizationService used
-// to create accurate, server-aligned timestamps for each recorded event.
+// The PowerAuthSDK constructor parameter is retained for compatibility.
+// Recorded event timestamps always use the device clock.
 val screenRecorder = PreApprovalScreensRecorder(powerAuthSDK)
 
 // Display UI for the PreApproval screen and record that it was shown

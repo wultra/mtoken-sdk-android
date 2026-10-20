@@ -1,6 +1,7 @@
 # Changelog
 
 ## TBA
+- `PreApprovalScreensRecorder` now captures all event timestamps using the device clock, avoiding mixed clock sources when PowerAuth time synchronization becomes available during a visit.
 
 ## 3.0.0
 - Integrated `PowerAuthSDK` `2.0.0` [(#234)](https://github.com/wultra/mtoken-sdk-android/issues/234). PowerAuth "server stack" `2.0+` is now required.

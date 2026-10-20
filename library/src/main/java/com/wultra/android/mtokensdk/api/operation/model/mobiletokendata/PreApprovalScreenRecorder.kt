@@ -18,19 +18,17 @@ package com.wultra.android.mtokensdk.api.operation.model.mobiletokendata
 
 import com.wultra.android.mtokensdk.log.WMTLogger
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
-import java.time.Instant
-import java.time.ZoneId
 import java.time.ZonedDateTime
 
 /**
  * Records user navigation through Pre-approval screens.
  * Each “visit” captures an opening timestamp and, when closed,
  * a closing timestamp and the action that ended the visit.
- * Timestamps use PowerAuth time sync when available.
+ * All event timestamps are captured using the device clock, independently of PowerAuth time synchronization.
  */
 class PreApprovalScreensRecorder(
-    /** Time source (used only for synchronized timestamps). */
-    private val powerAuthSDK: PowerAuthSDK
+    /** Retained for constructor compatibility; not used when capturing event timestamps. */
+    @Suppress("UNUSED_PARAMETER") powerAuthSDK: PowerAuthSDK
 ) : MobileTokenDataRecord {
 
     private companion object { const val KEY = "preApprovalScreens" }
@@ -119,11 +117,5 @@ class PreApprovalScreensRecorder(
         visits.toList()
     }
 
-    /** PowerAuth-synchronized current time (fallback: system clock). */
-    private fun now(): ZonedDateTime {
-        val ts = powerAuthSDK.timeSynchronizationService
-        return if (ts.isTimeSynchronized) {
-            ZonedDateTime.ofInstant(Instant.ofEpochMilli(ts.currentTime), ZoneId.systemDefault())
-        } else ZonedDateTime.now()
-    }
+    private fun now(): ZonedDateTime = ZonedDateTime.now()
 }
