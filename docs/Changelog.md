@@ -1,6 +1,12 @@
 # Changelog
 
 ## TBA
+- Improved time handling in `PreApprovalScreensRecorder` [(#245)](https://github.com/wultra/mtoken-sdk-android/issues/245).
+    - The recorder now captures device time, and `OperationsService.authorizeOperation` and `OperationsService.rejectOperation` align the recorded timestamps to server time, synchronizing the time first if needed ([documentation](Using-Operations-Service.md#predefined-record-helper-preapprovalscreensrecorder)).
+    - If the time synchronization fails, `authorizeOperation` and `rejectOperation` report the failure as `ApiErrorException` (with the original error as its cause) and the operation is not sent.
+    - Only `PreApprovalScreensRecorder` output stored as a top-level `mobileTokenData` entry is aligned. The rest of `mobileTokenData` is sent unchanged.
+    - Deprecated the `PreApprovalScreensRecorder(powerAuthSDK)` constructor, use `PreApprovalScreensRecorder()` instead.
+- Fixed serialization of timestamps sent to the server (`PreApprovalScreensRecorder` visits and proximity check `timestampReceived`/`timestampSent`). They are now sent as ISO-8601 UTC instants (for example `2026-10-21T11:35:56.898Z`). Previously, device-local time was sent with a `Z` suffix, which shifted the values by the device's UTC offset. Other `ZonedDateTime` values provided in `mobileTokenData` keep the previous format.
 
 ## 3.0.0
 - Integrated `PowerAuthSDK` `2.0.0` [(#234)](https://github.com/wultra/mtoken-sdk-android/issues/234). PowerAuth "server stack" `2.0+` is now required.

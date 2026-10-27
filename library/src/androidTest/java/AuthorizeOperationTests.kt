@@ -21,11 +21,17 @@ import com.wultra.android.mtokensdk.api.operation.*
 import com.wultra.android.mtokensdk.api.operation.model.IOperation
 import com.wultra.android.mtokensdk.api.operation.model.ProximityCheck
 import com.wultra.android.mtokensdk.api.operation.model.ProximityCheckType
+import com.wultra.android.mtokensdk.api.operation.model.mobiletokendata.MobileTokenData
+import com.wultra.android.mtokensdk.api.operation.model.mobiletokendata.PreApprovalScreensRecorder
+import com.wultra.android.mtokensdk.api.operation.model.mobiletokendata.ServerTimeAdjustable
 import com.wultra.android.mtokensdk.operation.OperationsService
+import com.wultra.android.mtokensdk.operation.RejectionData
+import com.wultra.android.mtokensdk.operation.RejectionReason
 import com.wultra.android.powerauth.networking.IApiCallResponseListener
 import com.wultra.android.powerauth.networking.OkHttpBuilderInterceptor
 import com.wultra.android.powerauth.networking.data.StatusResponse
 import com.wultra.android.powerauth.networking.data.StatusResponse.Status
+import com.wultra.android.powerauth.networking.error.ApiErrorException
 import io.getlime.security.powerauth.networking.interfaces.ICancelable
 import io.getlime.security.powerauth.networking.response.ITimeSynchronizationListener
 import io.getlime.security.powerauth.sdk.IPowerAuthTimeSynchronizationService
@@ -34,6 +40,7 @@ import io.getlime.security.powerauth.sdk.PowerAuthSDK
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
+import java.time.Duration
 import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -47,7 +54,9 @@ import java.util.concurrent.TimeUnit
  * - Proximity check + time NOT synchronized → synchronize first, adjust, then authorize
  * - Proximity check + time synchronization FAILS → callback with failure
  *
- * Also tests timestamp adjustment logic (adjustProximityCheckData) indirectly.
+ * Also tests timestamp adjustment logic (adjustProximityCheckData) indirectly, and alignment
+ * of [PreApprovalScreensRecorder] timestamps during [OperationsService.authorizeOperation]
+ * and [OperationsService.rejectOperation].
  */
 class AuthorizeOperationTests {
 
@@ -102,6 +111,8 @@ class AuthorizeOperationTests {
     ) : IPowerAuthTimeSynchronizationService {
 
         private var synchronized = false
+        var syncCount = 0
+            private set
 
         override fun isTimeSynchronized(): Boolean = synchronized
         override fun getCurrentTime(): Long = System.currentTimeMillis() + offsetMs
@@ -109,6 +120,7 @@ class AuthorizeOperationTests {
         override fun getLocalTimeAdjustmentPrecision(): Long = 50
 
         override fun synchronizeTime(listener: ITimeSynchronizationListener): ICancelable? {
+            syncCount++
             synchronized = true
             listener.onTimeSynchronizationSucceeded()
             return null
@@ -147,10 +159,12 @@ class AuthorizeOperationTests {
         override var okHttpInterceptor: OkHttpBuilderInterceptor? = null
 
         var lastAuthorizeRequest: AuthorizeRequest? = null
+        val authorizeRequests = mutableListOf<AuthorizeRequest>()
         var authorizeSuccess: Boolean = true
 
         override fun authorize(authorizeRequest: AuthorizeRequest, authentication: PowerAuthAuthentication, listener: IApiCallResponseListener<StatusResponse>) {
             lastAuthorizeRequest = authorizeRequest
+            authorizeRequests += authorizeRequest
             if (authorizeSuccess) {
                 listener.onSuccess(StatusResponse(Status.OK))
             } else {
@@ -158,9 +172,14 @@ class AuthorizeOperationTests {
             }
         }
 
+        var lastRejectRequest: RejectRequest? = null
+
         override fun list(listener: IApiCallResponseListener<OperationListResponse>) {}
         override fun history(authentication: PowerAuthAuthentication, listener: IApiCallResponseListener<OperationHistoryResponse>) {}
-        override fun reject(rejectRequest: RejectRequest, listener: IApiCallResponseListener<StatusResponse>) {}
+        override fun reject(rejectRequest: RejectRequest, listener: IApiCallResponseListener<StatusResponse>) {
+            lastRejectRequest = rejectRequest
+            listener.onSuccess(StatusResponse(Status.OK))
+        }
         override fun getDetail(claimRequest: OperationClaimDetailRequest, listener: IApiCallResponseListener<OperationClaimDetailResponse>) {}
         override fun claim(claimRequest: OperationClaimDetailRequest, listener: IApiCallResponseListener<OperationClaimDetailResponse>) {}
     }
@@ -287,6 +306,7 @@ class AuthorizeOperationTests {
             "Error should indicate sync failure",
             result.exceptionOrNull()!!.message!!.contains("Time sync unavailable")
         )
+        assertTimeSyncFailure(result)
 
         // API should NOT have been called
         Assert.assertNull("API should not be called when sync fails", mockApi.lastAuthorizeRequest)
@@ -414,5 +434,238 @@ class AuthorizeOperationTests {
             "Delta between sent and received should be ~30s, got ${delta}ms",
             delta in 28_000..32_000
         )
+    }
+
+    @Test
+    fun testAuthorizeRetryDoesNotDoubleAdjustProximityCheck() {
+        val offsetMs = 10_000L
+        val mockApi = MockOperationApi()
+        val service = createService(mockApi, SynchronizedTimeService(offsetMs))
+
+        val originalReceived = ZonedDateTime.ofInstant(Instant.ofEpochMilli(System.currentTimeMillis() - 30_000), ZoneId.systemDefault())
+        val pc = ProximityCheck("123456", ProximityCheckType.QR_CODE)
+        pc.timestampReceived = originalReceived
+        val operation = TestOperation(proximityCheck = pc)
+
+        // First attempt fails at the API (e.g. wrong password), the user retries
+        mockApi.authorizeSuccess = false
+        Assert.assertTrue("First attempt should fail", authorize(service, operation).isFailure)
+        mockApi.authorizeSuccess = true
+        Assert.assertTrue("Retry should succeed", authorize(service, operation).isSuccess)
+
+        Assert.assertEquals(2, mockApi.authorizeRequests.size)
+        val expectedReceived = originalReceived.toInstant().plusMillis(offsetMs)
+        mockApi.authorizeRequests.forEachIndexed { index, request ->
+            Assert.assertEquals(
+                "Request #$index timestampReceived should be adjusted exactly once",
+                expectedReceived,
+                request.requestObject.proximityCheck!!.timestampReceived.toInstant()
+            )
+        }
+        Assert.assertEquals("Operation ProximityCheck should not be modified", originalReceived, operation.proximityCheck!!.timestampReceived)
+    }
+
+    // --- Mobile token data with PreApprovalScreensRecorder ---
+
+    private fun Any.field(name: String): Any? = javaClass.getDeclaredField(name).apply { isAccessible = true }.get(this)
+
+    private fun mobileTokenDataWithRecorder(): Map<String, Any> {
+        val recorder = PreApprovalScreensRecorder()
+            .begin("intro")
+            .end("intro", PreApprovalScreensRecorder.Action.CONTINUE)
+            .begin("qr")
+            .end("qr", PreApprovalScreensRecorder.Action.SCAN)
+        val customerData = mapOf<String, Any>(
+            "baseK" to "baseV",
+            "customTime" to ZonedDateTime.of(2026, 10, 21, 13, 35, 56, 0, ZoneId.of("Europe/Prague")),
+            "customNested" to mapOf("time" to ZonedDateTime.now(), "list" to listOf(1, 2))
+        )
+        return MobileTokenData.Builder(customerData)
+            .put(recorder)
+            .build()
+    }
+
+    /** Asserts that recorder timestamps in [sent] are shifted by [offsetMs] compared to [original]. */
+    private fun assertRecorderAligned(original: Map<String, Any>, sent: Map<String, Any>?, offsetMs: Long) {
+        Assert.assertNotNull("mobileTokenData should be sent", sent)
+        Assert.assertEquals("Keys should be preserved", original.keys, sent!!.keys)
+        original.filterKeys { it != "preApprovalScreens" }.forEach { (key, value) ->
+            Assert.assertSame("Entry '$key' should be untouched", value, sent[key])
+        }
+
+        val rawVisits = original["preApprovalScreens"]
+        val sentVisits = sent["preApprovalScreens"]
+        Assert.assertTrue("Original mobileTokenData should not be modified", rawVisits is ServerTimeAdjustable)
+        Assert.assertFalse("Sent visits should be aligned", sentVisits is ServerTimeAdjustable)
+
+        rawVisits as List<*>
+        sentVisits as List<*>
+        Assert.assertEquals(rawVisits.size, sentVisits.size)
+        rawVisits.zip(sentVisits).forEach { (raw, aligned) ->
+            Assert.assertEquals(raw!!.field("screen"), aligned!!.field("screen"))
+            Assert.assertEquals(raw.field("action"), aligned.field("action"))
+            listOf("timestampOpened", "timestampClosed").forEach { name ->
+                val rawTimestamp = raw.field(name) as ZonedDateTime
+                val alignedTimestamp = aligned.field(name) as ZonedDateTime
+                Assert.assertEquals("$name should be shifted by offset", offsetMs, Duration.between(rawTimestamp, alignedTimestamp).toMillis())
+            }
+        }
+    }
+
+    private fun authorize(service: OperationsService, operation: IOperation): Result<Unit> {
+        val future = CompletableFuture<Result<Unit>>()
+        service.authorizeOperation(operation, PowerAuthAuthentication.possession()) { future.complete(it) }
+        return future.get(5, TimeUnit.SECONDS)
+    }
+
+    private fun reject(service: OperationsService, operation: IOperation): Result<Unit> {
+        val future = CompletableFuture<Result<Unit>>()
+        service.rejectOperation(operation, RejectionData(RejectionReason.UNEXPECTED_OPERATION)) { future.complete(it) }
+        return future.get(5, TimeUnit.SECONDS)
+    }
+
+    @Test
+    fun testAuthorizeAlignsRecorderTimestampsWhenTimeSynchronized() {
+        val offsetMs = 5 * 60 * 1000L
+        val mockApi = MockOperationApi()
+        val service = createService(mockApi, SynchronizedTimeService(offsetMs))
+        val mobileTokenData = mobileTokenDataWithRecorder()
+        val operation = TestOperation(mobileTokenData = mobileTokenData)
+
+        Assert.assertTrue("Should succeed", authorize(service, operation).isSuccess)
+
+        val requestObject = mockApi.lastAuthorizeRequest!!.requestObject
+        Assert.assertNull("proximityCheck should be null in request", requestObject.proximityCheck)
+        assertRecorderAligned(mobileTokenData, requestObject.mobileTokenData, offsetMs)
+        Assert.assertSame("Operation mobileTokenData should not be replaced", mobileTokenData, operation.mobileTokenData)
+    }
+
+    @Test
+    fun testAuthorizeSynchronizesTimeForRecorderData() {
+        val offsetMs = -3 * 60 * 1000L
+        val mockApi = MockOperationApi()
+        val timeService = DelayedSyncTimeService(offsetMs)
+        val service = createService(mockApi, timeService)
+        val mobileTokenData = mobileTokenDataWithRecorder()
+
+        Assert.assertTrue("Should succeed", authorize(service, TestOperation(mobileTokenData = mobileTokenData)).isSuccess)
+
+        Assert.assertEquals("Time should be synchronized once", 1, timeService.syncCount)
+        assertRecorderAligned(mobileTokenData, mockApi.lastAuthorizeRequest!!.requestObject.mobileTokenData, offsetMs)
+    }
+
+    @Test
+    fun testAuthorizeWithRecorderDataTimeSyncFails() {
+        val mockApi = MockOperationApi()
+        val service = createService(mockApi, FailingSyncTimeService())
+
+        val result = authorize(service, TestOperation(mobileTokenData = mobileTokenDataWithRecorder()))
+
+        Assert.assertTrue("Should fail when time sync fails", result.isFailure)
+        assertTimeSyncFailure(result)
+        Assert.assertNull("API should not be called when sync fails", mockApi.lastAuthorizeRequest)
+    }
+
+    @Test
+    fun testAuthorizeWithoutTimeSensitiveDataSkipsTimeSync() {
+        val mockApi = MockOperationApi()
+        val service = createService(mockApi, FailingSyncTimeService())
+        val mobileTokenData = mapOf<String, Any>("k" to "v")
+
+        Assert.assertTrue("Should succeed without time sync", authorize(service, TestOperation(mobileTokenData = mobileTokenData)).isSuccess)
+        Assert.assertEquals(mobileTokenData, mockApi.lastAuthorizeRequest!!.requestObject.mobileTokenData)
+    }
+
+    @Test
+    fun testAuthorizeWithProximityCheckAndRecorderDataSynchronizesOnce() {
+        val offsetMs = 2 * 60 * 1000L
+        val mockApi = MockOperationApi()
+        val timeService = DelayedSyncTimeService(offsetMs)
+        val service = createService(mockApi, timeService)
+        val mobileTokenData = mobileTokenDataWithRecorder()
+        val operation = TestOperation(
+            proximityCheck = ProximityCheck("123456", ProximityCheckType.QR_CODE),
+            mobileTokenData = mobileTokenData
+        )
+
+        Assert.assertTrue("Should succeed", authorize(service, operation).isSuccess)
+
+        Assert.assertEquals("Time should be synchronized once", 1, timeService.syncCount)
+        val requestObject = mockApi.lastAuthorizeRequest!!.requestObject
+        Assert.assertNotNull("proximityCheck data should be present", requestObject.proximityCheck)
+        assertRecorderAligned(mobileTokenData, requestObject.mobileTokenData, offsetMs)
+    }
+
+    @Test
+    fun testRejectAlignsRecorderTimestampsWhenTimeSynchronized() {
+        val offsetMs = 5 * 60 * 1000L
+        val mockApi = MockOperationApi()
+        val service = createService(mockApi, SynchronizedTimeService(offsetMs))
+        val mobileTokenData = mobileTokenDataWithRecorder()
+        val operation = TestOperation(mobileTokenData = mobileTokenData)
+
+        Assert.assertTrue("Should succeed", reject(service, operation).isSuccess)
+
+        val requestObject = mockApi.lastRejectRequest!!.requestObject
+        Assert.assertEquals(RejectionReason.UNEXPECTED_OPERATION.reason, requestObject.reason)
+        assertRecorderAligned(mobileTokenData, requestObject.mobileTokenData, offsetMs)
+        Assert.assertSame("Operation mobileTokenData should not be replaced", mobileTokenData, operation.mobileTokenData)
+    }
+
+    @Test
+    fun testRejectSynchronizesTimeForRecorderData() {
+        val offsetMs = -3 * 60 * 1000L
+        val mockApi = MockOperationApi()
+        val timeService = DelayedSyncTimeService(offsetMs)
+        val service = createService(mockApi, timeService)
+        val mobileTokenData = mobileTokenDataWithRecorder()
+
+        Assert.assertTrue("Should succeed", reject(service, TestOperation(mobileTokenData = mobileTokenData)).isSuccess)
+
+        Assert.assertEquals("Time should be synchronized once", 1, timeService.syncCount)
+        assertRecorderAligned(mobileTokenData, mockApi.lastRejectRequest!!.requestObject.mobileTokenData, offsetMs)
+    }
+
+    @Test
+    fun testAuthorizeDoesNotAlignNestedRecorderData() {
+        val mockApi = MockOperationApi()
+        val timeService = DelayedSyncTimeService(60_000L)
+        val service = createService(mockApi, timeService)
+        val recorderData = PreApprovalScreensRecorder().begin("s1").end("s1", PreApprovalScreensRecorder.Action.CONTINUE).build()
+        val nested = mapOf("fds" to mapOf("screens" to recorderData))
+        val mobileTokenData = mapOf<String, Any>("custom" to nested)
+
+        Assert.assertTrue("Should succeed", authorize(service, TestOperation(mobileTokenData = mobileTokenData)).isSuccess)
+
+        Assert.assertEquals("Nested data should not trigger time sync", 0, timeService.syncCount)
+        Assert.assertSame("Nested data should be sent as-is", mobileTokenData, mockApi.lastAuthorizeRequest!!.requestObject.mobileTokenData)
+    }
+
+    private fun assertTimeSyncFailure(result: Result<Unit>) {
+        val error = result.exceptionOrNull()
+        Assert.assertTrue("Error should be ApiErrorException, was $error", error is ApiErrorException)
+        Assert.assertEquals("Time sync unavailable", error!!.cause?.message)
+    }
+
+    @Test
+    fun testRejectWithRecorderDataTimeSyncFails() {
+        val mockApi = MockOperationApi()
+        val service = createService(mockApi, FailingSyncTimeService())
+
+        val result = reject(service, TestOperation(mobileTokenData = mobileTokenDataWithRecorder()))
+
+        Assert.assertTrue("Should fail when time sync fails", result.isFailure)
+        assertTimeSyncFailure(result)
+        Assert.assertNull("API should not be called when sync fails", mockApi.lastRejectRequest)
+    }
+
+    @Test
+    fun testRejectWithoutTimeSensitiveDataSkipsTimeSync() {
+        val mockApi = MockOperationApi()
+        val service = createService(mockApi, FailingSyncTimeService())
+        val mobileTokenData = mapOf<String, Any>("k" to "v")
+
+        Assert.assertTrue("Should succeed without time sync", reject(service, TestOperation(mobileTokenData = mobileTokenData)).isSuccess)
+        Assert.assertEquals(mobileTokenData, mockApi.lastRejectRequest!!.requestObject.mobileTokenData)
     }
 }

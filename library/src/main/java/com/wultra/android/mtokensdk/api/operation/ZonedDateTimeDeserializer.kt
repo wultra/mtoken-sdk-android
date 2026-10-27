@@ -19,6 +19,7 @@ package com.wultra.android.mtokensdk.api.operation
 import com.google.gson.JsonDeserializationContext
 import com.google.gson.JsonDeserializer
 import com.google.gson.JsonElement
+import com.google.gson.JsonNull
 import com.google.gson.JsonParseException
 import com.google.gson.JsonPrimitive
 import com.google.gson.JsonSerializationContext
@@ -26,11 +27,12 @@ import com.google.gson.JsonSerializer
 import java.lang.reflect.Type
 import java.time.Instant
 import java.time.ZoneId
+import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
 /**
- * Gson deserializer for [ZonedDateTime].
+ * Gson deserializer and serializer for [ZonedDateTime].
  */
 internal class ZonedDateTimeDeserializer : JsonDeserializer<ZonedDateTime>, JsonSerializer<ZonedDateTime> {
 
@@ -57,6 +59,12 @@ internal class ZonedDateTimeDeserializer : JsonDeserializer<ZonedDateTime>, Json
         throw JsonParseException("Unable to parse ZonedDateTime")
     }
 
+    /**
+     * Serializes [src] in the legacy format: local date-time of [src] with a literal `Z` suffix.
+     *
+     * The format is kept for backward compatibility of customer-provided values (for example in `mobileTokenData`).
+     * Values that must be sent as true UTC instants use [UtcInstantSerializer] instead.
+     */
     override fun serialize(src: ZonedDateTime?, typeOfSrc: Type?, context: JsonSerializationContext?): JsonElement {
         // Custom format for ZonedDateTime
         val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
@@ -66,5 +74,23 @@ internal class ZonedDateTimeDeserializer : JsonDeserializer<ZonedDateTime>, Json
 
         // Create a JsonPrimitive from the formatted string
         return JsonPrimitive(formattedZonedDateTime)
+    }
+}
+
+/**
+ * Gson serializer for [ZonedDateTime] that writes an ISO-8601 UTC instant with millisecond precision
+ * (for example `2026-10-21T11:35:56.898Z`), the format the server uses for `Instant` values.
+ *
+ * Applied only to SDK-owned timestamps via `@JsonAdapter` (proximity check and pre-approval screen visits).
+ */
+internal class UtcInstantSerializer : JsonSerializer<ZonedDateTime> {
+
+    override fun serialize(src: ZonedDateTime?, typeOfSrc: Type?, context: JsonSerializationContext?): JsonElement {
+        if (src == null) return JsonNull.INSTANCE
+        return JsonPrimitive(src.withZoneSameInstant(ZoneOffset.UTC).format(UTC_FORMATTER))
+    }
+
+    private companion object {
+        val UTC_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
     }
 }

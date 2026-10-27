@@ -21,6 +21,7 @@ import com.google.gson.GsonBuilder
 import com.wultra.android.mtokensdk.api.apiErrorForListener
 import com.wultra.android.mtokensdk.api.operation.*
 import com.wultra.android.mtokensdk.api.operation.model.*
+import com.wultra.android.mtokensdk.api.operation.model.mobiletokendata.ServerTimeAdjustable
 import com.wultra.android.mtokensdk.log.WMTLogger
 import com.wultra.android.powerauth.networking.IApiCallResponseListener
 import com.wultra.android.powerauth.networking.OkHttpBuilderInterceptor
@@ -138,7 +139,15 @@ class OperationsService {
      * @param tokenProvider PowerAuthToken provider. If null is provided, a default internal implementation is provided.
      *
      */
-    constructor(powerAuthSDK: PowerAuthSDK, appContext: Context, httpClient: OkHttpClient, baseURL: String, tokenProvider: IPowerAuthTokenProvider? = null, userAgent: UserAgent? = null, gsonBuilder: GsonBuilder? = null) {
+    constructor(
+        powerAuthSDK: PowerAuthSDK,
+        appContext: Context,
+        httpClient: OkHttpClient,
+        baseURL: String,
+        tokenProvider: IPowerAuthTokenProvider? = null,
+        userAgent: UserAgent? = null,
+        gsonBuilder: GsonBuilder? = null
+    ) {
         this.powerAuthSDK = powerAuthSDK
         this.appContext = appContext
         this.timeService = powerAuthSDK.timeSynchronizationService
@@ -148,7 +157,12 @@ class OperationsService {
     /**
      * Internal constructor for testing with mocked dependencies.
      */
-    internal constructor(powerAuthSDK: PowerAuthSDK, appContext: Context, operationApi: IOperationApi, timeService: IPowerAuthTimeSynchronizationService) {
+    internal constructor(
+        powerAuthSDK: PowerAuthSDK,
+        appContext: Context,
+        operationApi: IOperationApi,
+        timeService: IPowerAuthTimeSynchronizationService
+    ) {
         this.powerAuthSDK = powerAuthSDK
         this.appContext = appContext
         this.timeService = timeService
@@ -237,9 +251,11 @@ class OperationsService {
     /**
      * Authorizes operation with provided authentication
      *
-     * If the operation has a [ProximityCheck], the SDK automatically adjusts timestamps using
-     * server-synchronized time. If time is not yet synchronized, the SDK will synchronize it
-     * before proceeding with authorization.
+     * The SDK automatically aligns timestamps to server-synchronized time for the operation's [ProximityCheck]
+     * and for time-sensitive [IOperation.mobileTokenData] records (such as `PreApprovalScreensRecorder`).
+     * If time is not yet synchronized, the SDK will synchronize it before proceeding with authorization.
+     * If the synchronization fails, the callback receives [ApiErrorException] (with the original error as its cause)
+     * and the operation is not authorized.
      *
      * @param operation Operation for approval
      * @param authentication Multifactor authentication object for signing, which depends on the operation type but usually 2FA (password or biometrics)
@@ -248,30 +264,73 @@ class OperationsService {
     fun authorizeOperation(operation: IOperation, authentication: PowerAuthAuthentication, callback: (result: Result<Unit>) -> Unit) {
 
         val proximityCheck = operation.proximityCheck
+        val mobileTokenData = operation.mobileTokenData
 
-        if (proximityCheck == null) {
-            // No proximity check — authorize directly
-            postAuthorize(operation, null, authentication, callback)
-        } else if (timeService.isTimeSynchronized) {
-            // Proximity check + time already synchronized — authorize directly
-            WMTLogger.d("Proximity check: time already synchronized, authorizing directly.")
-            val proximityCheckData = adjustProximityCheckData(proximityCheck)
-            postAuthorize(operation, proximityCheckData, authentication, callback)
-        } else {
-            // Proximity check + time NOT synchronized — synchronize first
-            WMTLogger.i("Proximity check: time not synchronized, synchronizing before authorize.")
-            timeService.synchronizeTime(object : ITimeSynchronizationListener {
-                override fun onTimeSynchronizationSucceeded() {
-                    WMTLogger.d("Proximity check: time synchronized, proceeding with authorize.")
-                    val proximityCheckData = adjustProximityCheckData(proximityCheck)
-                    postAuthorize(operation, proximityCheckData, authentication, callback)
-                }
+        if (proximityCheck == null && !mobileTokenData.requiresTimeAdjustment()) {
+            // No time-sensitive data — authorize directly
+            postAuthorize(operation, AuthorizeRequestObject(operation), authentication, callback)
+            return
+        }
 
-                override fun onTimeSynchronizationFailed(t: Throwable) {
-                    WMTLogger.e("Proximity check: time synchronization failed: ${t.message}")
-                    callback(Result.failure(t))
-                }
-            })
+        withSynchronizedTime("Authorize", onFailure = { callback(Result.failure(it)) }) {
+            val authorizeRequestObject = AuthorizeRequestObject(
+                operation.id,
+                operation.data,
+                proximityCheck?.let { adjustProximityCheckData(it) },
+                adjustMobileTokenData(mobileTokenData)
+            )
+            postAuthorize(operation, authorizeRequestObject, authentication, callback)
+        }
+    }
+
+    /**
+     * Calls [onSynchronized] when time is synchronized with the server.
+     * If time is not yet synchronized, it is synchronized first. [onFailure] is called with [ApiErrorException]
+     * (wrapping the original error as its cause) when the synchronization fails.
+     *
+     * @param label Label used in log messages.
+     */
+    private fun withSynchronizedTime(label: String, onFailure: (Throwable) -> Unit, onSynchronized: () -> Unit) {
+        if (timeService.isTimeSynchronized) {
+            WMTLogger.d("$label: time already synchronized, proceeding directly.")
+            onSynchronized()
+            return
+        }
+        WMTLogger.i("$label: time not synchronized, synchronizing before proceeding.")
+        timeService.synchronizeTime(object : ITimeSynchronizationListener {
+            override fun onTimeSynchronizationSucceeded() {
+                WMTLogger.d("$label: time synchronized, proceeding.")
+                onSynchronized()
+            }
+
+            override fun onTimeSynchronizationFailed(t: Throwable) {
+                WMTLogger.e("$label: time synchronization failed: ${t.message}")
+                onFailure(ApiErrorException(ApiError(t)))
+            }
+        })
+    }
+
+    /**
+     * Returns true if the mobile token data contains values with timestamps that must be aligned to server time.
+     */
+    private fun Map<String, Any>?.requiresTimeAdjustment(): Boolean = this?.values?.any { it is ServerTimeAdjustable } == true
+
+    /**
+     * Aligns time-sensitive top-level [IOperation.mobileTokenData] values to server time.
+     *
+     * Must only be called when time IS synchronized. The provided map is not modified, a new map is returned instead.
+     */
+    private fun adjustMobileTokenData(mobileTokenData: Map<String, Any>?): Map<String, Any>? {
+        if (mobileTokenData == null || !mobileTokenData.requiresTimeAdjustment()) {
+            return mobileTokenData
+        }
+        check(timeService.isTimeSynchronized) { "adjustMobileTokenData called before time synchronization" }
+
+        val localTimeAdjustment = timeService.localTimeAdjustment
+        WMTLogger.d { "Aligning mobileTokenData timestamps to server time, localTimeAdjustment=${localTimeAdjustment}ms" }
+
+        return mobileTokenData.mapValues { (_, value) ->
+            if (value is ServerTimeAdjustable) value.adjusted(localTimeAdjustment) else value
         }
     }
 
@@ -310,11 +369,11 @@ class OperationsService {
      */
     private fun postAuthorize(
         operation: IOperation,
-        proximityCheckData: ProximityCheckData?,
+        authorizeRequestObject: AuthorizeRequestObject,
         authentication: PowerAuthAuthentication,
         callback: (result: Result<Unit>) -> Unit
     ) {
-        val authorizeRequest = AuthorizeRequest(AuthorizeRequestObject(operation, proximityCheckData))
+        val authorizeRequest = AuthorizeRequest(authorizeRequestObject)
         operationApi.authorize(
             authorizeRequest,
             authentication,
@@ -334,12 +393,35 @@ class OperationsService {
     /**
      * Rejects operation with the provided reason
      *
+     * If [IOperation.mobileTokenData] contains time-sensitive records (such as `PreApprovalScreensRecorder`),
+     * the SDK aligns their timestamps to server-synchronized time. If time is not yet synchronized, the SDK
+     * will synchronize it before proceeding with rejection. If the synchronization fails, the callback receives [ApiErrorException]
+     * (with the original error as its cause) and the operation is not rejected.
+     *
      * @param operation Operation to reject
      * @param reason Rejection reason
      * @param callback Callback with a result.
      */
     fun rejectOperation(operation: IOperation, reason: RejectionData, callback: (result: Result<Unit>) -> Unit) {
-        val rejectRequest = RejectRequest(RejectRequestObject(operation.id, reason.serialized, operation.mobileTokenData))
+        val mobileTokenData = operation.mobileTokenData
+
+        if (!mobileTokenData.requiresTimeAdjustment()) {
+            // No time-sensitive data — reject directly
+            postReject(operation, RejectRequestObject(operation.id, reason.serialized, mobileTokenData), callback)
+            return
+        }
+
+        withSynchronizedTime("Reject", onFailure = { callback(Result.failure(it)) }) {
+            val rejectRequestObject = RejectRequestObject(operation.id, reason.serialized, adjustMobileTokenData(mobileTokenData))
+            postReject(operation, rejectRequestObject, callback)
+        }
+    }
+
+    /**
+     * Posts the reject request to the server.
+     */
+    private fun postReject(operation: IOperation, rejectRequestObject: RejectRequestObject, callback: (result: Result<Unit>) -> Unit) {
+        val rejectRequest = RejectRequest(rejectRequestObject)
         operationApi.reject(
             rejectRequest,
             object : IApiCallResponseListener<StatusResponse> {
