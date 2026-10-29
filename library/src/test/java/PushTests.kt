@@ -17,6 +17,7 @@
 package com.wultra.android.mtokensdk.api.operation
 
 import com.wultra.android.mtokensdk.push.PushMessage
+import com.wultra.android.mtokensdk.push.PushMessageActivationStatusChanged
 import com.wultra.android.mtokensdk.push.PushMessageOperationCreated
 import com.wultra.android.mtokensdk.push.PushMessageOperationFinished
 import com.wultra.android.mtokensdk.push.PushParser
@@ -105,6 +106,33 @@ class PushTests {
     @Test
     fun `test inbox new message`() {
         Assert.assertNotNull(makePush("mtoken.inboxMessage.new", null, null, null, "666"))
+    }
+
+    @Test
+    fun `test status change push with activation id`() {
+        val data = mapOf("messageType" to "mtoken.statusChange", "activationId" to "act-123")
+        val push = PushParser.parseNotification(data)
+        if (push !is PushMessageActivationStatusChanged) {
+            Assert.fail("Expected activation status changed push.")
+            return
+        }
+        Assert.assertEquals("act-123", push.activationId)
+        Assert.assertEquals(data, push.originalData)
+    }
+
+    @Test
+    fun `test status change push without activation id`() {
+        val push = makePush("mtoken.statusChange", null, null, null)
+        if (push !is PushMessageActivationStatusChanged) {
+            Assert.fail("Expected activation status changed push.")
+            return
+        }
+        Assert.assertNull(push.activationId)
+    }
+
+    @Test
+    fun `test unknown push type`() {
+        Assert.assertNull(makePush("mtoken.unknownType", "1", "name", null))
     }
 
     private fun makePush(type: String?, id: String?, name: String?, opResult: String?, inboxId: String? = null): PushMessage? {
