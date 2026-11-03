@@ -26,7 +26,8 @@ class PushParser {
         /**
          * When you receive a push notification, you can test it here if it's a "WMT" notification.
          *
-         * Return type can be [PushMessageOperationCreated], [PushMessageOperationFinished] or [PushMessageInboxReceived]
+         * Return type can be [PushMessageOperationCreated], [PushMessageOperationFinished], [PushMessageInboxReceived]
+         * or [PushMessageActivationStatusChanged]
          *
          * @param notificationData: data of received notification.
          * @return parsed known [PushMessage] or null
@@ -40,6 +41,7 @@ class PushParser {
                 "mtoken.operationInit" -> parseOperationCreated(notificationData)
                 "mtoken.operationFinished" -> parseOperationFinished(notificationData)
                 "mtoken.inboxMessage.new" -> parseInboxMessageReceived(notificationData)
+                "mtoken.statusChange" -> parseActivationStatusChanged(notificationData)
                 else -> null
             }
         }
@@ -62,6 +64,10 @@ class PushParser {
         private fun parseInboxMessageReceived(notificationData: Map<String, String>): PushMessage? {
             val inboxId = notificationData["inboxId"] ?: return null
             return PushMessageInboxReceived(inboxId, notificationData)
+        }
+
+        private fun parseActivationStatusChanged(notificationData: Map<String, String>): PushMessage {
+            return PushMessageActivationStatusChanged(notificationData["activationId"], notificationData)
         }
     }
 }
@@ -149,6 +155,19 @@ class PushMessageOperationFinished(
 class PushMessageInboxReceived(
     /** Id of the inbox message. */
     val id: String,
+
+    /** Original data on which was the push message constructed. */
+    originalData: Map<String, String>
+): PushMessage(originalData)
+
+/**
+ * Created when the activation status has changed (for example, the activation was blocked or removed).
+ *
+ * When received, the application should refresh the activation status from the PowerAuth server and react accordingly.
+ */
+class PushMessageActivationStatusChanged(
+    /** Id of the activation whose status changed. It's optional because it may not be included in the push payload. */
+    val activationId: String?,
 
     /** Original data on which was the push message constructed. */
     originalData: Map<String, String>
