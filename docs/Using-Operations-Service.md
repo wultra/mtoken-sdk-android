@@ -194,7 +194,7 @@ fun approveWithBiometrics(operation: IOperation) {
 ```
 
 <!-- begin box info -->
-If the approval fails, call `PowerAuthSDK.fetchActivationStatus` to detect whether the activation is blocked and how many attempts are left.
+If the approval fails, call `PowerAuthSDK.fetchActivationStatusWithCallback` to detect whether the activation is blocked and how many attempts are left.
 <!-- end -->
 
 ## Reject an Operation
