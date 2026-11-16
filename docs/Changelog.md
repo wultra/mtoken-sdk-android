@@ -1,6 +1,7 @@
 # Changelog
 
 ## TBA
+- Integrated `PowerAuthSDK` `2.1.x` (`2.1.+`) [(#254)](https://github.com/wultra/mtoken-sdk-android/issues/254). This is a minor, non-breaking update; suggested next SDK version: `3.1.0`.
 - Improved time handling in `PreApprovalScreensRecorder` [(#245)](https://github.com/wultra/mtoken-sdk-android/issues/245).
     - The recorder now captures device time, and `OperationsService.authorizeOperation` and `OperationsService.rejectOperation` align the recorded timestamps to server time, synchronizing the time first if needed ([documentation](Using-Operations-Service.md#predefined-record-helper-preapprovalscreensrecorder)).
     - If the time synchronization fails, `authorizeOperation` and `rejectOperation` report the failure as `ApiErrorException` (with the original error as its cause) and the operation is not sent.
