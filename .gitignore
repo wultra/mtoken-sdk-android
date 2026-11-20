@@ -21,3 +21,6 @@ configs
 # temp data
 /tmp-*
 *.txt*.class
+
+# Gradle problems report
+problems-report.html
