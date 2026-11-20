@@ -1,6 +1,8 @@
 # Changelog
 
 ## TBA
+- Documented explicit biometric invalidation when the Android biometric set changes and clarified that customer-demo
+  environments should keep digital onboarding in custom environment configuration.
 - Improved time handling in `PreApprovalScreensRecorder` [(#245)](https://github.com/wultra/mtoken-sdk-android/issues/245).
     - The recorder now captures device time, and `OperationsService.authorizeOperation` and `OperationsService.rejectOperation` align the recorded timestamps to server time, synchronizing the time first if needed ([documentation](Using-Operations-Service.md#predefined-record-helper-preapprovalscreensrecorder)).
     - If the time synchronization fails, `authorizeOperation` and `rejectOperation` report the failure as `ApiErrorException` (with the original error as its cause) and the operation is not sent.

@@ -37,6 +37,7 @@ import io.getlime.security.powerauth.networking.response.IPersistActivationListe
 import io.getlime.security.powerauth.sdk.PowerAuthAlgorithm
 import io.getlime.security.powerauth.sdk.PowerAuthClientConfiguration
 import io.getlime.security.powerauth.sdk.PowerAuthConfiguration
+import io.getlime.security.powerauth.sdk.PowerAuthKeychainConfiguration
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -93,7 +94,13 @@ class IntegrationUtils {
             // Create PA instance
             val cfg = PowerAuthConfiguration.Builder("tests", enrollmentUrl, sdkConfig).build()
             val clientCfg = PowerAuthClientConfiguration.Builder().allowUnsecuredConnection(true).build()
-            val pa = PowerAuthSDK.Builder(cfg).clientConfiguration(clientCfg).build(context)
+            val keychainCfg = PowerAuthKeychainConfiguration.Builder()
+                .linkBiometricItemsToCurrentSet(true)
+                .build()
+            val pa = PowerAuthSDK.Builder(cfg)
+                .clientConfiguration(clientCfg)
+                .keychainConfiguration(keychainCfg)
+                .build(context)
 
             val wmt = pa.createWultraMobileToken(context)
             return Pair(pa, wmt.oidc)
@@ -103,7 +110,13 @@ class IntegrationUtils {
             // Create PA instance
             val cfg = PowerAuthConfiguration.Builder("authorizeTests", enrollmentUrl, sdkConfig).build()
             val clientCfg = PowerAuthClientConfiguration.Builder().allowUnsecuredConnection(true).build()
-            val pa = PowerAuthSDK.Builder(cfg).clientConfiguration(clientCfg).build(context)
+            val keychainCfg = PowerAuthKeychainConfiguration.Builder()
+                .linkBiometricItemsToCurrentSet(true)
+                .build()
+            val pa = PowerAuthSDK.Builder(cfg)
+                .clientConfiguration(clientCfg)
+                .keychainConfiguration(keychainCfg)
+                .build(context)
 
             val wmt = pa.createWultraMobileToken(context)
             return Pair(pa, context)
@@ -119,7 +132,13 @@ class IntegrationUtils {
 
             val cfg = PowerAuthConfiguration.Builder("tests", enrollmentUrl, sdkConfig).algorithm(algorithm).build()
             val clientCfg = PowerAuthClientConfiguration.Builder().allowUnsecuredConnection(true).build()
-            val pa = PowerAuthSDK.Builder(cfg).clientConfiguration(clientCfg).build(context)
+            val keychainCfg = PowerAuthKeychainConfiguration.Builder()
+                .linkBiometricItemsToCurrentSet(true)
+                .build()
+            val pa = PowerAuthSDK.Builder(cfg)
+                .clientConfiguration(clientCfg)
+                .keychainConfiguration(keychainCfg)
+                .build(context)
             val wmt = pa.createWultraMobileToken(context)
 
             // Remove local instance if present
