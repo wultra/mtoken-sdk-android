@@ -27,7 +27,6 @@ import com.wultra.android.powerauth.networking.UserAgent
 import com.wultra.android.powerauth.networking.data.StatusResponse
 import com.wultra.android.powerauth.networking.error.ApiError
 import com.wultra.android.powerauth.networking.error.ApiErrorException
-import com.wultra.android.powerauth.networking.tokens.IPowerAuthTokenProvider
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
 import okhttp3.OkHttpClient
 
@@ -35,7 +34,7 @@ import okhttp3.OkHttpClient
  * Service, that communicates with Mobile Token API that handles registration for
  * push notifications.
  */
-class PushService(powerAuthSDK: PowerAuthSDK, appContext: Context, okHttpClient: OkHttpClient, baseURL: String, tokenProvider: IPowerAuthTokenProvider? = null, userAgent: UserAgent? = null) {
+class PushService(powerAuthSDK: PowerAuthSDK, appContext: Context, okHttpClient: OkHttpClient, baseURL: String, userAgent: UserAgent? = null) {
     /**
      * Accept language for the outgoing requests headers.
      * Default value is "en".
@@ -62,7 +61,7 @@ class PushService(powerAuthSDK: PowerAuthSDK, appContext: Context, okHttpClient:
             pushApi.okHttpInterceptor = value
         }
 
-    private val pushApi = PushApi(okHttpClient, baseURL, powerAuthSDK, appContext, tokenProvider, userAgent)
+    private val pushApi = PushApi(okHttpClient, baseURL, powerAuthSDK, appContext, userAgent)
 
     /**
      * Registers FCM on PowerAuth backend to receive notifications about operations and inbox.

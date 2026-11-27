@@ -29,7 +29,6 @@ import com.wultra.android.powerauth.networking.UserAgent
 import com.wultra.android.powerauth.networking.data.StatusResponse
 import com.wultra.android.powerauth.networking.error.ApiError
 import com.wultra.android.powerauth.networking.error.ApiErrorException
-import com.wultra.android.powerauth.networking.tokens.IPowerAuthTokenProvider
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
 import okhttp3.OkHttpClient
 
@@ -41,13 +40,12 @@ class InboxService(
     appContext: Context,
     httpClient: OkHttpClient,
     baseURL: String,
-    tokenProvider: IPowerAuthTokenProvider? = null,
     userAgent: UserAgent? = null,
     gsonBuilder: GsonBuilder? = null
 ) {
 
     // API class for communication.
-    private val inboxApi = InboxApi(httpClient, baseURL, appContext, powerAuthSDK, tokenProvider, userAgent, gsonBuilder ?: OperationsUtils.defaultGsonBuilder())
+    private val inboxApi = InboxApi(httpClient, baseURL, appContext, powerAuthSDK, userAgent, gsonBuilder ?: OperationsUtils.defaultGsonBuilder())
 
     /**
      * Accept language for the outgoing requests headers.

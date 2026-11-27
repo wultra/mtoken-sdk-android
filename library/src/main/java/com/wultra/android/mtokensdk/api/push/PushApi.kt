@@ -26,7 +26,6 @@ import com.wultra.android.powerauth.networking.OkHttpBuilderInterceptor
 import com.wultra.android.powerauth.networking.UserAgent
 import com.wultra.android.powerauth.networking.data.ObjectRequest
 import com.wultra.android.powerauth.networking.data.StatusResponse
-import com.wultra.android.powerauth.networking.tokens.IPowerAuthTokenProvider
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
 import okhttp3.OkHttpClient
 
@@ -40,12 +39,11 @@ internal class PushApi constructor(
     baseURL: String,
     powerAuthSDK: PowerAuthSDK,
     appContext: Context,
-    tokenProvider: IPowerAuthTokenProvider?,
     userAgent: UserAgent?
-) : Api(baseURL, okHttpClient, powerAuthSDK, GsonBuilder(), appContext, tokenProvider, userAgent ?: UserAgent.libraryDefault(appContext)) {
+) : Api(baseURL, okHttpClient, powerAuthSDK, GsonBuilder(), appContext, userAgent ?: UserAgent.libraryDefault(appContext)) {
 
     companion object {
-        private val endpoint = EndpointAuthenticatedWithToken<PushRegistrationRequest, StatusResponse>("api/push/device/register/token", "possession_universal")
+        private val endpoint = EndpointAuthenticatedWithToken("api/push/device/register/token", "possession_universal", PushRegistrationRequest::class.java, StatusResponse::class.java)
     }
 
     var okHttpInterceptor: OkHttpBuilderInterceptor? = null

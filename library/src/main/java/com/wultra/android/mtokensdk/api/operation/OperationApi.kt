@@ -23,7 +23,6 @@ import com.wultra.android.mtokensdk.api.operation.model.*
 import com.wultra.android.mtokensdk.operation.OperationsUtils
 import com.wultra.android.powerauth.networking.*
 import com.wultra.android.powerauth.networking.data.*
-import com.wultra.android.powerauth.networking.tokens.IPowerAuthTokenProvider
 import io.getlime.security.powerauth.sdk.PowerAuthAuthentication
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
 import okhttp3.OkHttpClient
@@ -49,20 +48,19 @@ internal class OperationApi(
     baseUrl: String,
     appContext: Context,
     powerAuthSDK: PowerAuthSDK,
-    tokenProvider: IPowerAuthTokenProvider?,
     userAgent: UserAgent?,
     gsonBuilder: GsonBuilder?
-) : Api(baseUrl, okHttpClient, powerAuthSDK, gsonBuilder ?: OperationsUtils.defaultGsonBuilder(), appContext, tokenProvider, userAgent ?: UserAgent.libraryDefault(appContext)), IOperationApi {
+) : Api(baseUrl, okHttpClient, powerAuthSDK, gsonBuilder ?: OperationsUtils.defaultGsonBuilder(), appContext, userAgent ?: UserAgent.libraryDefault(appContext)), IOperationApi {
 
     private object EmptyRequest: BaseRequest()
 
     companion object {
-        private val historyEndpoint = EndpointAuthenticated<EmptyRequest, OperationHistoryResponse>("api/auth/token/app/operation/history", "/operation/history")
-        private val listEndpoint = EndpointAuthenticatedWithToken<EmptyRequest, OperationListResponse>("api/auth/token/app/operation/list", "possession_universal")
-        private val authorizeEndpoint = EndpointAuthenticated<AuthorizeRequest, StatusResponse>("api/auth/token/app/operation/authorize", "/operation/authorize")
-        private val rejectEndpoint = EndpointAuthenticated<RejectRequest, StatusResponse>("api/auth/token/app/operation/cancel", "/operation/cancel")
-        private val detailEndpoint = EndpointAuthenticatedWithToken<OperationClaimDetailRequest, OperationClaimDetailResponse>("api/auth/token/app/operation/detail", "possession_universal")
-        private val claimEndpoint = EndpointAuthenticatedWithToken<OperationClaimDetailRequest, OperationClaimDetailResponse>("api/auth/token/app/operation/detail/claim", "possession_universal")
+        private val historyEndpoint = EndpointAuthenticated("api/auth/token/app/operation/history", "/operation/history", EmptyRequest::class.java, OperationHistoryResponse::class.java)
+        private val listEndpoint = EndpointAuthenticatedWithToken("api/auth/token/app/operation/list", "possession_universal", EmptyRequest::class.java, OperationListResponse::class.java)
+        private val authorizeEndpoint = EndpointAuthenticated("api/auth/token/app/operation/authorize", "/operation/authorize", AuthorizeRequest::class.java, StatusResponse::class.java)
+        private val rejectEndpoint = EndpointAuthenticated("api/auth/token/app/operation/cancel", "/operation/cancel", RejectRequest::class.java, StatusResponse::class.java)
+        private val detailEndpoint = EndpointAuthenticatedWithToken("api/auth/token/app/operation/detail", "possession_universal", OperationClaimDetailRequest::class.java, OperationClaimDetailResponse::class.java)
+        private val claimEndpoint = EndpointAuthenticatedWithToken("api/auth/token/app/operation/detail/claim", "possession_universal", OperationClaimDetailRequest::class.java, OperationClaimDetailResponse::class.java)
         const val OFFLINE_AUTHORIZE_URI_ID = "/operation/authorize/offline"
     }
 

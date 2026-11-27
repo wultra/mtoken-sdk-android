@@ -31,7 +31,6 @@ import com.wultra.android.powerauth.networking.OkHttpBuilderInterceptor
 import com.wultra.android.powerauth.networking.UserAgent
 import com.wultra.android.powerauth.networking.error.ApiError
 import com.wultra.android.powerauth.networking.error.ApiErrorException
-import com.wultra.android.powerauth.networking.tokens.IPowerAuthTokenProvider
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
 import okhttp3.OkHttpClient
 
@@ -43,13 +42,12 @@ class OIDCService(
     appContext: Context,
     okHttpClient: OkHttpClient,
     baseURL: String,
-    tokenProvider: IPowerAuthTokenProvider? = null,
     userAgent: UserAgent? = null,
     gsonBuilder: GsonBuilder?
 ) {
 
     // API class for communication.
-    private val oidcApi = OIDCApi(okHttpClient, baseURL, appContext, powerAuthSDK, tokenProvider, userAgent, gsonBuilder)
+    private val oidcApi = OIDCApi(okHttpClient, baseURL, appContext, powerAuthSDK, userAgent, gsonBuilder)
 
     /**
      * Accept language for the outgoing requests headers.

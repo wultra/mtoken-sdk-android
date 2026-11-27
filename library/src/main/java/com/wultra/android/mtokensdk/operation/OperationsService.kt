@@ -29,7 +29,6 @@ import com.wultra.android.powerauth.networking.UserAgent
 import com.wultra.android.powerauth.networking.data.StatusResponse
 import com.wultra.android.powerauth.networking.error.ApiError
 import com.wultra.android.powerauth.networking.error.ApiErrorException
-import com.wultra.android.powerauth.networking.tokens.IPowerAuthTokenProvider
 import io.getlime.security.powerauth.networking.interfaces.ICancelable
 import io.getlime.security.powerauth.networking.response.IOfflineAuthenticationCodeListener
 import io.getlime.security.powerauth.networking.response.ITimeSynchronizationListener
@@ -136,7 +135,6 @@ class OperationsService {
      * @param appContext Application Context object
      * @param httpClient OkHttpClient for API communication
      * @param baseURL Base URL where the operations endpoint rests.
-     * @param tokenProvider PowerAuthToken provider. If null is provided, a default internal implementation is provided.
      *
      */
     constructor(
@@ -144,14 +142,13 @@ class OperationsService {
         appContext: Context,
         httpClient: OkHttpClient,
         baseURL: String,
-        tokenProvider: IPowerAuthTokenProvider? = null,
         userAgent: UserAgent? = null,
         gsonBuilder: GsonBuilder? = null
     ) {
         this.powerAuthSDK = powerAuthSDK
         this.appContext = appContext
         this.timeService = powerAuthSDK.timeSynchronizationService
-        this.operationApi = OperationApi(httpClient, baseURL, appContext, powerAuthSDK, tokenProvider, userAgent, gsonBuilder)
+        this.operationApi = OperationApi(httpClient, baseURL, appContext, powerAuthSDK, userAgent, gsonBuilder)
     }
 
     /**

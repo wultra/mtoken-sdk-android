@@ -28,7 +28,6 @@ import com.wultra.android.powerauth.networking.IApiCallResponseListener
 import com.wultra.android.powerauth.networking.OkHttpBuilderInterceptor
 import com.wultra.android.powerauth.networking.UserAgent
 import com.wultra.android.powerauth.networking.data.ObjectResponse
-import com.wultra.android.powerauth.networking.tokens.IPowerAuthTokenProvider
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
 import okhttp3.OkHttpClient
 
@@ -42,13 +41,12 @@ internal class OIDCApi(
     baseUrl: String,
     appContext: Context,
     powerAuthSDK: PowerAuthSDK,
-    tokenProvider: IPowerAuthTokenProvider?,
     userAgent: UserAgent?,
     gsonBuilder: GsonBuilder?
-) : Api(baseUrl, okHttpClient, powerAuthSDK, gsonBuilder ?: OperationsUtils.defaultGsonBuilder(), appContext, tokenProvider, userAgent ?: UserAgent.libraryDefault(appContext)) {
+) : Api(baseUrl, okHttpClient, powerAuthSDK, gsonBuilder ?: OperationsUtils.defaultGsonBuilder(), appContext, userAgent ?: UserAgent.libraryDefault(appContext)) {
 
     companion object {
-        private val getConfig = EndpointBasic<OIDCConfigRequest, ConfigResponse>("/api/config/oidc", E2EEConfiguration.APPLICATION_SCOPE)
+        private val getConfig = EndpointBasic("/api/config/oidc", OIDCConfigRequest::class.java, ConfigResponse::class.java, E2EEConfiguration.APPLICATION_SCOPE)
     }
 
     var okHttpInterceptor: OkHttpBuilderInterceptor? = null
