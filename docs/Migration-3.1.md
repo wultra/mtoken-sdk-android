@@ -64,3 +64,11 @@ Remove the `tokenProvider` argument from these calls and delete any custom `IPow
 ### Authenticated Requests Are Serialized
 
 Requests signed with a PowerAuth authentication code (for example `authorizeOperation`, `rejectOperation` and `getHistory`) are now dispatched one at a time, so the signature counter always reaches the server in the order it was assigned. Token-authenticated requests (for example `getOperations` or inbox requests) are still dispatched concurrently. No code changes are required.
+
+---
+
+### Automatic HTTP Redirects Are Disabled
+
+Networking `3.0.x` disables automatic HTTP redirects for SDK requests. The Mobile Token services retain this default and do not expose the Networking `Api.followRedirects` opt-in. Redirect settings on a supplied `OkHttpClient` or in `okHttpInterceptor` cannot override it.
+
+If your integration previously relied on an HTTP redirect, configure the final backend URL directly, either in `PowerAuthConfiguration.baseEndpointUrl` when using `WultraMobileToken`, or in the `baseURL` passed to each service constructor. Otherwise, redirected requests now report a failure instead of following the redirect.
