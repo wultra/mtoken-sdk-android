@@ -25,7 +25,6 @@ import com.wultra.android.mtokensdk.operation.OperationsService
 import com.wultra.android.mtokensdk.push.PushService
 import com.wultra.android.powerauth.networking.UserAgent
 import com.wultra.android.powerauth.networking.ssl.SSLValidationStrategy
-import com.wultra.android.powerauth.networking.tokens.IPowerAuthTokenProvider
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
 import okhttp3.OkHttpClient
 
@@ -36,7 +35,6 @@ import okhttp3.OkHttpClient
  * @param appContext Application Context
  * @param okHttpClient HTTP client instance for networking
  * @param acceptLanguage The language code to set for the `Accept-Language` header.
- * @param tokenProvider PowerAuthToken provider. If null is provided, default internal implementation is provided.
  * @param userAgent Default user agent for each request.
  * @param gsonBuilder Custom GSON builder for deserialization of request. If you want to provide your own
  * deserialization logic, we recommend adding it to the instance obtained from the [OperationsUtils.defaultGsonBuilder].
@@ -46,7 +44,6 @@ fun PowerAuthSDK.createWultraMobileToken(
     appContext: Context,
     okHttpClient: OkHttpClient? = null,
     acceptLanguage: String? = null,
-    tokeProvider: IPowerAuthTokenProvider? = null,
     userAgent: UserAgent? = null,
     gsonBuilder: GsonBuilder? = null
 ): WultraMobileToken {
@@ -55,7 +52,6 @@ fun PowerAuthSDK.createWultraMobileToken(
         appContext,
         okHttpClient,
         acceptLanguage,
-        tokeProvider,
         userAgent,
         gsonBuilder
     )
@@ -69,7 +65,6 @@ fun PowerAuthSDK.createWultraMobileToken(
  * @param appContext Application Context
  * @param okHttpClient OkHttpClient for API communication
  * @param acceptLanguage The language code to set for the `Accept-Language` header.
- * @param tokenProvider PowerAuthToken provider. If null is provided, default internal implementation is provided.
  * @param userAgent Default user agent used for each request.
  * @param gsonBuilder GSON builder for deserialization of request.
  *
@@ -84,7 +79,6 @@ class WultraMobileToken(
     private val appContext: Context,
     private val okHttpClient: OkHttpClient? = null,
     private var acceptLanguage: String? = null,
-    private val tokenProvider: IPowerAuthTokenProvider? = null,
     private val userAgent: UserAgent? = null,
     private val gsonBuilder: GsonBuilder? = null
 ) {
@@ -109,7 +103,6 @@ class WultraMobileToken(
                 appContext,
                 okHttpClient ?: defaultOkHttpClient(),
                 powerAuthSDK.configuration.baseEndpointUrl,
-                tokenProvider,
                 userAgent,
                 gsonBuilder
             ).apply {
@@ -124,7 +117,6 @@ class WultraMobileToken(
                 appContext,
                 okHttpClient ?: defaultOkHttpClient(),
                 powerAuthSDK.configuration.baseEndpointUrl,
-                tokenProvider,
                 userAgent
             ).apply {
                 this@WultraMobileToken.acceptLanguage?.let { acceptLanguage = it }
@@ -138,7 +130,6 @@ class WultraMobileToken(
                 appContext,
                 okHttpClient ?: defaultOkHttpClient(),
                 powerAuthSDK.configuration.baseEndpointUrl,
-                tokenProvider,
                 userAgent,
                 gsonBuilder
             ).apply {
@@ -153,7 +144,6 @@ class WultraMobileToken(
                 appContext,
                 okHttpClient ?: defaultOkHttpClient(),
                 powerAuthSDK.configuration.baseEndpointUrl,
-                tokenProvider,
                 userAgent,
                 gsonBuilder
             ).apply {

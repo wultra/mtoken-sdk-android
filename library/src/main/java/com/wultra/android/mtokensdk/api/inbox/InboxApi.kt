@@ -34,7 +34,6 @@ import com.wultra.android.powerauth.networking.data.BaseRequest
 import com.wultra.android.powerauth.networking.data.ObjectRequest
 import com.wultra.android.powerauth.networking.data.ObjectResponse
 import com.wultra.android.powerauth.networking.data.StatusResponse
-import com.wultra.android.powerauth.networking.tokens.IPowerAuthTokenProvider
 import io.getlime.security.powerauth.sdk.PowerAuthSDK
 import okhttp3.OkHttpClient
 
@@ -59,7 +58,6 @@ internal class InboxApi(
     baseUrl: String,
     appContext: Context,
     powerAuthSDK: PowerAuthSDK,
-    tokenProvider: IPowerAuthTokenProvider?,
     userAgent: UserAgent?,
     gsonBuilder: GsonBuilder?
 ) : Api(
@@ -68,34 +66,43 @@ internal class InboxApi(
     powerAuthSDK,
     gsonBuilder ?: OperationsUtils.defaultGsonBuilder(),
     appContext,
-    tokenProvider,
     userAgent ?: UserAgent.libraryDefault(appContext)
 ) {
 
     companion object {
         private val getMessageCount =
-            EndpointAuthenticatedWithToken<BaseRequest, InboxCountResponse>(
+            EndpointAuthenticatedWithToken(
                 "api/inbox/count",
-                "possession_universal"
+                "possession_universal",
+                BaseRequest::class.java,
+                InboxCountResponse::class.java
             )
         private val getMessageList =
-            EndpointAuthenticatedWithToken<InboxGetListRequest, InboxGetListResponse>(
+            EndpointAuthenticatedWithToken(
                 "api/inbox/message/list",
-                "possession_universal"
+                "possession_universal",
+                InboxGetListRequest::class.java,
+                InboxGetListResponse::class.java
             )
         private val getMessageDetail =
-            EndpointAuthenticatedWithToken<InboxGetMessageDetailRequest, InboxGetMessageDetailResponse>(
+            EndpointAuthenticatedWithToken(
                 "api/inbox/message/detail",
-                "possession_universal"
+                "possession_universal",
+                InboxGetMessageDetailRequest::class.java,
+                InboxGetMessageDetailResponse::class.java
             )
         private val setMessageRead =
-            EndpointAuthenticatedWithToken<InboxSetMessageReadRequest, StatusResponse>(
+            EndpointAuthenticatedWithToken(
                 "api/inbox/message/read",
-                "possession_universal"
+                "possession_universal",
+                InboxSetMessageReadRequest::class.java,
+                StatusResponse::class.java
             )
-        private val setMessageAllRead = EndpointAuthenticatedWithToken<BaseRequest, StatusResponse>(
+        private val setMessageAllRead = EndpointAuthenticatedWithToken(
             "api/inbox/message/read-all",
-            "possession_universal"
+            "possession_universal",
+            BaseRequest::class.java,
+            StatusResponse::class.java
         )
     }
 

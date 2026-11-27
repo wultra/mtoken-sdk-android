@@ -1,6 +1,9 @@
 # Changelog
 
 ## TBA
+- Integrated `PowerAuthSDK` `2.1.x` and `powerauth-networking` `3.0.0` [(#254)](https://github.com/wultra/mtoken-sdk-android/issues/254).
+    - [Migration guide](Migration-3.1.md)
+    - Removed the `tokenProvider` parameter from `createWultraMobileToken`, `WultraMobileToken`, `OperationsService`, `InboxService`, `OIDCService` and `PushService` (the `IPowerAuthTokenProvider` interface was removed from the networking library, tokens are now always obtained from `PowerAuthSDK.tokenStore`).
 - Improved time handling in `PreApprovalScreensRecorder` [(#245)](https://github.com/wultra/mtoken-sdk-android/issues/245).
     - The recorder now captures device time, and `OperationsService.authorizeOperation` and `OperationsService.rejectOperation` align the recorded timestamps to server time, synchronizing the time first if needed ([documentation](Using-Operations-Service.md#predefined-record-helper-preapprovalscreensrecorder)).
     - If the time synchronization fails, `authorizeOperation` and `rejectOperation` report the failure as `ApiErrorException` (with the original error as its cause) and the operation is not sent.

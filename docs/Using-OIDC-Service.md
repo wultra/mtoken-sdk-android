@@ -37,7 +37,6 @@ val oidcService = OIDCService(
     appContext,
     okHttpClient,
     baseURL,
-    tokenProvider,
     userAgent,
     gsonBuilder
 )
@@ -56,7 +55,6 @@ __Optional parameters:__
 
 For these, if null is provided, default internal implementation is provided.
 
-- `tokenProvider` - Provider that provides a valid PowerAuth token from token store for api communication.
 - `userAgent` - Optional default user agent used for each request
 - `gsonBuilder` - Optional GSON builder for custom deserialization
 
